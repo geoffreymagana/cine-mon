@@ -176,6 +176,17 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const [isClient, setIsClient] = React.useState(false)
+
+    React.useEffect(() => {
+      setIsClient(true)
+    }, [])
+
+    if (!isClient) {
+      // Render null on the server and initial client render to avoid hydration mismatch.
+      // You can also render a sidebar skeleton here.
+      return null
+    }
 
     if (collapsible === "none") {
       return (
