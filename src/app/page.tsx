@@ -4,7 +4,7 @@ import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Search, Plus, Popcorn } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Popcorn } from "lucide-react";
 import { CineMonLogo } from "@/components/cine-mon-logo";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
@@ -13,6 +13,10 @@ import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
@@ -119,7 +123,7 @@ export default function Home() {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <div className="flex items-center gap-2 p-2">
+           <div className="flex items-center gap-2 p-2">
             <Settings className="w-5 h-5" />
             <h3 className="font-semibold font-headline">Settings</h3>
           </div>
@@ -133,6 +137,21 @@ export default function Home() {
               checked={isDarkMode}
               onCheckedChange={setIsDarkMode}
             />
+          </div>
+          <Separator className="my-1" />
+          <div className="p-2">
+              <Link href="/profile">
+                  <Button variant="ghost" className="w-full justify-start h-auto p-2">
+                      <Avatar className="h-10 w-10 mr-3">
+                          <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="person portrait"/>
+                          <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col items-start">
+                          <span className="font-semibold">Cine-Mon User</span>
+                          <span className="text-xs text-muted-foreground">View Profile</span>
+                      </div>
+                  </Button>
+              </Link>
           </div>
         </SidebarFooter>
       </Sidebar>
