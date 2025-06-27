@@ -22,59 +22,50 @@ type SpinWheelDialogProps = {
 export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogProps) => {
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [isSpinning, setIsSpinning] = React.useState(false);
-  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [animationKey, setAnimationKey] = React.useState(0);
+
+  const moviesToDisplay = React.useMemo(() => {
+    return [...movies].sort(() => 0.5 - Math.random()).slice(0, 9);
+  }, [movies]);
 
   const spin = () => {
     if (movies.length === 0) return;
 
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    
     setIsSpinning(true);
+    setSelectedMovie(null);
+    setAnimationKey(prev => prev + 1);
 
-    const spinDuration = 2000;
-    const intervalTime = 100;
-    let spinTime = 0;
+    const spinDuration = 3000;
 
-    intervalRef.current = setInterval(() => {
-      spinTime += intervalTime;
+    setTimeout(() => {
+      setIsSpinning(false);
       const randomIndex = Math.floor(Math.random() * movies.length);
       setSelectedMovie(movies[randomIndex]);
-      
-      if (spinTime >= spinDuration) {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        setIsSpinning(false);
-      }
-    }, intervalTime);
+    }, spinDuration);
   };
   
   React.useEffect(() => {
     if(isOpen) {
       if (movies.length > 0) {
-        setSelectedMovie(movies[Math.floor(Math.random() * movies.length)]);
+        spin();
+      } else {
+        setSelectedMovie(null);
       }
-      spin();
-    } else {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-    }
-    
-    return () => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, movies]);
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
+      setIsSpinning(false);
       setSelectedMovie(null);
     }
     setIsOpen(open);
   }
+
+  const carouselMovies = moviesToDisplay.length > 0 ? moviesToDisplay : movies.slice(0,1);
+  const numItems = carouselMovies.length;
+  const radius = numItems > 1 ? 220 : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -86,20 +77,30 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center py-8 min-h-[350px]">
-          {isSpinning && selectedMovie ? (
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-40 h-[240px] flex items-center justify-center [perspective:1000px]">
-                  <div className="w-40 rounded-lg overflow-hidden shadow-lg animate-wheel-spin">
+          {isSpinning ? (
+             <div className="revolving-carousel-container">
+              <div key={animationKey} className="revolving-carousel">
+                {carouselMovies.map((movie, index) => {
+                  const angle = (360 / numItems) * index;
+                  return (
+                    <div 
+                      key={movie.id}
+                      className="revolving-card"
+                      style={{
+                        transform: `rotateY(${angle}deg) translateZ(${radius}px)`
+                      }}
+                    >
                       <Image
-                          src={selectedMovie.posterUrl}
-                          alt="Spinning poster"
-                          width={200}
-                          height={300}
-                          className="w-full h-full object-cover"
+                        src={movie.posterUrl}
+                        alt={`Poster for ${movie.title}`}
+                        width={200}
+                        height={300}
+                        className="w-full h-full object-cover"
                       />
-                  </div>
+                    </div>
+                  )
+                })}
               </div>
-              <p className="text-lg font-semibold mt-8">Spinning...</p>
             </div>
           ) : !isSpinning && selectedMovie ? (
             <div className="flex flex-col items-center text-center animate-in fade-in duration-500">
