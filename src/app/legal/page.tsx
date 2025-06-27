@@ -9,7 +9,7 @@ import { ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
-function LegalPage() {
+function LegalPageContent() {
     const searchParams = useSearchParams();
     const tab = searchParams.get('tab') || 'terms';
 
@@ -26,7 +26,7 @@ function LegalPage() {
                         <Link href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</Link>
                         <Link href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</Link>
                         <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
-                        <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+                        <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link href="/dashboard" target="_blank" rel="noopener noreferrer">
@@ -178,9 +178,10 @@ function LegalPage() {
                         <span className="text-lg font-bold">Cine-Mon</span>
                     </div>
                     <div className="flex gap-6 text-gray-400">
+                    <Link href="/about" className="hover:text-primary transition-colors">About</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
                     <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+                    <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
                     <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
                     </div>
                 </div>
@@ -196,7 +197,7 @@ function LegalPage() {
 export default function SuspendedLegalPage() {
     return (
         <React.Suspense fallback={<div>Loading...</div>}>
-            <LegalPage />
+            <LegalPageContent />
         </React.Suspense>
     )
 }

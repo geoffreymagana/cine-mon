@@ -129,7 +129,7 @@ export default function LandingPage() {
             <a href="#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</a>
             <a href="#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</a>
             <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+            <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
           </div>
           <div className="flex items-center gap-4">
              <Link href="/dashboard" target="_blank" rel="noopener noreferrer">
@@ -168,7 +168,7 @@ export default function LandingPage() {
                     Install Web App
                   </Button>
               </Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   <Github className="mr-2" /> Open on GitHub
                 </Button>
@@ -300,7 +300,7 @@ export default function LandingPage() {
                     Install Web App
                   </Button>
               </Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   <Github className="mr-2" /> Host Your Own Copy
                 </Button>
@@ -325,9 +325,10 @@ export default function LandingPage() {
                 <span className="text-lg font-bold">Cine-Mon</span>
             </div>
             <div className="flex gap-6 text-gray-400">
+              <Link href="/about" className="hover:text-primary transition-colors">About</Link>
               <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
               <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+              <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
               <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
             </div>
           </div>

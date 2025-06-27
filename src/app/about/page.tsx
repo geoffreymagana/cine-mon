@@ -177,6 +177,7 @@ export default function AboutPage() {
                         <span className="text-lg font-bold">Cine-Mon</span>
                     </div>
                     <div className="flex gap-6 text-gray-400">
+                    <Link href="/about" className="hover:text-primary transition-colors">About</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
                     <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
                     <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
