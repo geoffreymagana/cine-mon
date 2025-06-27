@@ -65,12 +65,14 @@ export default function ChangelogPage() {
                     {versions.map((versionInfo) => (
                         <div key={versionInfo.version} className="relative mb-16">
                             {/* Dot on the timeline */}
-                            <div className="absolute -left-[18px] top-1 w-4 h-4 rounded-full bg-background border-2 border-primary ring-4 ring-background" />
+                            <div className="absolute -left-[18px] top-2 w-4 h-4 rounded-full bg-background border-2 border-primary ring-4 ring-background" />
+                            
+                            <div className="flex items-center gap-4 mb-2">
+                                <Badge variant="outline">v {versionInfo.version}</Badge>
+                                <p className="text-sm text-muted-foreground">{versionInfo.date}</p>
+                            </div>
 
-                            <p className="text-sm text-muted-foreground mb-1">{versionInfo.date}</p>
-                            <Badge variant="outline" className="mb-2">v {versionInfo.version}</Badge>
-
-                            <h2 className="text-3xl font-bold font-headline mt-2 mb-4">{versionInfo.title}</h2>
+                            <h2 className="text-3xl font-bold font-headline mb-4">{versionInfo.title}</h2>
                             
                             <div className="space-y-6">
                                 <p className="text-muted-foreground max-w-prose">{versionInfo.summary}</p>
@@ -79,8 +81,8 @@ export default function ChangelogPage() {
                                     <Image
                                         src={versionInfo.imageUrl}
                                         alt={`Feature screenshot for version ${versionInfo.version}`}
-                                        width={800}
-                                        height={450}
+                                        width={700}
+                                        height={394}
                                         className="w-full object-cover"
                                         data-ai-hint={versionInfo.imageHint}
                                     />
