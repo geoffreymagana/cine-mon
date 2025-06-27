@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -14,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -74,14 +72,12 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [animationKey, setAnimationKey] = React.useState(0);
   const [typedCaption, setTypedCaption] = React.useState("");
   const [captionOpacity, setCaptionOpacity] = React.useState(1);
-  const [lottieFailed, setLottieFailed] = React.useState(false);
 
   const spin = React.useCallback(async () => {
     if (movies.length === 0 || isSpinning) return;
 
     setIsSpinning(true);
     setSelectedMovie(null);
-    setLottieFailed(false);
     setAnimationKey(prev => prev + 1);
 
     const spinDuration = 4500;
@@ -97,7 +93,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         setCaptionOpacity(1); // Fade in
 
         const typingDuration = captionSlotDuration - 500; // leave 500ms for fade + hold
-        const typingSpeed = Math.max(20, typingDuration / cap.length);
+        const typingSpeed = Math.max(40, typingDuration / cap.length);
 
         for (let i = 0; i < cap.length; i++) {
           setTypedCaption(prev => prev + cap.charAt(i));
@@ -156,10 +152,6 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const numItems = carouselMovies.length;
   const radius = numItems > 1 ? 220 : 0;
   
-  const handleLottieError = () => {
-    setLottieFailed(true);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -229,18 +221,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         <div className="flex justify-center">
             <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32 h-12 flex items-center justify-center">
                 {isSpinning ? (
-                  lottieFailed ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <div className="w-12 h-12">
-                      <DotLottieReact
-                          src="https://lottie.host/2491b654-e0c1-4cb2-8789-3224b17f5f99/5b1waQc1zl.lottie"
-                          loop
-                          autoplay
-                          onError={handleLottieError}
-                      />
-                    </div>
-                  )
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                     "Spin Again"
                 )}
