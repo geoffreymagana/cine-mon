@@ -60,7 +60,7 @@ export default function ChangelogPage() {
                 
                 <div className="relative">
                     {/* Vertical Timeline */}
-                    <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-border -z-10" />
+                    <div className="absolute left-2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-transparent via-border to-transparent -z-10" />
 
                     {versions.map((versionInfo) => (
                         <div key={versionInfo.version} className="flex items-start gap-x-6 mb-16">
