@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -13,6 +14,43 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 
+const spinnerCaptions = [
+  "Rewinding film reels...",
+  "Pulling scenes from the archives...",
+  "Projecting something special...",
+  "Dusting off an old classic...",
+  "Sharpening the focus...",
+  "Rolling the end credits backward...",
+  "Cueing the next blockbuster...",
+  "Scanning the multiverse of media...",
+  "Let fate decide your next binge...",
+  "Spinning the cinematic wheel of destiny...",
+  "Deciding what you didn’t know you needed...",
+  "Calculating plot twists...",
+  "Consulting the genre gods...",
+  "Opening the vault of unseen greatness...",
+  "Popcorn’s almost ready...",
+  "This one’s gonna be a reel treat...",
+  "Let’s give the Oscars a run for their money...",
+  "Hold tight, we’re skipping the trailers...",
+  "Is it drama? Is it anime? Even we don’t know...",
+  "Summoning a cinematic prophecy...",
+  "Translating storylines from another dimension...",
+  "Rerouting the quantum plot engine...",
+  "Running a montage simulation...",
+  "Decrypting genre algorithms...",
+  "Browsing the director’s cut...",
+  "Unfolding the unwritten script...",
+  "Digging through deleted scenes...",
+  "Quoting plotlines from memory...",
+  "Crafting a scene you’ll never forget...",
+  "Accessing Cine-Mon mainframe...",
+  "Spawning watchlist variants...",
+  "Rendering watch probability matrix...",
+  "Initializing movieverse index...",
+  "Booting script-to-brain interface...",
+];
+
 type SpinWheelDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -23,6 +61,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [isSpinning, setIsSpinning] = React.useState(false);
   const [animationKey, setAnimationKey] = React.useState(0);
+  const [spinnerText, setSpinnerText] = React.useState("Spinning...");
 
   const moviesToDisplay = React.useMemo(() => {
     return [...movies].sort(() => 0.5 - Math.random()).slice(0, 9);
@@ -31,6 +70,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const spin = () => {
     if (movies.length === 0) return;
 
+    setSpinnerText(spinnerCaptions[Math.floor(Math.random() * spinnerCaptions.length)]);
     setIsSpinning(true);
     setSelectedMovie(null);
     setAnimationKey(prev => prev + 1);
@@ -129,7 +169,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         </div>
         <div className="flex justify-center">
             <Button onClick={spin} disabled={isSpinning || movies.length === 0}>
-                {isSpinning ? "Spinning..." : "Spin Again"}
+                {isSpinning ? spinnerText : "Spin Again"}
             </Button>
         </div>
       </DialogContent>
