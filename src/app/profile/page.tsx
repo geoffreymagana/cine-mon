@@ -15,7 +15,8 @@ import {
     Keyboard,
     DownloadCloud,
     FileText,
-    Mail
+    Mail,
+    BarChart3
 } from "lucide-react";
 
 import { ProfileHeader } from "@/components/profile-header";
@@ -229,6 +230,15 @@ export default function ProfilePage() {
                                                 <div className="flex flex-col">
                                                    <span>Changelog</span>
                                                    <span className="text-xs text-muted-foreground">See what's new.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                        <Link href="/analytics" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <BarChart3 className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Analytics & Insights</span>
+                                                   <span className="text-xs text-muted-foreground">View your watch statistics.</span>
                                                 </div>
                                             </Button>
                                         </Link>
