@@ -36,24 +36,26 @@ export default function DashboardPage() {
     document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
 
-  const handleAddMovie = (newMovie: Omit<Movie, "id">) => {
-    const movieWithId = { ...newMovie, id: crypto.randomUUID() };
-    setMovies((prev) => [movieWithId, ...prev]);
-    toast({
-      title: "Success!",
-      description: `${newMovie.title} has been added to your collection.`,
-    });
-  };
-
-  const handleUpdateMovie = (updatedMovie: Movie) => {
-    setMovies((prev) =>
-      prev.map((movie) => (movie.id === updatedMovie.id ? updatedMovie : movie))
-    );
-    setMovieToEdit(undefined);
-    toast({
-      title: "Success!",
-      description: `${updatedMovie.title} has been updated.`,
-    });
+  const handleSaveMovie = (movieData: Movie | Omit<Movie, "id">) => {
+    if ("id" in movieData) {
+      // Update existing movie
+      setMovies((prev) =>
+        prev.map((movie) => (movie.id === movieData.id ? movieData : movie))
+      );
+      setMovieToEdit(undefined);
+      toast({
+        title: "Success!",
+        description: `${movieData.title} has been updated.`,
+      });
+    } else {
+      // Add new movie
+      const movieWithId = { ...movieData, id: crypto.randomUUID() };
+      setMovies((prev) => [movieWithId, ...prev]);
+      toast({
+        title: "Success!",
+        description: `${movieData.title} has been added to your collection.`,
+      });
+    }
   };
 
   const handleDeleteMovie = (movieId: string) => {
@@ -200,7 +202,7 @@ export default function DashboardPage() {
       <AddMovieDialog
         isOpen={isAddMovieOpen}
         setIsOpen={setIsAddMovieOpen}
-        onSave={movieToEdit ? handleUpdateMovie : handleAddMovie}
+        onSave={handleSaveMovie}
         movieToEdit={movieToEdit}
       />
 
