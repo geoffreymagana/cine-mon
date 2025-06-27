@@ -26,6 +26,9 @@ import { cn } from '@/lib/utils';
 import { CinematicBackground } from '@/components/cinematic-background';
 import Image from 'next/image';
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
+import avatar4 from '@/app/assets/avatars/avatar-4.png';
+import avatar6 from '@/app/assets/avatars/avatar-6.png';
+import avatar8 from '@/app/assets/avatars/avatar-8.png';
 
 // Intersection Observer Hook for animations
 const useIntersectionObserver = (options: IntersectionObserverInit) => {
@@ -87,21 +90,21 @@ export default function LandingPage() {
     {
       name: 'Aki K.',
       handle: '@akikurosawa',
-      avatar: 'https://placehold.co/100x100.png',
+      avatar: avatar4.src,
       imageHint: 'person portrait',
       quote: 'Cine-Mon is the Notion for movie lovers I never knew I needed. The offline access is a game-changer for my subway commute.',
     },
     {
       name: 'Jordan P.',
       handle: '@reelcritic',
-      avatar: 'https://placehold.co/100x100.png',
+      avatar: avatar6.src,
       imageHint: 'person portrait',
       quote: 'Finally, an app that respects my obsession. The script archiving feature is incredible for my analysis work. A must-have for any serious cinephile.',
     },
     {
       name: 'Sofia C.',
       handle: '@filmsofia',
-      avatar: 'https://placehold.co/100x100.png',
+      avatar: avatar8.src,
       imageHint: 'person portrait',
       quote: 'It’s beautiful, it’s fast, and the "Surprise Me" wheel has solved so many "what to watch" debates in my house. 10/10!',
     },
