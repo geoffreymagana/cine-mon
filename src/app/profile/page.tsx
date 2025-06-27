@@ -18,6 +18,7 @@ export default function ProfilePage() {
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [activeSection, setActiveSection] = React.useState('personal-info');
+    const mainContentRef = React.useRef<HTMLElement>(null);
 
     const sections = ['personal-info', 'appearance', 'settings', 'about', 'help'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
@@ -32,7 +33,7 @@ export default function ProfilePage() {
 
     React.useEffect(() => {
         const observerOptions = {
-            root: null,
+            root: mainContentRef.current,
             rootMargin: '-40% 0px -60% 0px',
             threshold: 0,
         };
@@ -45,14 +46,15 @@ export default function ProfilePage() {
             });
         }, observerOptions);
 
-        Object.values(sectionRefs).forEach(ref => {
+        const refs = Object.values(sectionRefs);
+        refs.forEach(ref => {
             if (ref.current) {
                 observer.observe(ref.current);
             }
         });
 
         return () => {
-            Object.values(sectionRefs).forEach(ref => {
+            refs.forEach(ref => {
                 if (ref.current) {
                     observer.unobserve(ref.current);
                 }
@@ -65,35 +67,35 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="w-full bg-muted/40">
-            <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
-                 <div className="mb-8">
-                     <Link href="/" className="inline-flex items-center gap-2 font-semibold text-lg hover:text-primary transition-colors">
-                        <ArrowLeft className="w-5 h-5"/>
-                        <span>Back to Collection</span>
-                    </Link>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-x-12">
-                    <aside className="hidden md:block">
-                        <div className="sticky top-8">
-                             <Card>
-                                <CardContent className="p-4">
-                                    <nav className="flex flex-col gap-1">
-                                        <a href="#personal-info" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
-                                        <a href="#appearance" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
-                                        <a href="#settings" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
-                                        <a href="#about" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'about' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>About Cine-Mon</a>
-                                        <a href="#help" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'help' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Help & Support</a>
-                                    </nav>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </aside>
-                    <main className="md:col-span-3">
-                        <div className="grid gap-8">
-                            <ProfileHeader />
+        <div className="flex h-screen flex-col bg-background">
+            <header className="mx-auto w-full max-w-screen-xl px-4 pt-8 sm:px-6 lg:px-8">
+                 <Link href="/" className="inline-flex items-center gap-2 font-semibold text-lg hover:text-primary transition-colors">
+                    <ArrowLeft className="w-5 h-5"/>
+                    <span>Back to Collection</span>
+                </Link>
+            </header>
+            <div className="mx-auto w-full max-w-screen-xl flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-12 overflow-hidden px-4 pb-8 sm:px-6 lg:px-8">
+                <aside className="hidden md:block pt-8">
+                    <div className="sticky top-8">
+                         <Card>
+                            <CardContent className="p-4">
+                                <nav className="flex flex-col gap-1">
+                                    <a href="#personal-info" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
+                                    <a href="#appearance" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
+                                    <a href="#settings" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
+                                    <a href="#about" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'about' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>About Cine-Mon</a>
+                                    <a href="#help" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'help' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Help & Support</a>
+                                </nav>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </aside>
+                <main ref={mainContentRef} className="md:col-span-3 overflow-y-auto pt-8 pr-6 scroll-smooth">
+                    <div className="grid gap-8">
+                        <ProfileHeader />
 
-                            <Card id="personal-info" ref={sectionRefs['personal-info']}>
+                        <div id="personal-info" ref={sectionRefs['personal-info']}>
+                            <Card>
                                 <CardHeader>
                                     <CardTitle>Personal Information</CardTitle>
                                     <CardDescription>Update your name and biography.</CardDescription>
@@ -112,8 +114,10 @@ export default function ProfilePage() {
                                     <Button>Save Changes</Button>
                                 </CardFooter>
                             </Card>
+                        </div>
 
-                            <Card id="appearance" ref={sectionRefs['appearance']}>
+                        <div id="appearance" ref={sectionRefs['appearance']}>
+                            <Card>
                                 <CardHeader>
                                     <CardTitle>Appearance</CardTitle>
                                     <CardDescription>Customize the look and feel of the app.</CardDescription>
@@ -130,16 +134,18 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor="dark-mode" className="flex items-center gap-2">
+                                        <Label htmlFor="dark-mode-profile" className="flex items-center gap-2">
                                             {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                                             <span>Dark Mode</span>
                                         </Label>
-                                        <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={setIsDarkMode} />
+                                        <Switch id="dark-mode-profile" checked={isDarkMode} onCheckedChange={setIsDarkMode} />
                                     </div>
                                 </CardContent>
                             </Card>
-                            
-                            <Card id="settings" ref={sectionRefs['settings']}>
+                        </div>
+                        
+                        <div id="settings" ref={sectionRefs['settings']}>
+                            <Card>
                                 <CardHeader>
                                     <CardTitle>Settings</CardTitle>
                                     <CardDescription>Manage your application preferences.</CardDescription>
@@ -164,8 +170,10 @@ export default function ProfilePage() {
                                     </div>
                                 </CardContent>
                             </Card>
+                        </div>
 
-                             <Card id="about" ref={sectionRefs['about']}>
+                        <div id="about" ref={sectionRefs['about']}>
+                            <Card>
                                 <CardHeader>
                                     <CardTitle>About Cine-Mon</CardTitle>
                                 </CardHeader>
@@ -173,8 +181,10 @@ export default function ProfilePage() {
                                     <p className="text-muted-foreground">Cine-Mon is your personal movie and series tracker, designed to help you organize what you've watched, what you're watching, and what you want to watch next. Built with Next.js, ShadCN, and Genkit.</p>
                                 </CardContent>
                             </Card>
+                        </div>
 
-                             <Card id="help" ref={sectionRefs['help']}>
+                        <div id="help" ref={sectionRefs['help']}>
+                             <Card>
                                 <CardHeader>
                                     <CardTitle>Help & Support</CardTitle>
                                 </CardHeader>
@@ -182,10 +192,10 @@ export default function ProfilePage() {
                                     <p className="text-muted-foreground">Having trouble? Contact our support team at <a href="mailto:support@cinemon.app" className="text-primary hover:underline">support@cinemon.app</a>.</p>
                                 </CardContent>
                             </Card>
-
                         </div>
-                    </main>
-                </div>
+
+                    </div>
+                </main>
             </div>
         </div>
     );
