@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { DotLottieReact, type PlayerEvents } from '@lottiefiles/dotlottie-react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -158,11 +158,9 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const numItems = carouselMovies.length;
   const radius = numItems > 1 ? 220 : 0;
   
-  const handleLottieEvent = (event: PlayerEvents) => {
-    if (event === 'error') {
-      setLottieFailed(true);
-    }
-  }
+  const handleLottieError = () => {
+    setLottieFailed(true);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -236,7 +234,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
                           src="https://lottie.host/a050cb6d-8846-4b86-9cfb-d4e5d3f5f806/tjYm0mBSbB.lottie"
                           loop
                           autoplay
-                          onEvent={handleLottieEvent}
+                          onError={handleLottieError}
                       />
                     </div>
                   )
