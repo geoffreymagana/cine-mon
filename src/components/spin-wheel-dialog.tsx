@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { DotLottieReact, type PlayerEvents } from '@lottiefiles/dotlottie-react';
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -73,6 +74,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [animationKey, setAnimationKey] = React.useState(0);
   const [caption, setCaption] = React.useState("");
   const [typedCaption, setTypedCaption] = React.useState("");
+  const [lottieFailed, setLottieFailed] = React.useState(false);
 
   // Typewriter effect for captions
   React.useEffect(() => {
@@ -92,7 +94,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             }
             clearInterval(intervalId);
         }
-    }, 40); // Typing speed
+    }, 25); // Typing speed
     
     return () => clearInterval(intervalId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,16 +106,17 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
 
     setIsSpinning(true);
     setSelectedMovie(null);
+    setLottieFailed(false);
     setAnimationKey(prev => prev + 1);
 
     const shuffledCaptions = [...spinnerCaptions].sort(() => 0.5 - Math.random());
     
     // Set captions at intervals
     setCaption(shuffledCaptions[0] || "Spinning");
-    setTimeout(() => setCaption(shuffledCaptions[1] || "Finding a gem..."), 1300);
-    setTimeout(() => setCaption(shuffledCaptions[2] || "Almost there..."), 2600);
+    setTimeout(() => setCaption(shuffledCaptions[1] || "Finding a gem..."), 1500);
+    setTimeout(() => setCaption(shuffledCaptions[2] || "Almost there..."), 3000);
 
-    const spinDuration = 4000;
+    const spinDuration = 4500;
 
     setTimeout(() => {
       const randomIndex = Math.floor(Math.random() * movies.length);
@@ -154,6 +157,12 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
 
   const numItems = carouselMovies.length;
   const radius = numItems > 1 ? 220 : 0;
+  
+  const handleLottieEvent = (event: PlayerEvents) => {
+    if (event === 'error') {
+      setLottieFailed(true);
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -217,9 +226,20 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         </div>
         <div className="text-center h-10 text-muted-foreground text-sm">{typedCaption}</div>
         <div className="flex justify-center">
-            <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32">
+            <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32 h-12 flex items-center justify-center">
                 {isSpinning ? (
-                    <Loader2 className="h-4 w-4 animate-spin"/>
+                  lottieFailed ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <div className="w-12 h-12">
+                      <DotLottieReact
+                          src="https://lottie.host/a050cb6d-8846-4b86-9cfb-d4e5d3f5f806/tjYm0mBSbB.lottie"
+                          loop
+                          autoplay
+                          onEvent={handleLottieEvent}
+                      />
+                    </div>
+                  )
                 ) : (
                     "Spin Again"
                 )}
