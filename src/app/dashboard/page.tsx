@@ -5,18 +5,15 @@ import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Popcorn, ChartPie } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Popcorn, ChartPie } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
 import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomNav } from "@/components/bottom-nav";
 import Image from "next/image";
@@ -25,16 +22,11 @@ import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 export default function DashboardPage() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
-  const [isDarkMode, setIsDarkMode] = React.useState(true);
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
   const [movieToEdit, setMovieToEdit] = React.useState<Movie | undefined>(undefined);
   const { toast } = useToast();
   const isMobile = useIsMobile();
-
-  React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDarkMode);
-  }, [isDarkMode]);
 
   const handleSaveMovie = (movieData: Movie | Omit<Movie, "id">) => {
     if ("id" in movieData) {
@@ -88,7 +80,7 @@ export default function DashboardPage() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 p-2">
             <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
             <h1 className="text-2xl font-headline font-bold">Cine-Mon</h1>
           </div>
@@ -152,22 +144,6 @@ export default function DashboardPage() {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-           <div className="flex items-center gap-2 p-2">
-            <Settings className="w-5 h-5" />
-            <h3 className="font-semibold font-headline">Settings</h3>
-          </div>
-          <div className="flex items-center justify-between p-2">
-            <Label htmlFor="dark-mode" className="flex items-center gap-2">
-              {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              <span>Dark Mode</span>
-            </Label>
-            <Switch
-              id="dark-mode"
-              checked={isDarkMode}
-              onCheckedChange={setIsDarkMode}
-            />
-          </div>
-          <Separator className="my-1" />
           <div className="p-2">
               <Link href="/profile">
                   <Button variant="ghost" className="w-full justify-start h-auto p-2">
