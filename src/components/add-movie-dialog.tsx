@@ -239,26 +239,30 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                 />
             </div>
             
-            <FormItem>
-              <div className="flex justify-between items-center">
-                <FormLabel>Tags</FormLabel>
-                <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isTagging}>
-                  {isTagging ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                  )}
-                  Smart Tag
-                </Button>
-              </div>
-              <FormControl>
-                <>
-                  <Input 
-                    placeholder="Add tags and press Enter"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleTagKeyDown}
-                  />
+            <FormField
+              control={form.control}
+              name="tags"
+              render={() => (
+                <FormItem>
+                  <div className="flex justify-between items-center">
+                    <FormLabel>Tags</FormLabel>
+                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isTagging}>
+                      {isTagging ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      Smart Tag
+                    </Button>
+                  </div>
+                    <FormControl>
+                        <Input 
+                        placeholder="Add tags and press Enter"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
+                        />
+                    </FormControl>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.watch("tags").map((tag) => (
                       <Badge key={tag} variant="secondary">
@@ -269,9 +273,10 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                       </Badge>
                     ))}
                   </div>
-                </>
-              </FormControl>
-            </FormItem>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
