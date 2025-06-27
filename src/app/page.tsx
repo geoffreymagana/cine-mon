@@ -68,6 +68,13 @@ const AnimatedSection = ({ children, className, ...props }: { children: React.Re
 };
 
 export default function LandingPage() {
+  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+    
   const features = [
     { icon: Film, title: 'Personal Watchlist & History', description: 'Catalog every movie and show you’ve ever seen.' },
     { icon: Shuffle, title: 'Spin the Wheel', description: 'Let fate pick your next watch from your collection.' },
@@ -135,7 +142,17 @@ export default function LandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center text-center overflow-hidden">
+        <section 
+            onMouseMove={handleMouseMove}
+            className="hero-section-container relative min-h-screen flex items-center justify-center text-center"
+        >
+          <div
+            className="dotted-backdrop"
+            style={{
+                '--mouse-x': `${mousePosition.x}px`,
+                '--mouse-y': `${mousePosition.y}px`,
+            } as React.CSSProperties}
+          />
           <CinematicBackground />
           <div className="relative z-10 container mx-auto px-6">
             <h1 className="text-4xl md:text-7xl font-bold font-headline text-white text-glow leading-tight">
