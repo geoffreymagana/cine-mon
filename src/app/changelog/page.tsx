@@ -14,7 +14,7 @@ export default function ChangelogPage() {
             date: "November 15, 2023",
             title: "Profile & Navigation Overhaul",
             summary: "Introduced a completely redesigned Profile Page for a more intuitive user experience, alongside new dedicated pages for support, information, and app updates. This version also addresses various UI inconsistencies and hydration errors for a smoother experience.",
-            imageUrl: "https://placehold.co/800x450.png",
+            imageUrl: "https://placehold.co/700x394.png",
             imageHint: "user profile interface",
             changes: [
                 { type: "Improved", description: "Redesigned Profile Page with better navigation and layout." },
@@ -27,7 +27,7 @@ export default function ChangelogPage() {
             date: "October 26, 2023",
             title: "Initial Release",
             summary: "The first version of Cine-Mon is here! Start tracking your movies, TV shows, and anime. Discover random picks with the 'Surprise Me' wheel and get organized with AI-powered smart tagging for your descriptions.",
-            imageUrl: "https://placehold.co/800x450.png",
+            imageUrl: "https://placehold.co/700x394.png",
             imageHint: "movie posters collage",
             changes: [
                 { type: "New", description: "Initial release of Cine-Mon! Track movies, TV shows, and anime." },
@@ -58,46 +58,49 @@ export default function ChangelogPage() {
                     <p className="text-muted-foreground mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
                 </div>
                 
-                <div className="relative pl-8">
+                <div className="relative">
                     {/* Vertical Timeline */}
-                    <div className="absolute left-3 top-1 bottom-0 w-0.5 bg-border -z-10" />
+                    <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-border -z-10" />
 
                     {versions.map((versionInfo) => (
-                        <div key={versionInfo.version} className="relative mb-16">
-                            {/* Dot on the timeline */}
-                            <div className="absolute -left-[18px] top-2 w-4 h-4 rounded-full bg-background border-2 border-primary ring-4 ring-background" />
+                        <div key={versionInfo.version} className="flex items-start gap-x-6 mb-16">
+                            {/* Dot */}
+                            <div className="w-4 h-4 bg-background rounded-full border-2 border-primary ring-4 ring-background mt-1 flex-shrink-0" />
                             
-                            <div className="flex items-center gap-4 mb-2">
-                                <Badge variant="outline">v {versionInfo.version}</Badge>
-                                <p className="text-sm text-muted-foreground">{versionInfo.date}</p>
-                            </div>
-
-                            <h2 className="text-3xl font-bold font-headline mb-4">{versionInfo.title}</h2>
-                            
-                            <div className="space-y-6">
-                                <p className="text-muted-foreground max-w-prose">{versionInfo.summary}</p>
-                                
-                                <div className="overflow-hidden rounded-lg border shadow-lg hover:shadow-primary/20 transition-shadow">
-                                    <Image
-                                        src={versionInfo.imageUrl}
-                                        alt={`Feature screenshot for version ${versionInfo.version}`}
-                                        width={700}
-                                        height={394}
-                                        className="w-full object-cover"
-                                        data-ai-hint={versionInfo.imageHint}
-                                    />
+                            {/* Content */}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <Badge variant="outline">v {versionInfo.version}</Badge>
+                                    <p className="text-sm text-muted-foreground">{versionInfo.date}</p>
                                 </div>
+
+                                <h2 className="text-3xl font-bold font-headline mb-4">{versionInfo.title}</h2>
                                 
-                                <div>
-                                    <h3 className="text-lg font-semibold mb-3">Detailed Changes:</h3>
-                                    <ul className="space-y-2">
-                                        {versionInfo.changes.map((change, idx) => (
-                                            <li key={idx} className="flex items-center gap-3">
-                                                <Badge variant={getBadgeVariant(change.type)}>{change.type}</Badge>
-                                                <span>{change.description}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                <div className="space-y-6">
+                                    <p className="text-muted-foreground max-w-prose">{versionInfo.summary}</p>
+                                    
+                                    <div className="overflow-hidden rounded-lg border shadow-lg hover:shadow-primary/20 transition-shadow">
+                                        <Image
+                                            src={versionInfo.imageUrl}
+                                            alt={`Feature screenshot for version ${versionInfo.version}`}
+                                            width={700}
+                                            height={394}
+                                            className="w-full object-cover"
+                                            data-ai-hint={versionInfo.imageHint}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-3">Detailed Changes:</h3>
+                                        <ul className="space-y-2">
+                                            {versionInfo.changes.map((change, idx) => (
+                                                <li key={idx} className="flex items-center gap-3">
+                                                    <Badge variant={getBadgeVariant(change.type)}>{change.type}</Badge>
+                                                    <span>{change.description}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
