@@ -32,7 +32,7 @@ export default function ProfilePage() {
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [activeSection, setActiveSection] = React.useState('personal-info');
-    const mainContentRef = React.useRef<HTMLElement>(null);
+    const mainContentRef = React.useRef<HTMLDivElement>(null);
 
     const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
@@ -46,7 +46,7 @@ export default function ProfilePage() {
     }, [isDarkMode]);
 
     React.useEffect(() => {
-        const scrollContainer = mainContentRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        const scrollContainer = mainContentRef.current;
         if (!scrollContainer) return;
 
         const observerOptions = {
@@ -83,6 +83,15 @@ export default function ProfilePage() {
         fileInputRef.current?.click();
     };
 
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+        e.preventDefault();
+        const section = sectionRefs[sectionId]?.current;
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        setActiveSection(sectionId);
+    };
+
     return (
         <div className="flex h-screen flex-col bg-background">
             <header className="mx-auto w-full max-w-screen-xl px-4 pt-8 sm:px-6 lg:px-8">
@@ -91,27 +100,27 @@ export default function ProfilePage() {
                     <span>Back to Collection</span>
                 </Link>
             </header>
-            <div className="mx-auto w-full max-w-screen-xl flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-12 overflow-hidden px-4 pb-8 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-screen-xl flex-1 grid grid-cols-1 md:grid-cols-[280px_1fr] gap-x-12 overflow-hidden px-4 pb-8 sm:px-6 lg:px-8">
                 <aside className="hidden md:block pt-8">
                     <div className="sticky top-8">
                          <Card>
                             <CardContent className="p-4">
                                 <nav className="flex flex-col gap-1">
-                                    <a href="#personal-info" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
-                                    <a href="#appearance" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
-                                    <a href="#settings" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
-                                    <a href="#resources" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'resources' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Resources & Support</a>
+                                    <a href="#personal-info" onClick={(e) => handleNavClick(e, 'personal-info')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
+                                    <a href="#appearance" onClick={(e) => handleNavClick(e, 'appearance')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
+                                    <a href="#settings" onClick={(e) => handleNavClick(e, 'settings')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
+                                    <a href="#resources" onClick={(e) => handleNavClick(e, 'resources')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'resources' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Resources & Support</a>
                                 </nav>
                             </CardContent>
                         </Card>
                     </div>
                 </aside>
-                <main ref={mainContentRef} className="md:col-span-3 overflow-hidden">
-                    <ScrollArea className="h-full pt-8">
-                        <div className="grid gap-8 pr-6">
+                <main className="md:col-start-2 overflow-hidden">
+                    <ScrollArea className="h-full pr-6" viewportRef={mainContentRef}>
+                        <div className="grid gap-8 pt-8">
                             <ProfileHeader />
 
-                            <div id="personal-info" ref={sectionRefs['personal-info']}>
+                            <div id="personal-info" ref={sectionRefs['personal-info']} className="pt-8 -mt-8">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Personal Information</CardTitle>
@@ -133,7 +142,7 @@ export default function ProfilePage() {
                                 </Card>
                             </div>
 
-                            <div id="appearance" ref={sectionRefs['appearance']}>
+                            <div id="appearance" ref={sectionRefs['appearance']} className="pt-8 -mt-8">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Appearance</CardTitle>
@@ -161,7 +170,7 @@ export default function ProfilePage() {
                                 </Card>
                             </div>
                             
-                            <div id="settings" ref={sectionRefs['settings']}>
+                            <div id="settings" ref={sectionRefs['settings']} className="pt-8 -mt-8">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Settings</CardTitle>
@@ -189,7 +198,7 @@ export default function ProfilePage() {
                                 </Card>
                             </div>
                             
-                            <div id="resources" ref={sectionRefs['resources']}>
+                            <div id="resources" ref={sectionRefs['resources']} className="pt-8 -mt-8">
                                  <Card>
                                     <CardHeader>
                                         <CardTitle>Resources & Support</CardTitle>
@@ -271,7 +280,6 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
                             </div>
-
                         </div>
                     </ScrollArea>
                 </main>
