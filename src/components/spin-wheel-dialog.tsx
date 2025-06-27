@@ -94,7 +94,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             }
             clearInterval(intervalId);
         }
-    }, 25); // Typing speed
+    }, 50); // Typing speed
     
     return () => clearInterval(intervalId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -231,7 +231,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
                   ) : (
                     <div className="w-12 h-12">
                       <DotLottieReact
-                          src="https://lottie.host/a050cb6d-8846-4b86-9cfb-d4e5d3f5f806/tjYm0mBSbB.lottie"
+                          src="https://lottie.host/2491b654-e0c1-4cb2-8789-3224b17f5f99/5b1waQc1zl.lottie"
                           loop
                           autoplay
                           onError={handleLottieError}

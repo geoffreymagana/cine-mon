@@ -100,7 +100,7 @@ body {
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    animation: revolve 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    animation: revolve 4.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 @keyframes revolve {
