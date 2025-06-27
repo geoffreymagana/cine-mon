@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        'neon': '0 0 15px hsl(var(--primary) / 0.6)',
+        'neon-hover': '0 0 25px hsl(var(--primary) / 0.8)',
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Space Grotesk', 'sans-serif'],

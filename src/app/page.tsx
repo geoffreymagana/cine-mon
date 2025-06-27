@@ -163,7 +163,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                <Link href="/dashboard">
-                  <Button size="lg" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto shadow-neon hover:shadow-neon-hover transition-shadow duration-300">
                     Install Web App
                   </Button>
               </Link>
@@ -295,7 +295,7 @@ export default function LandingPage() {
             </h2>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/dashboard">
-                  <Button size="lg" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto shadow-neon hover:shadow-neon-hover transition-shadow duration-300">
                     Install Web App
                   </Button>
               </Link>
