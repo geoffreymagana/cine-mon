@@ -7,7 +7,7 @@ import {
   Film,
   Shuffle,
   FileText,
-  BarChart3,
+  ChartPie,
   Tags,
   ShieldCheck,
   Cpu,
@@ -69,7 +69,7 @@ export default function LandingPage() {
     { icon: Film, title: 'Personal Watchlist & History', description: 'Catalog every movie and show you’ve ever seen.' },
     { icon: Shuffle, title: 'Spin the Wheel', description: 'Let fate pick your next watch from your collection.' },
     { icon: FileText, title: 'Script Upload & Archiving', description: 'Keep your favorite scripts just a click away.' },
-    { icon: BarChart3, title: 'Watch Analytics & Insights', description: 'Visualize your habits and discover your unique taste.' },
+    { icon: ChartPie, title: 'Watch Analytics & Insights', description: 'Visualize your habits and discover your unique taste.' },
     { icon: Tags, title: 'Custom Posters & Tags', description: 'Personalize your library with custom art and smart tags.' },
     { icon: ShieldCheck, title: 'Offline-First, Fully Private', description: 'Your data stays on your device. No clouds, no accounts.' },
   ];
