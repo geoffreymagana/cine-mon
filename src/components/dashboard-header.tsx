@@ -1,17 +1,21 @@
+
 "use client";
 
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
 };
 
 export const DashboardHeader = ({ onAddMovieClick }: DashboardHeaderProps) => {
+  const { isMobile } = useSidebar();
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-8">
-      <div className="flex-1">
+      <div className="flex flex-1 items-center gap-4">
+        {isMobile && <SidebarTrigger />}
         <h1 className="text-2xl font-headline font-semibold">My Collection</h1>
       </div>
       <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">

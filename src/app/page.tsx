@@ -18,6 +18,8 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { BottomNav } from "@/components/bottom-nav";
 
 export default function Home() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
@@ -27,6 +29,7 @@ export default function Home() {
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
   const [movieToEdit, setMovieToEdit] = React.useState<Movie | undefined>(undefined);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
@@ -88,46 +91,50 @@ export default function Home() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest something to watch">
-                  <Shuffle />
-                  <span>Surprise Me</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          <SidebarSeparator />
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={filter === 'All'} onClick={() => setFilter('All')}>
-                  <Clapperboard />
-                  <span>All</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={filter === 'Movie'} onClick={() => setFilter('Movie')}>
-                  <Film />
-                  <span>Movies</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={filter === 'TV Show'} onClick={() => setFilter('TV Show')}>
-                  <Tv />
-                  <span>TV Shows</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={filter === 'Anime'} onClick={() => setFilter('Anime')}>
-                  <Popcorn />
-                  <span>Anime</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          <SidebarSeparator />
+           {!isMobile && (
+              <>
+                <SidebarGroup>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest something to watch">
+                        <Shuffle />
+                        <span>Surprise Me</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroup>
+                <SidebarSeparator />
+                <SidebarGroup>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={filter === 'All'} onClick={() => setFilter('All')}>
+                        <Clapperboard />
+                        <span>All</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={filter === 'Movie'} onClick={() => setFilter('Movie')}>
+                        <Film />
+                        <span>Movies</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={filter === 'TV Show'} onClick={() => setFilter('TV Show')}>
+                        <Tv />
+                        <span>TV Shows</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={filter === 'Anime'} onClick={() => setFilter('Anime')}>
+                        <Popcorn />
+                        <span>Anime</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroup>
+                <SidebarSeparator />
+              </>
+            )}
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -176,7 +183,7 @@ export default function Home() {
       </Sidebar>
 
       <SidebarInset>
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen flex flex-col pb-16 md:pb-0">
           <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
           <div className="flex-grow p-4 md:p-8">
             <MovieGrid
@@ -186,6 +193,7 @@ export default function Home() {
             />
           </div>
         </main>
+         {isMobile && <BottomNav filter={filter} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
       </SidebarInset>
 
       <AddMovieDialog
