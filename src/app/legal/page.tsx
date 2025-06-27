@@ -1,32 +1,57 @@
-
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
-export default function LegalPage() {
+function LegalPageContent() {
+    const searchParams = useSearchParams();
+    const tab = searchParams.get('tab') || 'terms';
+
     return (
-        <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
-            <div className="w-full max-w-4xl">
-                 <Link href="/profile" className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
-                    <ArrowLeft className="w-5 h-5"/>
-                    <span>Back to Profile</span>
-                </Link>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-3xl font-headline">Terms & Privacy</CardTitle>
-                        <CardDescription>Legal information about using Cine-Mon.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Tabs defaultValue="terms" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
+        <div className="bg-black text-gray-100 font-body antialiased">
+            {/* Header */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
+                <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <Link href="/" className="flex items-center gap-2">
+                        <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
+                        <span className="text-xl font-bold font-headline">Cine-Mon</span>
+                    </Link>
+                    <div className="hidden md:flex items-center gap-6">
+                        <Link href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</Link>
+                        <Link href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</Link>
+                        <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
+                        <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Link href="/dashboard" target="_blank" rel="noopener noreferrer">
+                            <Button>
+                                Go to App <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
+                </nav>
+            </header>
+
+            <main className="pt-24 pb-20">
+                 <div className="container mx-auto px-6 py-12">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h1 className="text-4xl md:text-6xl font-bold font-headline text-white text-glow">Terms & Privacy</h1>
+                            <p className="mt-4 text-lg md:text-xl text-gray-300">Legal information about using Cine-Mon.</p>
+                        </div>
+                        
+                        <Tabs defaultValue={tab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 bg-gray-900/50 border border-primary/20">
                                 <TabsTrigger value="terms">Terms of Service</TabsTrigger>
                                 <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="terms" className="mt-4 prose prose-sm dark:prose-invert max-w-none text-muted-foreground space-y-4">
+                            <TabsContent value="terms" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-gray-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -82,7 +107,7 @@ export default function LegalPage() {
                                     <p>For feedback, feature requests, or legal questions: geoffreymagana21@gmail.com</p>
                                 </div>
                             </TabsContent>
-                            <TabsContent value="privacy" className="mt-4 prose prose-sm dark:prose-invert max-w-none text-muted-foreground space-y-4">
+                            <TabsContent value="privacy" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-gray-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -140,9 +165,38 @@ export default function LegalPage() {
                                 </div>
                             </TabsContent>
                         </Tabs>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </div>
+            </main>
+
+            {/* Footer */}
+             <footer className="bg-black border-t border-gray-800">
+                <div className="container mx-auto px-6 py-8">
+                <div className="flex flex-col md:flex-row justify-between items-center">
+                    <div className="flex items-center gap-2 mb-4 md:mb-0">
+                        <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
+                        <span className="text-lg font-bold">Cine-Mon</span>
+                    </div>
+                    <div className="flex gap-6 text-gray-400">
+                    <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
+                    <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+                    <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
+                    </div>
+                </div>
+                <div className="text-center text-gray-500 text-sm mt-8">
+                    &copy; {new Date().getFullYear()} Cine-Mon. All Rights Reserved.
+                </div>
+                </div>
+            </footer>
         </div>
     );
+}
+
+export default function LegalPage() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <LegalPageContent />
+        </React.Suspense>
+    )
 }

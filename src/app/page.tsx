@@ -325,8 +325,8 @@ export default function LandingPage() {
                 <span className="text-lg font-bold">Cine-Mon</span>
             </div>
             <div className="flex gap-6 text-gray-400">
-              <Link href="/legal" className="hover:text-primary transition-colors">Terms</Link>
-              <Link href="/legal" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
               <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
             </div>
