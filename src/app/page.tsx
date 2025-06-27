@@ -1,3 +1,153 @@
+"use client";
+
+import * as React from "react";
+import type { Movie } from "@/lib/types";
+import { initialMovies } from "@/lib/data";
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset } from "@/components/ui/sidebar";
+import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Search, Plus } from "lucide-react";
+import { CineMonLogo } from "@/components/cine-mon-logo";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { MovieGrid } from "@/components/movie-grid";
+import { AddMovieDialog } from "@/components/add-movie-dialog";
+import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+
 export default function Home() {
-  return <></>;
+  const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
+  const [isDarkMode, setIsDarkMode] = React.useState(true);
+  const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
+  const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
+  const [movieToEdit, setMovieToEdit] = React.useState<Movie | undefined>(undefined);
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDarkMode);
+  }, [isDarkMode]);
+
+  const handleAddMovie = (newMovie: Omit<Movie, "id">) => {
+    const movieWithId = { ...newMovie, id: crypto.randomUUID() };
+    setMovies((prev) => [movieWithId, ...prev]);
+    toast({
+      title: "Success!",
+      description: `${newMovie.title} has been added to your collection.`,
+    });
+  };
+
+  const handleUpdateMovie = (updatedMovie: Movie) => {
+    setMovies((prev) =>
+      prev.map((movie) => (movie.id === updatedMovie.id ? updatedMovie : movie))
+    );
+    setMovieToEdit(undefined);
+    toast({
+      title: "Success!",
+      description: `${updatedMovie.title} has been updated.`,
+    });
+  };
+
+  const handleDeleteMovie = (movieId: string) => {
+    setMovies((prev) => prev.filter((movie) => movie.id !== movieId));
+    toast({
+      title: "Movie Removed",
+      description: "The movie has been removed from your collection.",
+      variant: "destructive"
+    });
+  };
+
+  const handleEdit = (movie: Movie) => {
+    setMovieToEdit(movie);
+    setIsAddMovieOpen(true);
+  };
+  
+  const handleOpenAddDialog = () => {
+    setMovieToEdit(undefined);
+    setIsAddMovieOpen(true);
+  };
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center gap-2">
+            <CineMonLogo className="w-8 h-8 text-primary" />
+            <h1 className="text-2xl font-headline font-bold">Cine-Mon</h1>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest a random movie">
+                <Shuffle />
+                <span>Spin the Wheel</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive>
+                <Clapperboard />
+                <span>All</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <Film />
+                <span>Movies</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <Tv />
+                <span>Series</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="flex items-center gap-2 p-2">
+            <Settings className="w-5 h-5" />
+            <h3 className="font-semibold font-headline">Settings</h3>
+          </div>
+          <div className="flex items-center justify-between p-2">
+            <Label htmlFor="dark-mode" className="flex items-center gap-2">
+              {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              <span>Dark Mode</span>
+            </Label>
+            <Switch
+              id="dark-mode"
+              checked={isDarkMode}
+              onCheckedChange={setIsDarkMode}
+            />
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
+        <main className="min-h-screen flex flex-col">
+          <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
+          <div className="flex-grow p-4 md:p-8">
+            <MovieGrid
+              movies={movies}
+              onEdit={handleEdit}
+              onDelete={handleDeleteMovie}
+            />
+          </div>
+        </main>
+      </SidebarInset>
+
+      <AddMovieDialog
+        isOpen={isAddMovieOpen}
+        setIsOpen={setIsAddMovieOpen}
+        onSave={movieToEdit ? handleUpdateMovie : handleAddMovie}
+        movieToEdit={movieToEdit}
+      />
+
+      <SpinWheelDialog
+        isOpen={isSpinWheelOpen}
+        setIsOpen={setIsSpinWheelOpen}
+        movies={movies}
+      />
+    </SidebarProvider>
+  );
 }
