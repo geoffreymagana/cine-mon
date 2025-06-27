@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Film,
   Shuffle,
@@ -25,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { CinematicBackground } from '@/components/cinematic-background';
 
 // Intersection Observer Hook for animations
 const useIntersectionObserver = (options: IntersectionObserverInit) => {
@@ -55,10 +55,10 @@ const useIntersectionObserver = (options: IntersectionObserverInit) => {
   return [setRef, isVisible] as const;
 };
 
-const AnimatedSection = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+const AnimatedSection = ({ children, className, ...props }: { children: React.ReactNode, className?: string, [key: string]: any }) => {
   const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   return (
-    <div ref={ref} className={cn('fade-in-section', isVisible && 'is-visible', className)}>
+    <div ref={ref} className={cn('fade-in-section', isVisible && 'is-visible', className)} {...props}>
       {children}
     </div>
   );
@@ -115,6 +115,11 @@ export default function LandingPage() {
             <CineMonLogo className="w-8 h-8 text-primary" />
             <span className="text-xl font-bold font-headline">Cine-Mon</span>
           </Link>
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</a>
+            <a href="#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+          </div>
           <div className="flex items-center gap-4">
              <Link href="/dashboard">
                 <Button>
@@ -127,17 +132,8 @@ export default function LandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center text-center overflow-hidden hero-glow">
-           <div className="absolute inset-0 z-0 opacity-20">
-                <Image
-                    src="https://placehold.co/1920x1080.png"
-                    alt="Abstract cinematic background"
-                    fill
-                    objectFit="cover"
-                    quality={80}
-                    data-ai-hint="abstract cinematic background"
-                />
-            </div>
+        <section className="relative min-h-screen flex items-center justify-center text-center overflow-hidden">
+          <CinematicBackground />
           <div className="relative z-10 container mx-auto px-6">
             <h1 className="text-4xl md:text-7xl font-bold font-headline text-white text-glow leading-tight">
               Archive Your Cinematic Life
@@ -161,8 +157,13 @@ export default function LandingPage() {
         </section>
 
         {/* Key Features Grid */}
-        <AnimatedSection className="py-20 bg-black">
+        <AnimatedSection id="features" className="py-20 bg-black">
           <div className="container mx-auto px-6">
+            <div className="text-center mb-12">
+               <h2 className="text-3xl md:text-5xl font-bold font-headline text-white text-glow">
+                Everything a Cinephile Needs
+              </h2>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {features.map((feature) => (
                 <div key={feature.title} className="flex gap-4">
@@ -191,7 +192,7 @@ export default function LandingPage() {
               A stunning interface on both desktop and mobile.
             </p>
             <div className="mt-12 relative flex items-center justify-center gap-4 lg:gap-8">
-                <Image
+                <img
                     src="https://placehold.co/800x600.png"
                     alt="Cine-Mon on Desktop"
                     width={800}
@@ -199,7 +200,7 @@ export default function LandingPage() {
                     className="rounded-lg shadow-2xl shadow-primary/20 border-2 border-primary/20 transform lg:scale-110 lg:-rotate-3 transition hover:rotate-0 hover:scale-115"
                     data-ai-hint="app screenshot desktop"
                 />
-                 <Image
+                 <img
                     src="https://placehold.co/300x600.png"
                     alt="Cine-Mon on Mobile"
                     width={300}
@@ -238,7 +239,7 @@ export default function LandingPage() {
         </AnimatedSection>
         
         {/* Testimonials */}
-        <AnimatedSection className="py-20">
+        <AnimatedSection id="testimonials" className="py-20">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-5xl font-bold font-headline text-white text-glow">From One Cinephile to Another</h2>

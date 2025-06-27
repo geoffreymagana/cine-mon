@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -121,35 +125,6 @@ body {
     backface-visibility: hidden;
     border: 2px solid hsl(var(--border));
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Landing Page Styles */
-.hero-glow::before {
-  content: '';
-  position: absolute;
-  z-index: -10;
-  filter: blur(100px);
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, hsl(var(--primary)) 20%, transparent 70%);
-  top: -100px;
-  right: -100px;
-  animation: pulse-glow 8s infinite alternate;
-}
-
-.hero-glow::after {
-  content: '';
-  position: absolute;
-  z-index: -10;
-  filter: blur(100px);
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, hsl(var(--accent)) 20%, transparent 70%);
-  bottom: -50px;
-  left: -50px;
-  animation: pulse-glow 10s infinite alternate-reverse;
 }
 
 .text-glow {
