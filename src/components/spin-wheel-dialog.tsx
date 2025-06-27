@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -51,6 +52,15 @@ const spinnerCaptions = [
   "Booting script-to-brain interface...",
 ];
 
+const finalizingCaptions = [
+    "And the winner is...",
+    "Your next watch is...",
+    "The cinematic gods have spoken...",
+    "Here's what fate chose for you...",
+    "Get the popcorn ready for this one!",
+];
+
+
 type SpinWheelDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -61,26 +71,58 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [isSpinning, setIsSpinning] = React.useState(false);
   const [animationKey, setAnimationKey] = React.useState(0);
-  const [spinnerText, setSpinnerText] = React.useState("Spinning...");
+  const [caption, setCaption] = React.useState("");
+  const [typedCaption, setTypedCaption] = React.useState("");
 
-  const moviesToDisplay = React.useMemo(() => {
-    return [...movies].sort(() => 0.5 - Math.random()).slice(0, 9);
-  }, [movies]);
+  // Typewriter effect for captions
+  React.useEffect(() => {
+    if (!caption) {
+        setTypedCaption("");
+        return;
+    }
+    setTypedCaption("");
+    let i = 0;
+    const intervalId = setInterval(() => {
+        if (i < caption.length) {
+            setTypedCaption(prev => prev + caption.charAt(i));
+            i++;
+        } else {
+            if (!typedCaption.endsWith("...")) {
+                setTypedCaption(prev => prev + "...");
+            }
+            clearInterval(intervalId);
+        }
+    }, 40); // Typing speed
+    
+    return () => clearInterval(intervalId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caption]);
+
 
   const spin = () => {
     if (movies.length === 0) return;
 
-    setSpinnerText(spinnerCaptions[Math.floor(Math.random() * spinnerCaptions.length)]);
     setIsSpinning(true);
     setSelectedMovie(null);
     setAnimationKey(prev => prev + 1);
 
-    const spinDuration = 3000;
+    const shuffledCaptions = [...spinnerCaptions].sort(() => 0.5 - Math.random());
+    
+    // Set captions at intervals
+    setCaption(shuffledCaptions[0] || "Spinning");
+    setTimeout(() => setCaption(shuffledCaptions[1] || "Finding a gem..."), 1300);
+    setTimeout(() => setCaption(shuffledCaptions[2] || "Almost there..."), 2600);
+
+    const spinDuration = 4000;
 
     setTimeout(() => {
-      setIsSpinning(false);
       const randomIndex = Math.floor(Math.random() * movies.length);
-      setSelectedMovie(movies[randomIndex]);
+      const finalMovie = movies[randomIndex];
+      const finalizingCaption = finalizingCaptions[Math.floor(Math.random() * finalizingCaptions.length)];
+      
+      setIsSpinning(false);
+      setSelectedMovie(finalMovie);
+      setCaption(finalizingCaption);
     }, spinDuration);
   };
   
@@ -90,20 +132,26 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         spin();
       } else {
         setSelectedMovie(null);
+        setCaption("Add movies to your collection to get a suggestion!");
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, movies]);
+  }, [isOpen]);
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
       setIsSpinning(false);
       setSelectedMovie(null);
+      setCaption("");
     }
     setIsOpen(open);
   }
-
+  
+  const moviesToDisplay = React.useMemo(() => {
+    return [...movies].sort(() => 0.5 - Math.random()).slice(0, 9);
+  }, [movies]);
   const carouselMovies = moviesToDisplay.length > 0 ? moviesToDisplay : movies.slice(0,1);
+
   const numItems = carouselMovies.length;
   const radius = numItems > 1 ? 220 : 0;
 
@@ -116,7 +164,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             Let fate decide what you should watch next.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center justify-center py-8 min-h-[350px]">
+        <div className="flex flex-col items-center justify-center py-8 min-h-[400px]">
           {isSpinning ? (
              <div className="revolving-carousel-container">
               <div key={animationKey} className="revolving-carousel">
@@ -163,13 +211,18 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             </div>
           ) : (
              <div className="flex flex-col items-center text-center">
-              <p className="text-lg font-semibold mt-4">No movies to suggest.</p>
+              <p className="text-lg font-semibold mt-4">Your collection is empty.</p>
             </div>
           )}
         </div>
+        <div className="text-center h-10 text-muted-foreground text-sm">{typedCaption}</div>
         <div className="flex justify-center">
-            <Button onClick={spin} disabled={isSpinning || movies.length === 0}>
-                {isSpinning ? spinnerText : "Spin Again"}
+            <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32">
+                {isSpinning ? (
+                    <Loader2 className="h-4 w-4 animate-spin"/>
+                ) : (
+                    "Spin Again"
+                )}
             </Button>
         </div>
       </DialogContent>
