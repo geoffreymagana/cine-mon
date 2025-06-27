@@ -3,7 +3,20 @@
 
 import * as React from 'react';
 import Link from "next/link";
-import { Moon, Sun, Upload, ArrowLeft } from "lucide-react";
+import { 
+    Moon, 
+    Sun, 
+    Upload, 
+    ArrowLeft,
+    Info,
+    BookOpenCheck,
+    ListOrdered,
+    Lightbulb,
+    Keyboard,
+    DownloadCloud,
+    FileText,
+    Mail
+} from "lucide-react";
 
 import { ProfileHeader } from "@/components/profile-header";
 import { Button } from "@/components/ui/button";
@@ -21,7 +34,7 @@ export default function ProfilePage() {
     const [activeSection, setActiveSection] = React.useState('personal-info');
     const mainContentRef = React.useRef<HTMLElement>(null);
 
-    const sections = ['personal-info', 'appearance', 'settings', 'about', 'help'];
+    const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
         acc[sec] = React.createRef<HTMLDivElement>();
         return acc;
@@ -87,8 +100,7 @@ export default function ProfilePage() {
                                     <a href="#personal-info" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
                                     <a href="#appearance" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
                                     <a href="#settings" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
-                                    <a href="#about" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'about' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>About Cine-Mon</a>
-                                    <a href="#help" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'help' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Help & Support</a>
+                                    <a href="#resources" className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'resources' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Resources & Support</a>
                                 </nav>
                             </CardContent>
                         </Card>
@@ -176,25 +188,86 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
                             </div>
-
-                            <div id="about" ref={sectionRefs['about']}>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>About Cine-Mon</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">Cine-Mon is your personal movie and series tracker, designed to help you organize what you've watched, what you're watching, and what you want to watch next. Built with Next.js, ShadCN, and Genkit.</p>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            <div id="help" ref={sectionRefs['help']}>
+                            
+                            <div id="resources" ref={sectionRefs['resources']}>
                                  <Card>
                                     <CardHeader>
-                                        <CardTitle>Help & Support</CardTitle>
+                                        <CardTitle>Resources & Support</CardTitle>
+                                        <CardDescription>Find help, learn more about the app, or provide feedback.</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">Having trouble? Contact our support team at <a href="mailto:support@cinemon.app" className="text-primary hover:underline">support@cinemon.app</a>.</p>
+                                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Link href="/about" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <Info className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>About Cine-Mon</span>
+                                                   <span className="text-xs text-muted-foreground">App info and credits.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                         <Link href="/guide" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <BookOpenCheck className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Getting Started Guide</span>
+                                                   <span className="text-xs text-muted-foreground">Learn how to use the app.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                        <Link href="/changelog" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <ListOrdered className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Changelog</span>
+                                                   <span className="text-xs text-muted-foreground">See what's new.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                         <Link href="/feedback" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <Lightbulb className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Feedback & Suggestions</span>
+                                                   <span className="text-xs text-muted-foreground">Help us improve.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                         <Link href="/shortcuts" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <Keyboard className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Keyboard Shortcuts</span>
+                                                   <span className="text-xs text-muted-foreground">Boost your productivity.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                         <Link href="/export" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <DownloadCloud className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Data Backup / Export</span>
+                                                   <span className="text-xs text-muted-foreground">Export your collection.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                        <Link href="/legal" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <FileText className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Terms & Privacy</span>
+                                                   <span className="text-xs text-muted-foreground">Read our legal documents.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                        <a href="mailto:support@cinemon.app">
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <Mail className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Email Support</span>
+                                                   <span className="text-xs text-muted-foreground">Contact us directly.</span>
+                                                </div>
+                                            </Button>
+                                        </a>
                                     </CardContent>
                                 </Card>
                             </div>
