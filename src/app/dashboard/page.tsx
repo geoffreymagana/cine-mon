@@ -6,7 +6,6 @@ import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
 import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Popcorn, ChartPie } from "lucide-react";
-import { CineMonLogo } from "@/components/cine-mon-logo";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
@@ -20,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomNav } from "@/components/bottom-nav";
+import Image from "next/image";
 
 export default function DashboardPage() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
@@ -86,7 +86,7 @@ export default function DashboardPage() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <CineMonLogo className="w-8 h-8 text-primary" />
+            <Image src="https://placehold.co/32x32.png" alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
             <h1 className="text-2xl font-headline font-bold">Cine-Mon</h1>
           </div>
         </SidebarHeader>

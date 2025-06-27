@@ -19,12 +19,12 @@ import {
   Github,
   ArrowRight
 } from 'lucide-react';
-import { CineMonLogo } from '@/components/cine-mon-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { CinematicBackground } from '@/components/cinematic-background';
+import Image from 'next/image';
 
 // Intersection Observer Hook for animations
 const useIntersectionObserver = (options: IntersectionObserverInit) => {
@@ -112,7 +112,7 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <CineMonLogo className="w-8 h-8 text-primary" />
+            <Image src="https://placehold.co/32x32.png" alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
             <span className="text-xl font-bold font-headline">Cine-Mon</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
@@ -300,7 +300,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-                <CineMonLogo className="w-6 h-6 text-primary" />
+                <Image src="https://placehold.co/24x24.png" alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
                 <span className="text-lg font-bold">Cine-Mon</span>
             </div>
             <div className="flex gap-6 text-gray-400">

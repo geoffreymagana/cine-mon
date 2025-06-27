@@ -1,11 +1,10 @@
-
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CineMonLogo } from '@/components/cine-mon-logo';
+import Image from 'next/image';
 
 export default function AboutPage() {
     return (
@@ -18,7 +17,7 @@ export default function AboutPage() {
                 <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto mb-4">
-                            <CineMonLogo className="w-16 h-16 text-primary" />
+                            <Image src="https://placehold.co/64x64.png" alt="Cine-Mon Logo" width={64} height={64} data-ai-hint="logo" />
                         </div>
                         <CardTitle className="text-3xl font-headline">About Cine-Mon</CardTitle>
                         <CardDescription>Your personal movie and series tracker.</CardDescription>
