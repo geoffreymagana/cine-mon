@@ -268,12 +268,12 @@ export default function ProfilePage() {
                                                 </div>
                                             </Button>
                                         </Link>
-                                        <a href="mailto:support@cinemon.app">
+                                        <a href="mailto:geoffreymagana21@gmail.com">
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
                                                 <Mail className="mr-3 text-primary"/>
                                                 <div className="flex flex-col">
                                                    <span>Email Support</span>
-                                                   <span className="text-xs text-muted-foreground">Contact us directly.</span>
+                                                   <span className="text-xs text-muted-foreground">geoffreymagana21@gmail.com</span>
                                                 </div>
                                             </Button>
                                         </a>
