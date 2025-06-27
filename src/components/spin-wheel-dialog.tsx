@@ -22,23 +22,28 @@ type SpinWheelDialogProps = {
 export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogProps) => {
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [isSpinning, setIsSpinning] = React.useState(false);
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const spin = () => {
     if (movies.length === 0) return;
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
     setIsSpinning(true);
-    setSelectedMovie(null);
 
     const spinDuration = 2000;
     const intervalTime = 100;
     let spinTime = 0;
 
-    const spinInterval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       spinTime += intervalTime;
       const randomIndex = Math.floor(Math.random() * movies.length);
       setSelectedMovie(movies[randomIndex]);
       
       if (spinTime >= spinDuration) {
-        clearInterval(spinInterval);
+        if (intervalRef.current) clearInterval(intervalRef.current);
         setIsSpinning(false);
       }
     }, intervalTime);
@@ -46,8 +51,22 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   
   React.useEffect(() => {
     if(isOpen) {
-        spin();
+      if (movies.length > 0) {
+        setSelectedMovie(movies[Math.floor(Math.random() * movies.length)]);
+      }
+      spin();
+    } else {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
     }
+    
+    return () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const onOpenChange = (open: boolean) => {
@@ -66,8 +85,23 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             Let fate decide what you should watch next.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center justify-center py-8 min-h-[300px]">
-          {selectedMovie && !isSpinning ? (
+        <div className="flex flex-col items-center justify-center py-8 min-h-[350px]">
+          {isSpinning && selectedMovie ? (
+            <div className="flex flex-col items-center text-center">
+              <div className="relative w-40 h-[240px] flex items-center justify-center">
+                  <div className="w-40 rounded-lg overflow-hidden shadow-lg animate-spin-path">
+                      <Image
+                          src={selectedMovie.posterUrl}
+                          alt="Spinning poster"
+                          width={200}
+                          height={300}
+                          className="w-full h-full object-cover"
+                      />
+                  </div>
+              </div>
+              <p className="text-lg font-semibold mt-8">Spinning...</p>
+            </div>
+          ) : !isSpinning && selectedMovie ? (
             <div className="flex flex-col items-center text-center animate-in fade-in duration-500">
                 <div className="w-40 rounded-lg overflow-hidden shadow-lg shadow-primary/20">
                     <Image
@@ -87,19 +121,8 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
                 </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center text-center">
-              {selectedMovie && isSpinning && (
-                <div className="w-40 rounded-lg overflow-hidden blur-sm">
-                  <Image
-                      src={selectedMovie.posterUrl}
-                      alt="Spinning poster"
-                      width={200}
-                      height={300}
-                      className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <p className="text-lg font-semibold mt-4">{isSpinning ? "Spinning..." : "No movies to suggest."}</p>
+             <div className="flex flex-col items-center text-center">
+              <p className="text-lg font-semibold mt-4">No movies to suggest.</p>
             </div>
           )}
         </div>
