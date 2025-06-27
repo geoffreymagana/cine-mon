@@ -233,15 +233,6 @@ export default function ProfilePage() {
                                                 </div>
                                             </Button>
                                         </Link>
-                                        <Link href="/analytics" passHref>
-                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
-                                                <BarChart3 className="mr-3 text-primary"/>
-                                                <div className="flex flex-col">
-                                                   <span>Analytics & Insights</span>
-                                                   <span className="text-xs text-muted-foreground">View your watch statistics.</span>
-                                                </div>
-                                            </Button>
-                                        </Link>
                                          <Link href="/feedback" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
                                                 <Lightbulb className="mr-3 text-primary"/>
