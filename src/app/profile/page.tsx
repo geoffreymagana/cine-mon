@@ -96,7 +96,7 @@ export default function ProfilePage() {
     return (
         <div className="flex h-screen flex-col bg-background">
             <header className="mx-auto w-full max-w-screen-xl px-4 pt-8 sm:px-6 lg:px-8">
-                 <Link href="/" className="inline-flex items-center gap-2 font-semibold text-lg hover:text-primary transition-colors">
+                 <Link href="/dashboard" className="inline-flex items-center gap-2 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
                     <span>Back to Collection</span>
                 </Link>

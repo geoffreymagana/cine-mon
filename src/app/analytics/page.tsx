@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
     return (
         <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8">
             <div className="w-full max-w-7xl mx-auto">
-                 <Link href="/" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+                 <Link href="/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
                     <span>Back to Dashboard</span>
                 </Link>
