@@ -9,7 +9,7 @@ import { ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
-function LegalPageContent() {
+function LegalPage() {
     const searchParams = useSearchParams();
     const tab = searchParams.get('tab') || 'terms';
 
@@ -193,10 +193,10 @@ function LegalPageContent() {
     );
 }
 
-export default function LegalPage() {
+export default function SuspendedLegalPage() {
     return (
         <React.Suspense fallback={<div>Loading...</div>}>
-            <LegalPageContent />
+            <LegalPage />
         </React.Suspense>
     )
 }
