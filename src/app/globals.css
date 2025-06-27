@@ -87,29 +87,16 @@ body {
   }
 }
 
-@keyframes spin-path {
-  0% {
-    transform: translate(0, 0) scale(0.75);
-    opacity: 0.5;
+@keyframes wheel-spin {
+  from {
+    transform: rotateY(0deg);
   }
-  25% {
-    transform: translate(50px, -30px) scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(0, -60px) scale(0.75);
-    opacity: 0.5;
-  }
-  75% {
-    transform: translate(-50px, -30px) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(0, 0) scale(0.75);
-    opacity: 0.5;
+  to {
+    transform: rotateY(360deg);
   }
 }
 
-.animate-spin-path {
-  animation: spin-path 1.5s ease-in-out infinite;
+.animate-wheel-spin {
+  animation: wheel-spin 0.8s linear infinite;
+  transform-style: preserve-3d;
 }

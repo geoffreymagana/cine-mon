@@ -88,8 +88,8 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         <div className="flex flex-col items-center justify-center py-8 min-h-[350px]">
           {isSpinning && selectedMovie ? (
             <div className="flex flex-col items-center text-center">
-              <div className="relative w-40 h-[240px] flex items-center justify-center">
-                  <div className="w-40 rounded-lg overflow-hidden shadow-lg animate-spin-path">
+              <div className="relative w-40 h-[240px] flex items-center justify-center [perspective:1000px]">
+                  <div className="w-40 rounded-lg overflow-hidden shadow-lg animate-wheel-spin">
                       <Image
                           src={selectedMovie.posterUrl}
                           alt="Spinning poster"
