@@ -3,7 +3,7 @@ export type Movie = {
   title: string;
   description: string;
   posterUrl: string;
-  type: 'Movie' | 'Series' | 'Anime';
+  type: 'Movie' | 'TV Show' | 'Anime';
   status: 'Watching' | 'Completed' | 'On-Hold' | 'Dropped' | 'Plan to Watch';
   watchedEpisodes: number;
   totalEpisodes: number;

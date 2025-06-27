@@ -41,7 +41,7 @@ const movieSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   posterUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
-  type: z.enum(["Movie", "Series", "Anime"]),
+  type: z.enum(["Movie", "TV Show", "Anime"]),
   status: z.enum(["Watching", "Completed", "On-Hold", "Dropped", "Plan to Watch"]),
   watchedEpisodes: z.coerce.number().min(0),
   totalEpisodes: z.coerce.number().min(1),
@@ -205,7 +205,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="Movie">Movie</SelectItem>
-                          <SelectItem value="Series">Series</SelectItem>
+                          <SelectItem value="TV Show">TV Shows</SelectItem>
                           <SelectItem value="Anime">Anime</SelectItem>
                         </SelectContent>
                       </Select>

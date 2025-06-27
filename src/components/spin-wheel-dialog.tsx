@@ -61,7 +61,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-headline">Spin the Wheel!</DialogTitle>
+          <DialogTitle className="font-headline">Surprise Me!</DialogTitle>
           <DialogDescription>
             Let fate decide what you should watch next.
           </DialogDescription>

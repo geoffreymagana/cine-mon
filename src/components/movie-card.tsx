@@ -59,8 +59,8 @@ export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
         </CardTitle>
       </CardContent>
       <CardFooter className="p-3 pt-0">
-         <Badge variant={movie.type === 'Movie' ? 'default' : movie.type === 'Series' ? 'secondary' : 'outline' } className="text-xs">
-          {movie.type}
+         <Badge variant={movie.type === 'Movie' ? 'default' : movie.type === 'TV Show' ? 'secondary' : 'outline' } className="text-xs">
+          {movie.type === 'TV Show' ? 'TV Shows' : movie.type}
         </Badge>
       </CardFooter>
     </Card>

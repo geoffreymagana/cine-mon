@@ -4,7 +4,7 @@ import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Search, Plus } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Search, Plus, Popcorn } from "lucide-react";
 import { CineMonLogo } from "@/components/cine-mon-logo";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
+  const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isDarkMode, setIsDarkMode] = React.useState(true);
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
@@ -65,6 +66,13 @@ export default function Home() {
     setIsAddMovieOpen(true);
   };
 
+  const filteredMovies = React.useMemo(() => {
+    if (filter === 'All') {
+      return movies;
+    }
+    return movies.filter((movie) => movie.type === filter);
+  }, [movies, filter]);
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -77,29 +85,35 @@ export default function Home() {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest a random movie">
+              <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest something to watch">
                 <Shuffle />
-                <span>Spin the Wheel</span>
+                <span>Surprise Me</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive>
+              <SidebarMenuButton isActive={filter === 'All'} onClick={() => setFilter('All')}>
                 <Clapperboard />
                 <span>All</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton isActive={filter === 'Movie'} onClick={() => setFilter('Movie')}>
                 <Film />
                 <span>Movies</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton isActive={filter === 'TV Show'} onClick={() => setFilter('TV Show')}>
                 <Tv />
-                <span>Series</span>
+                <span>TV Shows</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive={filter === 'Anime'} onClick={() => setFilter('Anime')}>
+                <Popcorn />
+                <span>Anime</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -128,7 +142,7 @@ export default function Home() {
           <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
           <div className="flex-grow p-4 md:p-8">
             <MovieGrid
-              movies={movies}
+              movies={filteredMovies}
               onEdit={handleEdit}
               onDelete={handleDeleteMovie}
             />
