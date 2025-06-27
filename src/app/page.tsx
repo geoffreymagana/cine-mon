@@ -1,10 +1,11 @@
+
 "use client";
 
 import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Popcorn, BarChart3 } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Settings, Sun, Moon, Popcorn, ChartPie } from "lucide-react";
 import { CineMonLogo } from "@/components/cine-mon-logo";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
@@ -132,7 +133,7 @@ export default function Home() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="View your watch statistics">
                     <Link href="/analytics">
-                        <BarChart3 />
+                        <ChartPie />
                         <span>Analytics</span>
                     </Link>
                 </SidebarMenuButton>
