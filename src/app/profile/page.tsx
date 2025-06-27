@@ -12,15 +12,53 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [activeSection, setActiveSection] = React.useState('personal-info');
+
+    const sections = ['personal-info', 'appearance', 'settings', 'about', 'help'];
+    const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
+        acc[sec] = React.createRef<HTMLDivElement>();
+        return acc;
+    }, {} as Record<string, React.RefObject<HTMLDivElement>>), []);
+
 
     React.useEffect(() => {
-        // This is for demonstration. A real implementation would use a theme provider.
         document.documentElement.classList.toggle("dark", isDarkMode);
     }, [isDarkMode]);
+
+    React.useEffect(() => {
+        const observerOptions = {
+            root: null,
+            rootMargin: '-40% 0px -60% 0px',
+            threshold: 0,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        }, observerOptions);
+
+        Object.values(sectionRefs).forEach(ref => {
+            if (ref.current) {
+                observer.observe(ref.current);
+            }
+        });
+
+        return () => {
+            Object.values(sectionRefs).forEach(ref => {
+                if (ref.current) {
+                    observer.unobserve(ref.current);
+                }
+            });
+        };
+    }, [sectionRefs]);
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -36,11 +74,11 @@ export default function ProfilePage() {
                     </Link>
                 </div>
                 <nav className="flex flex-col gap-2">
-                    <a href="#personal-info" className="font-semibold text-primary px-2 py-1 rounded-md">Profile</a>
-                    <a href="#appearance" className="text-muted-foreground hover:text-foreground px-2 py-1 rounded-md">Appearance</a>
-                    <a href="#settings" className="text-muted-foreground hover:text-foreground px-2 py-1 rounded-md">Settings</a>
-                    <a href="#about" className="text-muted-foreground hover:text-foreground px-2 py-1 rounded-md">About</a>
-                    <a href="#help" className="text-muted-foreground hover:text-foreground px-2 py-1 rounded-md">Help & Support</a>
+                    <a href="#personal-info" className={cn("px-2 py-1 rounded-md transition-colors", activeSection === 'personal-info' ? 'font-semibold text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground')}>Profile</a>
+                    <a href="#appearance" className={cn("px-2 py-1 rounded-md transition-colors", activeSection === 'appearance' ? 'font-semibold text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground')}>Appearance</a>
+                    <a href="#settings" className={cn("px-2 py-1 rounded-md transition-colors", activeSection === 'settings' ? 'font-semibold text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground')}>Settings</a>
+                    <a href="#about" className={cn("px-2 py-1 rounded-md transition-colors", activeSection === 'about' ? 'font-semibold text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground')}>About</a>
+                    <a href="#help" className={cn("px-2 py-1 rounded-md transition-colors", activeSection === 'help' ? 'font-semibold text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground')}>Help & Support</a>
                 </nav>
             </aside>
             <div className="flex flex-1 flex-col overflow-auto">
@@ -48,7 +86,7 @@ export default function ProfilePage() {
                     <div className="mx-auto grid max-w-5xl gap-8">
                         <ProfileHeader />
 
-                        <Card id="personal-info">
+                        <Card id="personal-info" ref={sectionRefs['personal-info']}>
                             <CardHeader>
                                 <CardTitle>Personal Information</CardTitle>
                                 <CardDescription>Update your name and biography.</CardDescription>
@@ -68,7 +106,7 @@ export default function ProfilePage() {
                             </CardFooter>
                         </Card>
 
-                        <Card id="appearance">
+                        <Card id="appearance" ref={sectionRefs['appearance']}>
                             <CardHeader>
                                 <CardTitle>Appearance</CardTitle>
                                 <CardDescription>Customize the look and feel of the app.</CardDescription>
@@ -94,7 +132,7 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
                         
-                        <Card id="settings">
+                        <Card id="settings" ref={sectionRefs['settings']}>
                             <CardHeader>
                                 <CardTitle>Settings</CardTitle>
                                 <CardDescription>Manage your application preferences.</CardDescription>
@@ -120,7 +158,7 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
 
-                         <Card id="about">
+                         <Card id="about" ref={sectionRefs['about']}>
                             <CardHeader>
                                 <CardTitle>About Cine-Mon</CardTitle>
                             </CardHeader>
@@ -129,7 +167,7 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
 
-                         <Card id="help">
+                         <Card id="help" ref={sectionRefs['help']}>
                             <CardHeader>
                                 <CardTitle>Help & Support</CardTitle>
                             </CardHeader>
