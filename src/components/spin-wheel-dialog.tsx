@@ -72,62 +72,59 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [isSpinning, setIsSpinning] = React.useState(false);
   const [animationKey, setAnimationKey] = React.useState(0);
-  const [caption, setCaption] = React.useState("");
   const [typedCaption, setTypedCaption] = React.useState("");
+  const [captionOpacity, setCaptionOpacity] = React.useState(1);
   const [lottieFailed, setLottieFailed] = React.useState(false);
 
-  // Typewriter effect for captions
-  React.useEffect(() => {
-    if (!caption) {
-        setTypedCaption("");
-        return;
-    }
-    setTypedCaption("");
-    let i = 0;
-    const intervalId = setInterval(() => {
-        if (i < caption.length) {
-            setTypedCaption(prev => prev + caption.charAt(i));
-            i++;
-        } else {
-            if (!typedCaption.endsWith("...")) {
-                setTypedCaption(prev => prev + "...");
-            }
-            clearInterval(intervalId);
-        }
-    }, 50); // Typing speed
-    
-    return () => clearInterval(intervalId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caption]);
-
-
-  const spin = () => {
-    if (movies.length === 0) return;
+  const spin = React.useCallback(async () => {
+    if (movies.length === 0 || isSpinning) return;
 
     setIsSpinning(true);
     setSelectedMovie(null);
     setLottieFailed(false);
     setAnimationKey(prev => prev + 1);
 
-    const shuffledCaptions = [...spinnerCaptions].sort(() => 0.5 - Math.random());
-    
-    // Set captions at intervals
-    setCaption(shuffledCaptions[0] || "Spinning");
-    setTimeout(() => setCaption(shuffledCaptions[1] || "Finding a gem..."), 1500);
-    setTimeout(() => setCaption(shuffledCaptions[2] || "Almost there..."), 3000);
-
     const spinDuration = 4500;
+    const captionsToShow = [...spinnerCaptions].sort(() => 0.5 - Math.random()).slice(0, 3);
+    const captionSlotDuration = spinDuration / captionsToShow.length;
 
-    setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * movies.length);
-      const finalMovie = movies[randomIndex];
-      const finalizingCaption = finalizingCaptions[Math.floor(Math.random() * finalizingCaptions.length)];
+    const captionCyclePromise = (async () => {
+      for (const cap of captionsToShow) {
+        setCaptionOpacity(0);
+        await new Promise(resolve => setTimeout(resolve, 300)); // Fade out
+
+        setTypedCaption(""); // Clear old caption
+        setCaptionOpacity(1); // Fade in
+
+        const typingDuration = captionSlotDuration - 500; // leave 500ms for fade + hold
+        const typingSpeed = Math.max(20, typingDuration / cap.length);
+
+        for (let i = 0; i < cap.length; i++) {
+          setTypedCaption(prev => prev + cap.charAt(i));
+          await new Promise(resolve => setTimeout(resolve, typingSpeed));
+        }
+        setTypedCaption(prev => prev + "...");
+        
+        await new Promise(resolve => setTimeout(resolve, 200)); // Hold
+      }
+    })();
+
+    const selectionPromise = new Promise(resolve => setTimeout(resolve, spinDuration));
+
+    await Promise.all([captionCyclePromise, selectionPromise]);
+
+    const randomIndex = Math.floor(Math.random() * movies.length);
+    const finalMovie = movies[randomIndex];
+    const finalizingCaption = finalizingCaptions[Math.floor(Math.random() * finalizingCaptions.length)];
       
-      setIsSpinning(false);
-      setSelectedMovie(finalMovie);
-      setCaption(finalizingCaption);
-    }, spinDuration);
-  };
+    setIsSpinning(false);
+    setSelectedMovie(finalMovie);
+      
+    setCaptionOpacity(0);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    setTypedCaption(finalizingCaption);
+    setCaptionOpacity(1);
+  }, [movies, isSpinning]);
   
   React.useEffect(() => {
     if(isOpen) {
@@ -135,7 +132,8 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         spin();
       } else {
         setSelectedMovie(null);
-        setCaption("Add movies to your collection to get a suggestion!");
+        setTypedCaption("Add movies to your collection to get a suggestion!");
+        setCaptionOpacity(1);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,7 +143,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
     if (!open) {
       setIsSpinning(false);
       setSelectedMovie(null);
-      setCaption("");
+      setTypedCaption("");
     }
     setIsOpen(open);
   }
@@ -222,7 +220,12 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
             </div>
           )}
         </div>
-        <div className="text-center h-10 text-muted-foreground text-sm">{typedCaption}</div>
+        <div
+          className="text-center h-10 text-muted-foreground text-sm"
+          style={{ opacity: captionOpacity, transition: 'opacity 0.3s ease-in-out' }}
+        >
+            {typedCaption}
+        </div>
         <div className="flex justify-center">
             <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32 h-12 flex items-center justify-center">
                 {isSpinning ? (
