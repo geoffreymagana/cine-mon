@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomNav } from "@/components/bottom-nav";
 import Image from "next/image";
+import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
 export default function DashboardPage() {
   const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
@@ -86,7 +87,7 @@ export default function DashboardPage() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <Image src="https://placehold.co/32x32.png" alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
+            <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
             <h1 className="text-2xl font-headline font-bold">Cine-Mon</h1>
           </div>
         </SidebarHeader>

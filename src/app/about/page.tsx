@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
+import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
 export default function AboutPage() {
     return (
@@ -17,7 +18,7 @@ export default function AboutPage() {
                 <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto mb-4">
-                            <Image src="https://placehold.co/64x64.png" alt="Cine-Mon Logo" width={64} height={64} data-ai-hint="logo" />
+                            <Image src={cineMonLogo} alt="Cine-Mon Logo" width={64} height={64} data-ai-hint="logo" />
                         </div>
                         <CardTitle className="text-3xl font-headline">About Cine-Mon</CardTitle>
                         <CardDescription>Your personal movie and series tracker.</CardDescription>
