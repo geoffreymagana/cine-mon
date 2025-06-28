@@ -22,9 +22,9 @@ type MovieCardProps = {
 
 export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
   return (
-    <Card className="overflow-visible flex flex-col group">
+    <Card className="overflow-visible flex flex-col group transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
         <div className="relative">
-            <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-border/10 shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
+            <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-border/10">
                 <Image
                     src={movie.posterUrl}
                     alt={`Poster for ${movie.title}`}
