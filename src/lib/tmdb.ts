@@ -1,3 +1,4 @@
+
 import type { Movie } from './types';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -58,5 +59,6 @@ export const mapTmdbResultToMovie = (tmdbResult: any): Omit<Movie, 'id'> => {
             character: c.character,
             avatarUrl: getPosterUrl(c.profile_path)
         })) || [],
+        collection: tmdbResult.belongs_to_collection?.name,
     };
 };

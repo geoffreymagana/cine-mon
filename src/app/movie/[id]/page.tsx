@@ -16,7 +16,8 @@ import {
     Star,
     Calendar,
     Clapperboard,
-    Info
+    Info,
+    ChevronRight
 } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -27,11 +28,16 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RatingProgressBar } from '@/components/rating-progress-bar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function MovieDetailPage() {
     const params = useParams();
     const [movieId, setMovieId] = React.useState<string | null>(null);
     const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
+    const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
+    const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
+    const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined' && params.id) {
@@ -46,6 +52,7 @@ export default function MovieDetailPage() {
             const storedMovies = localStorage.getItem('movies');
             if (storedMovies) {
                 const movies: Movie[] = JSON.parse(storedMovies);
+                setAllMovies(movies);
                 const foundMovie = movies.find((m) => m.id === movieId);
                 setMovie(foundMovie || null);
             } else {
@@ -56,6 +63,14 @@ export default function MovieDetailPage() {
             setMovie(null);
         }
     }, [movieId]);
+
+    const handleCollectionClick = (collectionName: string) => {
+        const moviesInCollection = allMovies.filter(
+            (m) => m.collection === collectionName && m.id !== movie?.id
+        );
+        setCollectionMovies(moviesInCollection);
+        setIsCollectionDialogOpen(true);
+    };
 
     if (movie === undefined) {
         return (
@@ -90,156 +105,205 @@ export default function MovieDetailPage() {
     );
 
     return (
-        <div className="bg-background min-h-screen">
-            {/* Backdrop */}
-            <div className="relative h-48 md:h-64 lg:h-80 w-full">
-                <Image
-                    src={movie.backdropUrl || movie.posterUrl}
-                    alt={`${movie.title} backdrop`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="blur-md opacity-20"
-                    data-ai-hint="movie background"
-                    unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-            </div>
-
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">
-                <div className="mb-8">
-                    <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
-                        <ArrowLeft className="w-4 h-4"/>
-                        <span>Back to Collection</span>
-                    </Link>
+        <>
+            <div className="bg-background min-h-screen">
+                {/* Backdrop */}
+                <div className="relative h-48 md:h-64 lg:h-80 w-full">
+                    <Image
+                        src={movie.backdropUrl || movie.posterUrl}
+                        alt={`${movie.title} backdrop`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="blur-md opacity-20"
+                        data-ai-hint="movie background"
+                        unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
-                    {/* Left Sidebar */}
-                    <aside className="md:col-span-4 lg:col-span-3 space-y-6">
-                        <Card className="overflow-hidden shadow-lg">
-                            <Image
-                                src={movie.posterUrl}
-                                alt={`Poster for ${movie.title}`}
-                                width={500}
-                                height={750}
-                                className="w-full object-cover"
-                                data-ai-hint="movie poster"
-                            />
-                        </Card>
-                         {movie.scriptUrl && (
-                            <div className="px-4">
-                                <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer">
-                                    <Button variant="outline" className="w-full">
-                                        <Download className="mr-2"/>
-                                        Download Script
-                                    </Button>
-                                </a>
-                            </div>
-                        )}
-                    </aside>
-
-                    {/* Main Content */}
-                    <div className="md:col-span-8 lg:col-span-9">
-                        {/* Header */}
-                        <div className="mb-6 flex justify-between items-start">
-                            <div>
-                                <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2">{movie.title}</h1>
-                                <div className="flex flex-wrap gap-2">
-                                    {movie.tags.map(tag => (
-                                        <Badge key={tag} variant="secondary">{tag}</Badge>
-                                    ))}
-                                </div>
-                            </div>
-                             <Link href={`/movie/${movie.id}/edit`}>
-                                <Button variant="outline">Edit</Button>
-                            </Link>
-                        </div>
-
-                        <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="mb-4">
-                                <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
-                                {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
-                                {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
-                            </TabsList>
-                            
-                            <TabsContent value="details">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Synopsis</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground max-w-prose">{movie.description}</p>
-                                        <hr className="my-6 border-border" />
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="flex items-start gap-3">
-                                                <Star className="w-5 h-5 text-muted-foreground mt-1" />
-                                                <div className="w-5/6">
-                                                    <p className="font-semibold">Rating</p>
-                                                    <RatingProgressBar percentage={movie.rating} className="mt-2" />
-                                                </div>
-                                            </div>
-                                            <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
-                                            <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
-                                            {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
-                                            <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
-                                            {movie.type !== 'Movie' && (
-                                                <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
-                                            )}
-                                            {movie.collection && <DetailItem icon={FileText} label="Collection" value={movie.collection} />}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-
-                            <TabsContent value="cast">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Cast</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {movie.cast?.map(person => (
-                                            <div key={person.name} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
-                                                <Avatar>
-                                                    <AvatarImage src={person.avatarUrl} alt={person.name} data-ai-hint="person portrait" />
-                                                    <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-semibold">{person.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{person.character}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-
-                            <TabsContent value="media">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Alternate Posters</CardTitle>
-                                        <CardDescription>Other posters for this title.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                            {movie.alternatePosters?.map((poster, index) => (
-                                                <Image
-                                                    key={index}
-                                                    src={poster}
-                                                    alt={`Alternate poster ${index + 1}`}
-                                                    width={200}
-                                                    height={300}
-                                                    className="rounded-md object-cover w-full aspect-[2/3] hover:scale-105 transition-transform"
-                                                    data-ai-hint="movie poster"
-                                                />
-                                            ))}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                        </Tabs>
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">
+                    <div className="mb-8">
+                        <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                            <ArrowLeft className="w-4 h-4"/>
+                            <span>Back to Collection</span>
+                        </Link>
                     </div>
-                </div>
-            </main>
-        </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
+                        {/* Left Sidebar */}
+                        <aside className="md:col-span-4 lg:col-span-3 space-y-6">
+                            <Card className="overflow-hidden shadow-lg">
+                                <Image
+                                    src={movie.posterUrl}
+                                    alt={`Poster for ${movie.title}`}
+                                    width={500}
+                                    height={750}
+                                    className="w-full object-cover"
+                                    data-ai-hint="movie poster"
+                                />
+                            </Card>
+                            {movie.scriptUrl && (
+                                <div className="px-4">
+                                    <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer">
+                                        <Button variant="outline" className="w-full">
+                                            <Download className="mr-2"/>
+                                            Download Script
+                                        </Button>
+                                    </a>
+                                </div>
+                            )}
+                        </aside>
+
+                        {/* Main Content */}
+                        <div className="md:col-span-8 lg:col-span-9">
+                            {/* Header */}
+                            <div className="mb-6 flex justify-between items-start">
+                                <div>
+                                    <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2">{movie.title}</h1>
+                                    <div className="flex flex-wrap gap-2">
+                                        {movie.tags.map(tag => (
+                                            <Badge key={tag} variant="secondary">{tag}</Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                                <Link href={`/movie/${movie.id}/edit`}>
+                                    <Button variant="outline">Edit</Button>
+                                </Link>
+                            </div>
+
+                            <Tabs defaultValue="details" className="w-full">
+                                <TabsList className="mb-4">
+                                    <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
+                                    {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
+                                    {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
+                                </TabsList>
+                                
+                                <TabsContent value="details">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Synopsis</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-muted-foreground max-w-prose">{movie.description}</p>
+                                            <hr className="my-6 border-border" />
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                <div className="flex items-start gap-3">
+                                                    <Star className="w-5 h-5 text-muted-foreground mt-1" />
+                                                    <div className="w-5/6">
+                                                        <p className="font-semibold">Rating</p>
+                                                        <RatingProgressBar percentage={movie.rating} className="mt-2" />
+                                                    </div>
+                                                </div>
+                                                <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
+                                                <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
+                                                {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
+                                                <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
+                                                {movie.type !== 'Movie' && (
+                                                    <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
+                                                )}
+                                                {movie.collection && (
+                                                    <div className="flex items-start gap-3">
+                                                        <FileText className="w-5 h-5 text-muted-foreground mt-1" />
+                                                        <div>
+                                                            <p className="font-semibold">Collection</p>
+                                                            <button onClick={() => handleCollectionClick(movie.collection!)} className="text-muted-foreground hover:text-primary hover:underline cursor-pointer text-left">
+                                                                {movie.collection}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="cast">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Cast</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {movie.cast?.map(person => (
+                                                <div key={person.name} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
+                                                    <Avatar>
+                                                        <AvatarImage src={person.avatarUrl} alt={person.name} data-ai-hint="person portrait" />
+                                                        <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-semibold">{person.name}</p>
+                                                        <p className="text-sm text-muted-foreground">{person.character}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="media">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Alternate Posters</CardTitle>
+                                            <CardDescription>Other posters for this title.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                                {movie.alternatePosters?.map((poster, index) => (
+                                                    <Image
+                                                        key={index}
+                                                        src={poster}
+                                                        alt={`Alternate poster ${index + 1}`}
+                                                        width={200}
+                                                        height={300}
+                                                        className="rounded-md object-cover w-full aspect-[2/3] hover:scale-105 transition-transform"
+                                                        data-ai-hint="movie poster"
+                                                    />
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            </Tabs>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            <Dialog open={isCollectionDialogOpen} onOpenChange={setIsCollectionDialogOpen}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Collection: {movie.collection}</DialogTitle>
+                        <DialogDescription>
+                            Other titles in this collection from your library.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-72 -mx-6 pr-6 pl-6">
+                        <div className="space-y-2">
+                            {collectionMovies.length > 0 ? (
+                                collectionMovies.map(collectionMovie => (
+                                    <Link key={collectionMovie.id} href={`/movie/${collectionMovie.id}`} passHref>
+                                        <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => setIsCollectionDialogOpen(false)}>
+                                            <Image
+                                                src={collectionMovie.posterUrl}
+                                                alt={collectionMovie.title}
+                                                width={50}
+                                                height={75}
+                                                className="w-[50px] h-[75px] object-cover rounded-md"
+                                                data-ai-hint="movie poster"
+                                            />
+                                            <div className="flex-grow">
+                                                <p className="font-semibold">{collectionMovie.title}</p>
+                                                <p className="text-sm text-muted-foreground">{collectionMovie.releaseDate}</p>
+                                            </div>
+                                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-10">No other titles from this collection found in your library.</p>
+                            )}
+                        </div>
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
