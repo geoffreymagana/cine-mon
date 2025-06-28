@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -12,7 +13,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -72,6 +74,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
   const [animationKey, setAnimationKey] = React.useState(0);
   const [typedCaption, setTypedCaption] = React.useState("");
   const [captionOpacity, setCaptionOpacity] = React.useState(1);
+  const { toast } = useToast();
 
   const spin = React.useCallback(async () => {
     if (movies.length === 0 || isSpinning) return;
@@ -144,6 +147,40 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
     setIsOpen(open);
   }
   
+  const handleAcceptFate = () => {
+    if (!selectedMovie) return;
+
+    try {
+      const storedMovies = localStorage.getItem('movies');
+      if (storedMovies) {
+        const allMovies: Movie[] = JSON.parse(storedMovies);
+        const updatedMovies = allMovies.map(movie => {
+          if (movie.id === selectedMovie.id) {
+            const newRewatchCount = (movie.rewatchCount || 0) + 1;
+            toast({
+              title: "Fate Accepted!",
+              description: `You've now watched "${selectedMovie.title}" ${newRewatchCount} times.`,
+            });
+            return {
+              ...movie,
+              rewatchCount: newRewatchCount,
+            };
+          }
+          return movie;
+        });
+        localStorage.setItem('movies', JSON.stringify(updatedMovies));
+        setIsOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to update movie in localStorage:", error);
+      toast({
+        title: "Error",
+        description: "Could not update your watch count.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const moviesToDisplay = React.useMemo(() => {
     return [...movies].sort(() => 0.5 - Math.random()).slice(0, 9);
   }, [movies]);
@@ -218,14 +255,24 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
         >
             {typedCaption}
         </div>
-        <div className="flex justify-center">
-            <Button onClick={spin} disabled={isSpinning || movies.length === 0} className="w-32 h-12 flex items-center justify-center">
-                {isSpinning ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                ) : (
-                    "Spin Again"
-                )}
-            </Button>
+        <div className="flex justify-center gap-4">
+            {isSpinning ? (
+                <Button disabled className="w-40 h-12">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                </Button>
+            ) : selectedMovie ? (
+                <>
+                    <Button variant="outline" onClick={spin} className="w-32">
+                        Spin Again
+                    </Button>
+                    <Button onClick={handleAcceptFate} className="w-32">
+                        <Check className="mr-2 h-4 w-4" />
+                        Accept Fate
+                    </Button>
+                </>
+            ) : (
+                 <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
+            )}
         </div>
       </DialogContent>
     </Dialog>
