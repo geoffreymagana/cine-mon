@@ -64,12 +64,23 @@ export default function MovieEditPage() {
   const form = useForm<MovieEditFormValues>({
     resolver: zodResolver(movieEditSchema),
     defaultValues: {
-      tags: [],
-      cast: [],
-      alternatePosters: [],
+      title: '',
+      description: '',
+      posterUrl: '',
+      backdropUrl: '',
+      type: 'Movie',
+      status: 'Plan to Watch',
       watchedEpisodes: 0,
       totalEpisodes: 1,
       rating: 75,
+      tags: [],
+      releaseDate: '',
+      director: '',
+      cast: [],
+      alternatePosters: [],
+      rewatchCount: 0,
+      scriptUrl: '',
+      collection: '',
     },
   });
   
