@@ -18,6 +18,19 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomNav } from "@/components/bottom-nav";
 import Image from "next/image";
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 
 export default function DashboardPage() {
   const [movies, setMovies] = React.useState<Movie[]>([]);
@@ -27,6 +40,13 @@ export default function DashboardPage() {
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   React.useEffect(() => {
     try {
@@ -92,6 +112,25 @@ export default function DashboardPage() {
     }
     return movies.filter((movie) => movie.type === filter);
   }, [movies, filter]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const {active, over} = event;
+
+    if (over && active.id !== over.id) {
+      setMovies((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        if (oldIndex === -1 || newIndex === -1) {
+            return items;
+        }
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        updateMoviesInStorage(newItems);
+        return newItems;
+      });
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -182,10 +221,16 @@ export default function DashboardPage() {
         <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
           <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
           <div className="flex-grow p-4 md:p-8">
-            <MovieGrid
-              movies={filteredMovies}
-              onDelete={handleDeleteMovie}
-            />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <MovieGrid
+                movies={filteredMovies}
+                onDelete={handleDeleteMovie}
+              />
+            </DndContext>
           </div>
         </main>
          {isMobile && <BottomNav filter={filter} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
