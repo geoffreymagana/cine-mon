@@ -3,13 +3,13 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie } from 'recharts';
 import { ArrowLeft, Clock, Film, Flame, Medal, Tv, Video } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
 // Mock data for charts as the real data lacks timestamps
 const monthlyWatchData = [
@@ -24,6 +24,9 @@ const monthlyWatchData = [
 const chartConfig = {
     movies: { label: "Movies", color: "hsl(var(--chart-1))" },
     series: { label: "Series", color: "hsl(var(--chart-2))" },
+    "Movie": { label: "Movies", color: "hsl(var(--chart-1))" },
+    "TV Show": { label: "TV Shows", color: "hsl(var(--chart-2))" },
+    "Anime": { label: "Anime", color: "hsl(var(--chart-3))" },
 };
 
 export default function AnalyticsPage() {
@@ -66,6 +69,10 @@ export default function AnalyticsPage() {
         
         return { favoriteGenre: favGenre, typeCounts: tCounts };
     }, [movies]);
+
+    const pieData = React.useMemo(() => {
+        return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
+    }, [typeCounts]);
 
     const mostWatchedType = React.useMemo(() => {
         if (Object.keys(typeCounts).length === 0) return "N/A";
@@ -158,28 +165,32 @@ export default function AnalyticsPage() {
                             <CardTitle>Breakdown by Type</CardTitle>
                             <CardDescription>How your collection is categorized.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4 pt-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Film className="h-5 w-5 text-primary" />
-                                    <span className="font-medium">Movies</span>
+                        <CardContent className="flex items-center justify-center pt-4">
+                            {pieData.length > 0 ? (
+                                <ChartContainer
+                                    config={chartConfig}
+                                    className="mx-auto aspect-square h-[250px]"
+                                >
+                                    <PieChart>
+                                        <Tooltip
+                                            cursor={false}
+                                            content={<ChartTooltipContent indicator="dot" />}
+                                        />
+                                        <Pie
+                                            data={pieData}
+                                            dataKey="value"
+                                            nameKey="name"
+                                            innerRadius={60}
+                                            strokeWidth={5}
+                                        />
+                                        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                                    </PieChart>
+                                </ChartContainer>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
+                                    <p>No data to display.</p>
                                 </div>
-                                <span className="font-bold">{typeCounts['Movie'] || 0}</span>
-                            </div>
-                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Tv className="h-5 w-5 text-primary" />
-                                    <span className="font-medium">TV Shows</span>
-                                </div>
-                                <span className="font-bold">{typeCounts['TV Show'] || 0}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Flame className="h-5 w-5 text-primary" />
-                                    <span className="font-medium">Anime</span>
-                                </div>
-                                <span className="font-bold">{typeCounts['Anime'] || 0}</span>
-                            </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
