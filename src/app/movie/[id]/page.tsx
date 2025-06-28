@@ -31,24 +31,30 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MovieDetailPage() {
     const params = useParams();
-    const movieId = params.id as string;
+    const [movieId, setMovieId] = React.useState<string | null>(null);
     const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
 
     React.useEffect(() => {
-        if (movieId) {
-            try {
-                const storedMovies = localStorage.getItem('movies');
-                if (storedMovies) {
-                    const movies: Movie[] = JSON.parse(storedMovies);
-                    const foundMovie = movies.find((m) => m.id === movieId);
-                    setMovie(foundMovie || null);
-                } else {
-                    setMovie(null);
-                }
-            } catch (error) {
-                console.error("Failed to access localStorage:", error);
+        if (params.id) {
+            setMovieId(params.id as string);
+        }
+    }, [params.id]);
+
+    React.useEffect(() => {
+        if (!movieId) return;
+
+        try {
+            const storedMovies = localStorage.getItem('movies');
+            if (storedMovies) {
+                const movies: Movie[] = JSON.parse(storedMovies);
+                const foundMovie = movies.find((m) => m.id === movieId);
+                setMovie(foundMovie || null);
+            } else {
                 setMovie(null);
             }
+        } catch (error) {
+            console.error("Failed to access localStorage:", error);
+            setMovie(null);
         }
     }, [movieId]);
 
@@ -136,13 +142,18 @@ export default function MovieDetailPage() {
                     {/* Main Content */}
                     <div className="md:col-span-8 lg:col-span-9">
                         {/* Header */}
-                        <div className="mb-6">
-                            <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2">{movie.title}</h1>
-                            <div className="flex flex-wrap gap-2">
-                                {movie.tags.map(tag => (
-                                    <Badge key={tag} variant="secondary">{tag}</Badge>
-                                ))}
+                        <div className="mb-6 flex justify-between items-start">
+                            <div>
+                                <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2">{movie.title}</h1>
+                                <div className="flex flex-wrap gap-2">
+                                    {movie.tags.map(tag => (
+                                        <Badge key={tag} variant="secondary">{tag}</Badge>
+                                    ))}
+                                </div>
                             </div>
+                             <Link href={`/movie/${movie.id}/edit`}>
+                                <Button variant="outline">Edit</Button>
+                            </Link>
                         </div>
 
                         <Tabs defaultValue="details" className="w-full">

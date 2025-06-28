@@ -55,7 +55,7 @@ export default function MovieEditPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const movieId = params.id as string;
+  const [movieId, setMovieId] = React.useState<string | null>(null);
   const [tagInput, setTagInput] = React.useState('');
   const [isTagging, setIsTagging] = React.useState(false);
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -73,6 +73,8 @@ export default function MovieEditPage() {
       description: '',
       posterUrl: '',
       backdropUrl: '',
+      type: 'Movie',
+      status: 'Plan to Watch',
       releaseDate: '',
       director: '',
       cast: [],
@@ -83,6 +85,12 @@ export default function MovieEditPage() {
       tags: [],
     }
   });
+
+  React.useEffect(() => {
+    if (params.id) {
+      setMovieId(params.id as string);
+    }
+  }, [params.id]);
   
   const { fields: castFields, append: appendCast, remove: removeCast } = useFieldArray({
     control: form.control,
@@ -95,6 +103,8 @@ export default function MovieEditPage() {
   });
 
   React.useEffect(() => {
+    if (!movieId) return;
+    
     try {
       const storedMovies = localStorage.getItem('movies');
       if (storedMovies) {
@@ -198,6 +208,8 @@ export default function MovieEditPage() {
 
 
   const onSubmit = (data: MovieEditFormValues) => {
+    if (!movieId) return;
+
     try {
       const storedMovies = localStorage.getItem('movies');
       if (storedMovies) {
@@ -213,7 +225,7 @@ export default function MovieEditPage() {
     }
   };
   
-  if (isLoading) {
+  if (isLoading || !movieId) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
             <Loader2 className="h-8 w-8 animate-spin" />
