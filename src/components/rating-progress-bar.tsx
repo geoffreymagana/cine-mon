@@ -33,9 +33,9 @@ export const RatingProgressBar = ({ percentage, className }: RatingProgressBarPr
   const color = getRatingColor(percentage);
 
   return (
-    <div className={cn("flex w-full items-center gap-3", className)}>
+    <div className={cn("flex w-full items-center gap-2", className)}>
       <ProgressPrimitive.Root
-        className="relative h-2 w-full overflow-hidden rounded-full bg-muted"
+        className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted"
         value={percentage}
       >
         <ProgressPrimitive.Indicator
