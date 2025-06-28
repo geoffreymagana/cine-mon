@@ -24,7 +24,7 @@ export const searchMulti = async (query: string) => {
 
 const fetchDetails = async (id: number, type: 'movie' | 'tv') => {
     try {
-        const response = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=en-US&append_to_response=credits`);
+        const response = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=en-US&append_to_response=credits,images`);
         if (!response.ok) throw new Error(`Failed to fetch ${type} details`);
         return await response.json();
     } catch (error) {
@@ -37,7 +37,7 @@ export const getMovieDetails = (id: number) => fetchDetails(id, 'movie');
 export const getTvDetails = (id: number) => fetchDetails(id, 'tv');
 
 export const mapTmdbResultToMovie = (tmdbResult: any): Omit<Movie, 'id'> => {
-    const isMovie = tmdbResult.media_type === 'movie' || tmdbResult.title;
+    const isMovie = tmdbResult.media_type === 'movie';
     const isAnime = tmdbResult.genres?.some((g: any) => g.id === 16) || tmdbResult.origin_country?.includes('JP');
 
     return {
@@ -53,12 +53,15 @@ export const mapTmdbResultToMovie = (tmdbResult: any): Omit<Movie, 'id'> => {
         rating: Math.round(tmdbResult.vote_average * 10),
         tags: tmdbResult.genres?.map((g: any) => g.name) || [],
         releaseDate: tmdbResult.release_date || tmdbResult.first_air_date,
-        director: isMovie ? tmdbResult.credits?.crew.find((c: any) => c.job === 'Director')?.name : tmdbResult.created_by?.[0]?.name,
+        director: isMovie 
+            ? tmdbResult.credits?.crew.find((c: any) => c.job === 'Director')?.name 
+            : tmdbResult.created_by?.[0]?.name,
         cast: tmdbResult.credits?.cast.slice(0, 10).map((c: any) => ({
             name: c.name,
             character: c.character,
             avatarUrl: getPosterUrl(c.profile_path)
         })) || [],
+        alternatePosters: tmdbResult.images?.posters.slice(1, 6).map((p: any) => getPosterUrl(p.file_path, 'w500')) || [],
         collection: tmdbResult.belongs_to_collection?.name,
         budget: tmdbResult.budget,
         revenue: tmdbResult.revenue,
