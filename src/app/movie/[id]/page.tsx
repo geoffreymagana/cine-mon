@@ -159,12 +159,12 @@ export default function MovieDetailPage() {
                                         <p className="text-muted-foreground max-w-prose">{movie.description}</p>
                                         <hr className="my-6 border-border" />
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            <DetailItem icon={Star} label="Rating">
+                                            <DetailItem icon={Star} label="Rating" value={
                                                 <div className="flex items-center gap-2">
                                                     <RatingCircle percentage={movie.rating} />
                                                     <span className="font-bold text-lg text-foreground">{movie.rating}%</span>
                                                 </div>
-                                            </DetailItem>
+                                            } />
                                             <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
                                             <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
                                             {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
