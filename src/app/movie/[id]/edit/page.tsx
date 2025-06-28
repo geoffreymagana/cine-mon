@@ -59,11 +59,26 @@ export default function MovieEditPage() {
   const [isTagging, setIsTagging] = React.useState(false);
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
   const backdropFileInputRef = React.useRef<HTMLInputElement>(null);
+  const alternatePosterFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
 
   const form = useForm<MovieEditFormValues>({
     resolver: zodResolver(movieEditSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      posterUrl: '',
+      backdropUrl: '',
+      releaseDate: '',
+      director: '',
+      cast: [],
+      alternatePosters: [],
+      rewatchCount: 0,
+      scriptUrl: '',
+      collection: '',
+      tags: [],
+    }
   });
   
   const { fields: castFields, append: appendCast, remove: removeCast } = useFieldArray({
@@ -410,18 +425,52 @@ export default function MovieEditPage() {
                 )} />
                  <div>
                   <FormLabel>Alternate Posters</FormLabel>
-                  <div className="space-y-2 mt-2">
-                    {posterFields.map((field, index) => (
-                      <div key={field.id} className="flex items-center gap-2">
-                        <FormField control={form.control} name={`alternatePosters.${index}`} render={({ field }) => (
-                            <FormItem className="flex-1"><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
-                        )}/>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removePoster(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                      </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendPoster('')}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Poster URL
-                    </Button>
+                  <div className="space-y-4 mt-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {(form.watch('alternatePosters') || []).map((poster, index) => (
+                            <div key={poster} className="relative group aspect-[2/3]">
+                                <Image
+                                    src={poster}
+                                    alt={`Alternate Poster ${index + 1}`}
+                                    layout="fill"
+                                    className="object-cover rounded-md border"
+                                    data-ai-hint="movie poster"
+                                />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => removePoster(index)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div>
+                        <Button type="button" variant="outline" size="sm" onClick={() => alternatePosterFileInputRef.current?.click()}>
+                          <Upload className="mr-2 h-4 w-4" /> Add Poster
+                        </Button>
+                        <input
+                            type="file"
+                            ref={alternatePosterFileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    appendPoster(reader.result as string);
+                                    if(e.target) e.target.value = "";
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                            }}
+                        />
+                    </div>
                   </div>
                 </div>
               </CardContent>
