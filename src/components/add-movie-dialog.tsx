@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Sparkles, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
+import { Slider } from "./ui/slider";
 
 
 const movieSchema = z.object({
@@ -46,8 +47,9 @@ const movieSchema = z.object({
   status: z.enum(["Watching", "Completed", "On-Hold", "Dropped", "Plan to Watch"]),
   watchedEpisodes: z.coerce.number().min(0),
   totalEpisodes: z.coerce.number().min(1),
-  rating: z.coerce.number().min(0).max(5),
+  rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
+  releaseDate: z.string().min(1, "Release date is required"),
 });
 
 type MovieFormValues = z.infer<typeof movieSchema>;
@@ -71,8 +73,9 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
       tags: [],
       watchedEpisodes: 0,
       totalEpisodes: 1,
-      rating: 0,
+      rating: 75,
       posterUrl: "",
+      releaseDate: "",
     },
   });
 
@@ -89,8 +92,9 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                 status: "Plan to Watch",
                 watchedEpisodes: 0,
                 totalEpisodes: 1,
-                rating: 0,
+                rating: 75,
                 tags: [],
+                releaseDate: "",
             });
         }
     }
@@ -289,7 +293,69 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                     </FormItem>
                   )}
                 />
+                 <FormField
+                    control={form.control}
+                    name="releaseDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Release Date</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Jul 16, 2010" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="rating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rating: {field.value}%</FormLabel>
+                      <FormControl>
+                        <Slider
+                            defaultValue={[field.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                            max={100}
+                            step={1}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </div>
+            
+            {form.watch("type") !== "Movie" && (
+              <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="watchedEpisodes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Watched Episodes</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="totalEpisodes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Episodes</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+            )}
             
             <FormField
               control={form.control}

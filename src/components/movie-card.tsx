@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import type { Movie } from "@/lib/types";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
 import {
@@ -12,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { RatingCircle } from "./rating-circle";
 
 type MovieCardProps = {
   movie: Movie;
@@ -21,48 +21,48 @@ type MovieCardProps = {
 
 export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
   return (
-    <Card className="overflow-hidden flex flex-col group border-transparent hover:border-primary transition-colors duration-300 shadow-lg hover:shadow-primary/20">
-      <CardHeader className="p-0 relative">
-        <div className="absolute top-2 right-2 z-10">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onEdit}>
-                <Edit className="mr-2 h-4 w-4" />
-                <span>Edit</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <Card className="overflow-visible border-transparent bg-transparent shadow-none flex flex-col group">
+        <div className="relative">
+            <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-border/10 shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
+                <Image
+                    src={movie.posterUrl}
+                    alt={`Poster for ${movie.title}`}
+                    width={500}
+                    height={750}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={`${movie.type} ${movie.title}`}
+                />
+            </div>
+            <div className="absolute top-2 right-2 z-20">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onEdit}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="absolute -bottom-5 left-2 z-10">
+                <RatingCircle percentage={movie.rating} />
+            </div>
         </div>
-        <div className="aspect-[2/3] w-full">
-           <Image
-            src={movie.posterUrl}
-            alt={`Poster for ${movie.title}`}
-            width={500}
-            height={750}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={`${movie.type} ${movie.title}`}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="p-3 flex-grow">
-        <CardTitle className="text-base font-headline font-medium leading-tight truncate" title={movie.title}>
+      
+      <CardContent className="pt-8 px-2">
+        <p className="text-base font-bold leading-tight truncate" title={movie.title}>
           {movie.title}
-        </CardTitle>
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">{movie.releaseDate}</p>
       </CardContent>
-      <CardFooter className="p-3 pt-0">
-         <Badge variant={movie.type === 'Movie' ? 'default' : movie.type === 'TV Show' ? 'secondary' : 'outline' } className="text-xs">
-          {movie.type === 'TV Show' ? 'TV Shows' : movie.type}
-        </Badge>
-      </CardFooter>
     </Card>
   );
 };

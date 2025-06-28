@@ -9,4 +9,5 @@ export type Movie = {
   totalEpisodes: number;
   rating: number;
   tags: string[];
+  releaseDate: string;
 };
