@@ -1,8 +1,8 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Movie } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,22 @@ type MovieCardProps = {
 };
 
 export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
-  // Prevents the link from navigating when a dropdown item is clicked
-  const handleInteraction = (e: React.MouseEvent, action: () => void) => {
+  const router = useRouter();
+
+  // A single handler for all menu interactions to prevent link navigation.
+  const handleInteraction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    action();
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    handleInteraction(e);
+    router.push(`/movie/${movie.id}/edit`);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    handleInteraction(e);
+    onDelete();
   };
 
   return (
@@ -45,19 +56,17 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
               <div className="absolute top-2 right-2 z-20">
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm" onClick={(e) => handleInteraction(e, () => {})}>
+                        <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm" onClick={handleInteraction}>
                             <MoreVertical className="h-4 w-4" />
                             <span className="sr-only">Movie actions</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <Link href={`/movie/${movie.id}/edit`} passHref>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>Edit</span>
-                          </DropdownMenuItem>
-                        </Link>
-                        <DropdownMenuItem onClick={(e) => handleInteraction(e, onDelete)} className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem onClick={handleEdit}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             <span>Delete</span>
                         </DropdownMenuItem>
