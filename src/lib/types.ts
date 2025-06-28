@@ -10,4 +10,12 @@ export type Movie = {
   rating: number;
   tags: string[];
   releaseDate: string;
+  // New fields for details page
+  director?: string;
+  cast?: { name: string; character: string; avatarUrl: string }[];
+  alternatePosters?: string[];
+  rewatchCount?: number;
+  scriptUrl?: string;
+  collection?: string;
+  backdropUrl?: string;
 };
