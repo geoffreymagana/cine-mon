@@ -22,11 +22,13 @@ const monthlyWatchData = [
 ];
 
 const chartConfig = {
+    // For bar chart
     movies: { label: "Movies", color: "hsl(var(--chart-2))" },
     series: { label: "Series", color: "hsl(var(--primary))" },
-    "Movie": { label: "Movies", color: "hsl(var(--chart-2))" },
-    "TV Show": { label: "TV Shows", color: "hsl(var(--primary))" },
-    "Anime": { label: "Anime", color: "hsl(var(--chart-3))" },
+    // For pie chart
+    "tv-show": { label: "TV Shows", color: "hsl(var(--primary))" }, // Purple
+    movie: { label: "Movies", color: "hsl(var(--chart-2))" }, // Green
+    anime: { label: "Anime", color: "hsl(var(--chart-3))" }, // Orange
 };
 
 export default function AnalyticsPage() {
@@ -71,7 +73,11 @@ export default function AnalyticsPage() {
     }, [movies]);
 
     const pieData = React.useMemo(() => {
-        return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
+        return Object.entries(typeCounts).map(([name, value]) => ({
+            name: name,
+            value: value,
+            key: name.toLowerCase().replace(" ", "-"),
+        }));
     }, [typeCounts]);
 
     const mostWatchedType = React.useMemo(() => {
@@ -179,15 +185,15 @@ export default function AnalyticsPage() {
                                         <Pie
                                             data={pieData}
                                             dataKey="value"
-                                            nameKey="name"
+                                            nameKey="key"
                                             innerRadius={60}
                                             strokeWidth={5}
                                         >
                                             {pieData.map((entry) => (
-                                                <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background"/>
+                                                <Cell key={entry.name} fill={`var(--color-${entry.key})`} className="stroke-background"/>
                                             ))}
                                         </Pie>
-                                        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+                                        <ChartLegend content={<ChartLegendContent />} />
                                     </PieChart>
                                 </ChartContainer>
                             ) : (
