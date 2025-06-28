@@ -19,4 +19,9 @@ export type Movie = {
   scriptUrl?: string;
   collection?: string;
   backdropUrl?: string;
+  // Fields for more details
+  budget?: number;
+  revenue?: number;
+  runtime?: number;
+  productionCountries?: string;
 };

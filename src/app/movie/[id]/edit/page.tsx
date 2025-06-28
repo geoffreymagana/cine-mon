@@ -47,6 +47,10 @@ const movieEditSchema = z.object({
   rewatchCount: z.coerce.number().min(0).optional(),
   scriptUrl: z.string().optional().or(z.literal('')),
   collection: z.string().optional(),
+  budget: z.coerce.number().min(0).optional(),
+  revenue: z.coerce.number().min(0).optional(),
+  runtime: z.coerce.number().min(0).optional(),
+  productionCountries: z.string().optional(),
 });
 
 type MovieEditFormValues = z.infer<typeof movieEditSchema>;
@@ -83,6 +87,10 @@ export default function MovieEditPage() {
       scriptUrl: '',
       collection: '',
       tags: [],
+      budget: 0,
+      revenue: 0,
+      runtime: 0,
+      productionCountries: '',
     }
   });
 
@@ -424,10 +432,49 @@ export default function MovieEditPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Additional Metrics</CardTitle>
+                    <CardDescription>Add financial, runtime, and country details.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField control={form.control} name="budget" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Budget</FormLabel>
+                                <FormControl><Input type="number" placeholder="160000000" {...field} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="revenue" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Revenue</FormLabel>
+                                <FormControl><Input type="number" placeholder="829895144" {...field} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="runtime" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Runtime (minutes)</FormLabel>
+                                <FormControl><Input type="number" placeholder="148" {...field} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
+                    <FormField control={form.control} name="productionCountries" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Production Countries</FormLabel>
+                            <FormControl><Input placeholder="USA, UK" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                </CardContent>
+            </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>Additional Details</CardTitle>
+                <CardTitle>Additional Content</CardTitle>
                 <CardDescription>Add metadata like collections, scripts, and alternative media.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -17,7 +17,11 @@ import {
     Calendar,
     Clapperboard,
     Info,
-    ChevronRight
+    ChevronRight,
+    DollarSign,
+    TrendingUp,
+    Clock,
+    Globe
 } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -212,6 +216,10 @@ export default function MovieDetailPage() {
                                                         </div>
                                                     </div>
                                                 )}
+                                                <DetailItem icon={Clock} label="Runtime" value={movie.runtime ? `${movie.runtime} min` : 'N/A'} />
+                                                <DetailItem icon={Globe} label="Country" value={movie.productionCountries || 'N/A'} />
+                                                <DetailItem icon={DollarSign} label="Budget" value={movie.budget ? `$${movie.budget.toLocaleString()}` : 'N/A'} />
+                                                <DetailItem icon={TrendingUp} label="Revenue" value={movie.revenue ? `$${movie.revenue.toLocaleString()}` : 'N/A'} />
                                             </div>
                                         </CardContent>
                                     </Card>

@@ -3,7 +3,7 @@ import type { Movie } from './types';
 export const initialMovies: Movie[] = [
   {
     id: '1',
-    tmdbId: 603,
+    tmdbId: 27205,
     title: 'Inception',
     description: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O., a dangerous task that requires a skilled team and a journey into the depths of the subconscious.',
     posterUrl: 'https://placehold.co/500x750/000000/FFFFFF.png',
@@ -30,6 +30,10 @@ export const initialMovies: Movie[] = [
     rewatchCount: 3,
     scriptUrl: '#',
     collection: 'The Dark Knight Trilogy',
+    budget: 160000000,
+    revenue: 829895144,
+    runtime: 148,
+    productionCountries: "United Kingdom, United States of America",
   },
   {
     id: '2',

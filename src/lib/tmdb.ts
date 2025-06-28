@@ -60,5 +60,9 @@ export const mapTmdbResultToMovie = (tmdbResult: any): Omit<Movie, 'id'> => {
             avatarUrl: getPosterUrl(c.profile_path)
         })) || [],
         collection: tmdbResult.belongs_to_collection?.name,
+        budget: tmdbResult.budget,
+        revenue: tmdbResult.revenue,
+        runtime: isMovie ? tmdbResult.runtime : tmdbResult.episode_run_time?.[0],
+        productionCountries: tmdbResult.production_countries?.map((c: any) => c.name).join(', '),
     };
 };
