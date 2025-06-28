@@ -306,22 +306,22 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                     )}
                 />
                 <FormField
-                control={form.control}
-                name="rating"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Rating: {field.value}%</FormLabel>
-                    <FormControl>
-                        <Slider
-                            defaultValue={[field.value]}
-                            onValueChange={(value) => field.onChange(value[0])}
-                            max={100}
-                            step={1}
-                        />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
+                    control={form.control}
+                    name="rating"
+                    render={({ field }) => (
+                        <FormItem className="flex h-full flex-col justify-center gap-2">
+                             <FormLabel>Rating: {field.value}%</FormLabel>
+                            <FormControl>
+                                <Slider
+                                    defaultValue={[field.value]}
+                                    onValueChange={(value) => field.onChange(value[0])}
+                                    max={100}
+                                    step={1}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
             </div>
             
