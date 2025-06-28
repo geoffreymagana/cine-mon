@@ -22,10 +22,10 @@ const monthlyWatchData = [
 ];
 
 const chartConfig = {
-    movies: { label: "Movies", color: "hsl(var(--chart-1))" },
-    series: { label: "Series", color: "hsl(var(--chart-2))" },
-    "Movie": { label: "Movies", color: "hsl(var(--chart-1))" },
-    "TV Show": { label: "TV Shows", color: "hsl(var(--chart-2))" },
+    movies: { label: "Movies", color: "hsl(var(--chart-2))" },
+    series: { label: "Series", color: "hsl(var(--primary))" },
+    "Movie": { label: "Movies", color: "hsl(var(--chart-2))" },
+    "TV Show": { label: "TV Shows", color: "hsl(var(--primary))" },
     "Anime": { label: "Anime", color: "hsl(var(--chart-3))" },
 };
 
