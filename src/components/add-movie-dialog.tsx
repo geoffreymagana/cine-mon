@@ -48,7 +48,7 @@ const movieSchema = z.object({
   totalEpisodes: z.coerce.number().min(1),
   rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
-  releaseDate: z.string().min(1, "Release date is required"),
+  releaseDate: z.string(),
 });
 
 type MovieFormValues = z.infer<typeof movieSchema>;
