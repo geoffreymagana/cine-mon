@@ -59,29 +59,11 @@ export default function MovieEditPage() {
   const [isTagging, setIsTagging] = React.useState(false);
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
   const backdropFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
 
   const form = useForm<MovieEditFormValues>({
     resolver: zodResolver(movieEditSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      posterUrl: '',
-      backdropUrl: '',
-      type: 'Movie',
-      status: 'Plan to Watch',
-      watchedEpisodes: 0,
-      totalEpisodes: 1,
-      rating: 75,
-      tags: [],
-      releaseDate: '',
-      director: '',
-      cast: [],
-      alternatePosters: [],
-      rewatchCount: 0,
-      scriptUrl: '',
-      collection: '',
-    },
   });
   
   const { fields: castFields, append: appendCast, remove: removeCast } = useFieldArray({
@@ -110,6 +92,8 @@ export default function MovieEditPage() {
     } catch (error) {
       console.error('Failed to load movie from localStorage:', error);
       toast({ title: 'Error', description: 'Could not load movie data.', variant: 'destructive' });
+    } finally {
+        setIsLoading(false);
     }
   }, [movieId, form, router, toast]);
 
@@ -177,6 +161,14 @@ export default function MovieEditPage() {
       toast({ title: 'Error', description: 'Could not save changes.', variant: 'destructive' });
     }
   };
+  
+  if (isLoading) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
   
   return (
     <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8">
@@ -447,3 +439,4 @@ export default function MovieEditPage() {
     </div>
   );
 }
+
