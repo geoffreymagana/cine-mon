@@ -1,10 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { 
     ArrowLeft, 
     Download, 
@@ -171,6 +170,13 @@ export default function MovieDetailPage() {
                                         <p className="text-muted-foreground max-w-prose">{movie.description}</p>
                                         <hr className="my-6 border-border" />
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="flex items-start gap-3">
+                                                <Star className="w-5 h-5 text-muted-foreground mt-1" />
+                                                <div className="w-full">
+                                                    <p className="font-semibold">Rating</p>
+                                                    <RatingProgressBar percentage={movie.rating} className="mt-2" />
+                                                </div>
+                                            </div>
                                             <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
                                             <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
                                             {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
@@ -179,13 +185,6 @@ export default function MovieDetailPage() {
                                                 <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
                                             )}
                                             {movie.collection && <DetailItem icon={FileText} label="Collection" value={movie.collection} />}
-                                            <div className="flex items-start gap-3">
-                                                <Star className="w-5 h-5 text-muted-foreground mt-1" />
-                                                <div>
-                                                    <p className="font-semibold">Rating</p>
-                                                    <RatingProgressBar percentage={movie.rating} className="mt-2" />
-                                                </div>
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
