@@ -179,7 +179,7 @@ export default function DashboardPage() {
       </Sidebar>
 
       <SidebarInset>
-        <main className="min-h-screen flex flex-col pb-16 md:pb-0">
+        <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
           <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
           <div className="flex-grow p-4 md:p-8">
             <MovieGrid

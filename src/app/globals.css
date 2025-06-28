@@ -186,6 +186,11 @@ body {
     opacity: 1;
 }
 
+.dotted-background-permanent {
+    background-image: radial-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 10px 10px;
+}
+
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;
