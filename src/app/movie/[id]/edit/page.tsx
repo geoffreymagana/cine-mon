@@ -320,7 +320,7 @@ export default function MovieEditPage() {
                   <FormField control={form.control} name="releaseDate" render={({ field }) => (
                       <FormItem>
                           <FormLabel>Release Date</FormLabel>
-                          <FormControl><Input placeholder="Jul 16, 2010" {...field} /></FormControl>
+                          <FormControl><Input placeholder="Jul 16, 2010" {...field} value={field.value ?? ''} /></FormControl>
                           <FormMessage />
                       </FormItem>
                   )} />
@@ -396,7 +396,7 @@ export default function MovieEditPage() {
                     <FormField control={form.control} name="director" render={({ field }) => (
                       <FormItem>
                           <FormLabel>Director</FormLabel>
-                          <FormControl><Input placeholder="Christopher Nolan" {...field} /></FormControl>
+                          <FormControl><Input placeholder="Christopher Nolan" {...field} value={field.value ?? ''} /></FormControl>
                           <FormMessage />
                       </FormItem>
                     )} />
@@ -412,7 +412,7 @@ export default function MovieEditPage() {
                                 <FormItem className="flex-1"><FormLabel className="text-xs">Character</FormLabel><FormControl><Input placeholder="Cobb" {...field} /></FormControl><FormMessage /></FormItem>
                             )}/>
                             <FormField control={form.control} name={`cast.${index}.avatarUrl`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Avatar URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Avatar URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                             )}/>
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeCast(index)} className="mt-4"><Trash2 className="h-4 w-4 text-destructive"/></Button>
                           </div>
@@ -435,14 +435,14 @@ export default function MovieEditPage() {
                   <FormField control={form.control} name="collection" render={({ field }) => (
                       <FormItem>
                           <FormLabel>Collection</FormLabel>
-                          <FormControl><Input placeholder="The Dark Knight Trilogy" {...field} /></FormControl>
+                          <FormControl><Input placeholder="The Dark Knight Trilogy" {...field} value={field.value ?? ''} /></FormControl>
                           <FormMessage />
                       </FormItem>
                   )} />
                    <FormField control={form.control} name="rewatchCount" render={({ field }) => (
                       <FormItem>
                           <FormLabel>Rewatch Count</FormLabel>
-                          <FormControl><Input type="number" placeholder="0" {...field} /></FormControl>
+                          <FormControl><Input type="number" placeholder="0" {...field} value={field.value ?? ''} /></FormControl>
                           <FormMessage />
                       </FormItem>
                   )} />
