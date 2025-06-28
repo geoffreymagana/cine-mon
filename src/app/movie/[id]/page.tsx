@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -172,7 +173,7 @@ export default function MovieDetailPage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                             <div className="flex items-start gap-3">
                                                 <Star className="w-5 h-5 text-muted-foreground mt-1" />
-                                                <div className="w-full">
+                                                <div className="w-5/6">
                                                     <p className="font-semibold">Rating</p>
                                                     <RatingProgressBar percentage={movie.rating} className="mt-2" />
                                                 </div>
