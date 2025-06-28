@@ -48,7 +48,7 @@ const movieSchema = z.object({
   totalEpisodes: z.coerce.number().min(1),
   rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
-  releaseDate: z.string(),
+  releaseDate: z.string().optional(),
 });
 
 type MovieFormValues = z.infer<typeof movieSchema>;
@@ -223,7 +223,14 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                     <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                        <Input placeholder="Inception" {...field} />
+                        <Input
+                          placeholder="Inception"
+                          {...field}
+                          onChange={(e) => {
+                            const capitalized = e.target.value.replace(/\b\w/g, (char) => char.toUpperCase());
+                            field.onChange(capitalized);
+                          }}
+                        />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
