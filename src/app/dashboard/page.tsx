@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
+  const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -35,6 +36,10 @@ export default function DashboardPage() {
       } else {
         localStorage.setItem('movies', JSON.stringify(initialMovies));
         setMovies(initialMovies);
+      }
+      const storedAvatar = localStorage.getItem('profileAvatar');
+      if (storedAvatar) {
+        setAvatarUrl(storedAvatar);
       }
     } catch (error) {
       console.error("Failed to access localStorage:", error);
@@ -160,7 +165,7 @@ export default function DashboardPage() {
               <Link href="/profile">
                   <Button variant="ghost" className="w-full justify-start h-auto p-2">
                       <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="person portrait"/>
+                          <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
                           <AvatarFallback>U</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start">
