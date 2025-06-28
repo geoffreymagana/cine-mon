@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -26,8 +25,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RatingCircle } from '@/components/rating-circle';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RatingProgressBar } from '@/components/rating-progress-bar';
 
 export default function MovieDetailPage() {
     const params = useParams();
@@ -171,18 +170,26 @@ export default function MovieDetailPage() {
                                     <CardContent>
                                         <p className="text-muted-foreground max-w-prose">{movie.description}</p>
                                         <hr className="my-6 border-border" />
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            <DetailItem icon={Star} label="Rating" value={
-                                                <RatingCircle percentage={movie.rating} />
-                                            } />
-                                            <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
-                                            <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
-                                            {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
-                                            <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
-                                            {movie.type !== 'Movie' && (
-                                                <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
-                                            )}
-                                            {movie.collection && <DetailItem icon={FileText} label="Collection" value={movie.collection} />}
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
+                                                <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
+                                                {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
+                                                <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
+                                                {movie.type !== 'Movie' && (
+                                                    <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
+                                                )}
+                                                {movie.collection && <DetailItem icon={FileText} label="Collection" value={movie.collection} />}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-start gap-3">
+                                                    <Star className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0" />
+                                                    <div className="w-full">
+                                                        <p className="font-semibold">Rating</p>
+                                                        <RatingProgressBar percentage={movie.rating} className="mt-2" />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
