@@ -167,7 +167,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-        <DialogTitle className="font-headline">Add Movie</DialogTitle>
+        <DialogTitle className="font-headline">Add Movie Manually</DialogTitle>
         <DialogDescription>
             Add a new movie, series, or anime to your collection.
         </DialogDescription>
@@ -218,10 +218,6 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
                         <Input
                           placeholder="Inception"
                           {...field}
-                          onChange={(e) => {
-                            const capitalized = e.target.value.replace(/\b\w/g, (char) => char.toUpperCase());
-                            field.onChange(capitalized);
-                          }}
                         />
                     </FormControl>
                     <FormMessage />

@@ -3,6 +3,7 @@ import type { Movie } from './types';
 export const initialMovies: Movie[] = [
   {
     id: '1',
+    tmdbId: 603,
     title: 'Inception',
     description: 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O., a dangerous task that requires a skilled team and a journey into the depths of the subconscious.',
     posterUrl: 'https://placehold.co/500x750/000000/FFFFFF.png',
@@ -32,6 +33,7 @@ export const initialMovies: Movie[] = [
   },
   {
     id: '2',
+    tmdbId: 1399,
     title: 'Attack on Titan',
     description: 'After his hometown is destroyed and his mother is killed, young Eren Jaeger vows to cleanse the earth of the giant humanoid Titans that have brought humanity to the brink of extinction.',
     posterUrl: 'https://placehold.co/500x750/333333/FFFFFF.png',
@@ -53,6 +55,7 @@ export const initialMovies: Movie[] = [
   },
   {
     id: '3',
+    tmdbId: 1396,
     title: 'Breaking Bad',
     description: 'A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family\'s future.',
     posterUrl: 'https://placehold.co/500x750/999999/FFFFFF.png',
@@ -75,6 +78,7 @@ export const initialMovies: Movie[] = [
   },
   {
     id: '4',
+    tmdbId: 129,
     title: 'Spirited Away',
     description: 'During her family\'s move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches, and spirits, and where humans are changed into beasts.',
     posterUrl: 'https://placehold.co/500x750/666666/FFFFFF.png',
@@ -100,6 +104,7 @@ export const initialMovies: Movie[] = [
   {
     id: '5',
     title: 'The Matrix',
+    tmdbId: 603,
     description: 'A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.',
     posterUrl: 'https://placehold.co/500x750/111111/FFFFFF.png',
     backdropUrl: 'https://placehold.co/1280x720/111111/FFFFFF.png',
@@ -115,6 +120,7 @@ export const initialMovies: Movie[] = [
   },
   {
     id: '6',
+    tmdbId: 66732,
     title: 'Stranger Things',
     description: 'When a young boy disappears, his mother, a police chief, and his friends must confront terrifying supernatural forces in order to get him back.',
     posterUrl: 'https://placehold.co/500x750/444444/FFFFFF.png',

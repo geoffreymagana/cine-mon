@@ -10,6 +10,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
 import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
+import { SearchDialog } from "@/components/search-dialog";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -81,6 +83,14 @@ export default function DashboardPage() {
   };
 
   const handleSaveMovie = (movieData: Omit<Movie, "id">) => {
+    // Check for duplicates before adding
+    if (movieData.tmdbId && movies.some(m => m.tmdbId === movieData.tmdbId)) {
+        toast({
+            title: "Already in Collection",
+            description: `${movieData.title} is already in your collection.`,
+        });
+        return;
+    }
     const movieWithId = { ...movieData, id: crypto.randomUUID() };
     const updatedMovies = [movieWithId, ...movies];
     setMovies(updatedMovies);
@@ -104,6 +114,10 @@ export default function DashboardPage() {
   
   const handleOpenAddDialog = () => {
     setIsAddMovieOpen(true);
+  };
+  
+  const handleOpenSearchDialog = () => {
+    setIsSearchOpen(true);
   };
 
   const filteredMovies = React.useMemo(() => {
@@ -219,7 +233,7 @@ export default function DashboardPage() {
 
       <SidebarInset>
         <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
-          <DashboardHeader onAddMovieClick={handleOpenAddDialog} />
+          <DashboardHeader onAddMovieClick={handleOpenAddDialog} onSearchClick={handleOpenSearchDialog} />
           <div className="flex-grow p-4 md:p-8">
             <DndContext
               sensors={sensors}
@@ -240,6 +254,13 @@ export default function DashboardPage() {
         isOpen={isAddMovieOpen}
         setIsOpen={setIsAddMovieOpen}
         onSave={handleSaveMovie}
+      />
+
+      <SearchDialog
+        isOpen={isSearchOpen}
+        setIsOpen={setIsSearchOpen}
+        onSave={handleSaveMovie}
+        existingMovies={movies}
       />
 
       <SpinWheelDialog

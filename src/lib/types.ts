@@ -1,5 +1,6 @@
 export type Movie = {
   id: string;
+  tmdbId?: number;
   title: string;
   description: string;
   posterUrl: string;
