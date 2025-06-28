@@ -122,12 +122,14 @@ export default function MovieDetailPage() {
                             />
                         </Card>
                          {movie.scriptUrl && (
-                            <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer">
-                                <Button variant="outline" className="w-full">
-                                    <Download className="mr-2"/>
-                                    Download Script
-                                </Button>
-                            </a>
+                            <div className="px-4">
+                                <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer">
+                                    <Button variant="outline" className="w-full">
+                                        <Download className="mr-2"/>
+                                        Download Script
+                                    </Button>
+                                </a>
+                            </div>
                         )}
                     </aside>
 
