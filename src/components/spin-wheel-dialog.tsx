@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -237,10 +236,14 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
                     />
                 </div>
                 <h3 className="text-2xl font-bold font-headline mt-4">{selectedMovie.title}</h3>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap justify-center gap-2 mt-2">
                     {selectedMovie.tags.slice(0, 3).map(tag => (
                         <Badge key={tag} variant="secondary">{tag}</Badge>
                     ))}
+                </div>
+                <div className="mt-4 text-center">
+                    <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Watch Count</p>
+                    <p className="text-xl font-bold text-foreground">{selectedMovie.rewatchCount || 0}</p>
                 </div>
             </div>
           ) : (
