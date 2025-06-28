@@ -80,6 +80,19 @@ body {
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 275 76% 58%;
   }
+
+  /* Theme Colors */
+  html.theme-red { --primary: 347 77% 50%; --ring: 347 77% 50%; }
+  html.dark.theme-red { --primary: 347 87% 60%; --ring: 347 87% 60%; }
+
+  html.theme-green { --primary: 142 71% 45%; --ring: 142 71% 45%; }
+  html.dark.theme-green { --primary: 142 61% 55%; --ring: 142 61% 55%; }
+
+  html.theme-orange { --primary: 38 92% 50%; --ring: 38 92% 50%; }
+  html.dark.theme-orange { --primary: 38 100% 60%; --ring: 38 100% 60%; }
+
+  html.theme-blue { --primary: 217 91% 60%; --ring: 217 91% 60%; }
+  html.dark.theme-blue { --primary: 217 91% 70%; --ring: 217 91% 70%; }
 }
 
 @layer base {

@@ -29,11 +29,20 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const themes = [
+    { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
+    { name: 'red', displayColor: 'hsl(347, 77%, 50%)' },
+    { name: 'green', displayColor: 'hsl(142, 71%, 45%)' },
+    { name: 'orange', displayColor: 'hsl(38, 92%, 50%)' },
+    { name: 'blue', displayColor: 'hsl(217, 91%, 60%)' },
+];
+
 export default function ProfilePage() {
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [activeSection, setActiveSection] = React.useState('personal-info');
     const mainContentRef = React.useRef<HTMLDivElement>(null);
+    const [activeTheme, setActiveTheme] = React.useState(themes[0].name);
 
     const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
@@ -41,10 +50,23 @@ export default function ProfilePage() {
         return acc;
     }, {} as Record<string, React.RefObject<HTMLDivElement>>), []);
 
-
     React.useEffect(() => {
-        document.documentElement.classList.toggle("dark", isDarkMode);
-    }, [isDarkMode]);
+        const storedTheme = localStorage.getItem('cinemon-theme') || themes[0].name;
+        const storedDarkMode = localStorage.getItem('cinemon-dark-mode') !== 'false';
+        
+        setIsDarkMode(storedDarkMode);
+        setActiveTheme(storedTheme);
+
+        document.documentElement.classList.toggle('dark', storedDarkMode);
+        
+        document.documentElement.classList.forEach(cls => {
+            if (cls.startsWith('theme-')) document.documentElement.classList.remove(cls);
+        });
+
+        if (storedTheme !== 'purple') {
+            document.documentElement.classList.add(`theme-${storedTheme}`);
+        }
+    }, []);
 
     React.useEffect(() => {
         const scrollContainer = mainContentRef.current;
@@ -91,6 +113,25 @@ export default function ProfilePage() {
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         setActiveSection(sectionId);
+    };
+
+    const handleThemeChange = (themeName: string) => {
+        document.documentElement.classList.forEach(cls => {
+            if (cls.startsWith('theme-')) document.documentElement.classList.remove(cls);
+        });
+
+        if (themeName !== 'purple') {
+            document.documentElement.classList.add(`theme-${themeName}`);
+        }
+        
+        localStorage.setItem('cinemon-theme', themeName);
+        setActiveTheme(themeName);
+    };
+
+    const handleDarkModeToggle = (isDark: boolean) => {
+        setIsDarkMode(isDark);
+        localStorage.setItem('cinemon-dark-mode', String(isDark));
+        document.documentElement.classList.toggle("dark", isDark);
     };
 
     return (
@@ -153,11 +194,20 @@ export default function ProfilePage() {
                                         <div className="space-y-2">
                                             <Label>Accent Color</Label>
                                             <div className="flex gap-3">
-                                                <Button aria-label="Purple" variant="outline" size="icon" className="h-8 w-8 rounded-full border-2 border-primary ring-2 ring-primary" style={{ backgroundColor: 'hsl(275, 76%, 58%)' }} />
-                                                <Button aria-label="Red" variant="outline" size="icon" className="h-8 w-8 rounded-full" style={{ backgroundColor: 'hsl(347, 77%, 50%)' }} />
-                                                <Button aria-label="Green" variant="outline" size="icon" className="h-8 w-8 rounded-full" style={{ backgroundColor: 'hsl(142, 71%, 45%)' }} />
-                                                <Button aria-label="Orange" variant="outline" size="icon" className="h-8 w-8 rounded-full" style={{ backgroundColor: 'hsl(38, 92%, 50%)' }} />
-                                                <Button aria-label="Blue" variant="outline" size="icon" className="h-8 w-8 rounded-full" style={{ backgroundColor: 'hsl(217, 91%, 60%)' }} />
+                                                {themes.map((theme) => (
+                                                    <Button
+                                                        key={theme.name}
+                                                        aria-label={theme.name}
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className={cn(
+                                                            "h-8 w-8 rounded-full border-2",
+                                                            activeTheme === theme.name ? "border-primary ring-2 ring-primary" : "border-transparent"
+                                                        )}
+                                                        style={{ backgroundColor: theme.displayColor }}
+                                                        onClick={() => handleThemeChange(theme.name)}
+                                                    />
+                                                ))}
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
@@ -165,7 +215,7 @@ export default function ProfilePage() {
                                                 {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                                                 <span>Dark Mode</span>
                                             </Label>
-                                            <Switch id="dark-mode-profile" checked={isDarkMode} onCheckedChange={setIsDarkMode} />
+                                            <Switch id="dark-mode-profile" checked={isDarkMode} onCheckedChange={handleDarkModeToggle} />
                                         </div>
                                     </CardContent>
                                 </Card>
