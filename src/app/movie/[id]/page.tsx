@@ -20,19 +20,56 @@ import {
     Info
 } from 'lucide-react';
 
-import { initialMovies } from '@/lib/data';
+import type { Movie } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RatingCircle } from '@/components/rating-circle';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MovieDetailPage() {
     const params = useParams();
     const movieId = params.id as string;
-    const movie = initialMovies.find((m) => m.id === movieId);
+    const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
 
+    React.useEffect(() => {
+        if (movieId) {
+            try {
+                const storedMovies = localStorage.getItem('movies');
+                if (storedMovies) {
+                    const movies: Movie[] = JSON.parse(storedMovies);
+                    const foundMovie = movies.find((m) => m.id === movieId);
+                    setMovie(foundMovie || null);
+                } else {
+                    setMovie(null);
+                }
+            } catch (error) {
+                console.error("Failed to access localStorage:", error);
+                setMovie(null);
+            }
+        }
+    }, [movieId]);
+
+    if (movie === undefined) {
+        return (
+            <div className="bg-background min-h-screen p-8">
+                <Skeleton className="h-8 w-48 mb-12" />
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
+                    <aside className="md:col-span-4 lg:col-span-3">
+                        <Skeleton className="w-full aspect-[2/3] rounded-lg" />
+                    </aside>
+                    <div className="md:col-span-8 lg:col-span-9 space-y-4">
+                        <Skeleton className="h-12 w-3/4" />
+                        <Skeleton className="h-6 w-1/2" />
+                        <Skeleton className="h-40 w-full" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    
     if (!movie) {
         return notFound();
     }
@@ -193,4 +230,3 @@ export default function MovieDetailPage() {
         </div>
     );
 }
-

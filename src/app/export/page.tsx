@@ -6,22 +6,43 @@ import Link from 'next/link';
 import { ArrowLeft, FileJson, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { initialMovies } from '@/lib/data';
+import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ExportPage() {
     const { toast } = useToast();
+    const [movies, setMovies] = React.useState<Movie[]>([]);
+
+    React.useEffect(() => {
+        try {
+            const storedMovies = localStorage.getItem('movies');
+            if (storedMovies) {
+                setMovies(JSON.parse(storedMovies));
+            }
+        } catch (error) {
+            console.error("Failed to access localStorage:", error);
+        }
+    }, []);
 
     const handleExport = (format: 'json' | 'csv') => {
+        if (movies.length === 0) {
+            toast({
+                title: "Collection is Empty",
+                description: "There is no data to export.",
+                variant: 'destructive'
+            });
+            return;
+        }
+
         let dataStr: string;
         let fileName: string;
 
         if (format === 'json') {
-            dataStr = JSON.stringify(initialMovies, null, 2);
+            dataStr = JSON.stringify(movies, null, 2);
             fileName = 'cinemon-collection.json';
         } else {
-            const header = Object.keys(initialMovies[0]).join(',');
-            const rows = initialMovies.map(row => 
+            const header = Object.keys(movies[0]).join(',');
+            const rows = movies.map(row => 
                 Object.values(row).map(value => {
                     if (Array.isArray(value)) {
                         return `"${value.join(';')}"`; // Handle tags array

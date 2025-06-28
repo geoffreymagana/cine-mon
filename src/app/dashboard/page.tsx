@@ -20,7 +20,7 @@ import Image from "next/image";
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
 export default function DashboardPage() {
-  const [movies, setMovies] = React.useState<Movie[]>(initialMovies);
+  const [movies, setMovies] = React.useState<Movie[]>([]);
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
@@ -28,13 +28,39 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
+  React.useEffect(() => {
+    try {
+      const storedMovies = localStorage.getItem('movies');
+      if (storedMovies) {
+        setMovies(JSON.parse(storedMovies));
+      } else {
+        localStorage.setItem('movies', JSON.stringify(initialMovies));
+        setMovies(initialMovies);
+      }
+    } catch (error) {
+      console.error("Failed to access localStorage:", error);
+      setMovies(initialMovies);
+    }
+  }, []);
+
+  const updateMoviesInStorage = (updatedMovies: Movie[]) => {
+    try {
+      localStorage.setItem('movies', JSON.stringify(updatedMovies));
+    } catch (error) {
+      console.error("Failed to save movies to localStorage:", error);
+      toast({
+        title: "Error Saving Data",
+        description: "Your changes could not be saved to local storage.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSaveMovie = (movieData: Movie | Omit<Movie, "id">) => {
+    let updatedMovies: Movie[];
     if ("id" in movieData) {
       // Update existing movie
-      setMovies((prev) =>
-        prev.map((movie) => (movie.id === movieData.id ? movieData : movie))
-      );
-      setMovieToEdit(undefined);
+      updatedMovies = movies.map((movie) => (movie.id === movieData.id ? movieData : movie));
       toast({
         title: "Success!",
         description: `${movieData.title} has been updated.`,
@@ -42,16 +68,21 @@ export default function DashboardPage() {
     } else {
       // Add new movie
       const movieWithId = { ...movieData, id: crypto.randomUUID() };
-      setMovies((prev) => [movieWithId, ...prev]);
+      updatedMovies = [movieWithId, ...movies];
       toast({
         title: "Success!",
         description: `${movieData.title} has been added to your collection.`,
       });
     }
+    setMovies(updatedMovies);
+    updateMoviesInStorage(updatedMovies);
+    setMovieToEdit(undefined);
   };
 
   const handleDeleteMovie = (movieId: string) => {
-    setMovies((prev) => prev.filter((movie) => movie.id !== movieId));
+    const updatedMovies = movies.filter((movie) => movie.id !== movieId);
+    setMovies(updatedMovies);
+    updateMoviesInStorage(updatedMovies);
     toast({
       title: "Movie Removed",
       description: "The movie has been removed from your collection.",

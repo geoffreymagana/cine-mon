@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { ArrowLeft, Clock, Film, Flame, Medal, Tv, Video } from 'lucide-react';
 
-import { initialMovies } from '@/lib/data';
 import type { Movie } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,32 +27,48 @@ const chartConfig = {
 };
 
 export default function AnalyticsPage() {
-    const totalWatched = initialMovies.length;
+    const [movies, setMovies] = React.useState<Movie[]>([]);
+
+    React.useEffect(() => {
+        try {
+            const storedMovies = localStorage.getItem('movies');
+            if (storedMovies) {
+                setMovies(JSON.parse(storedMovies));
+            }
+        } catch (error) {
+            console.error("Failed to access localStorage:", error);
+        }
+    }, []);
+
+    const totalWatched = movies.length;
 
     const totalHoursWatched = React.useMemo(() => {
-        return initialMovies.reduce((acc, movie) => {
+        return movies.reduce((acc, movie) => {
             const duration = movie.type === 'Movie' ? 120 : movie.watchedEpisodes * 24; // Assumption: 2hr movie, 24min episode
             return acc + duration;
         }, 0) / 60;
-    }, []);
+    }, [movies]);
 
     const { favoriteGenre, typeCounts } = React.useMemo(() => {
-        const tagCounts = initialMovies.flatMap(movie => movie.tags).reduce((acc, tag) => {
+        if (movies.length === 0) return { favoriteGenre: "N/A", typeCounts: {} };
+
+        const tagCounts = movies.flatMap(movie => movie.tags).reduce((acc, tag) => {
             acc[tag] = (acc[tag] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
 
         const favGenre = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
-        const tCounts = initialMovies.reduce((acc, movie) => {
+        const tCounts = movies.reduce((acc, movie) => {
             acc[movie.type] = (acc[movie.type] || 0) + 1;
             return acc;
         }, {} as Record<Movie['type'], number>);
         
         return { favoriteGenre: favGenre, typeCounts: tCounts };
-    }, []);
+    }, [movies]);
 
     const mostWatchedType = React.useMemo(() => {
+        if (Object.keys(typeCounts).length === 0) return "N/A";
         return Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
     }, [typeCounts]);
 
