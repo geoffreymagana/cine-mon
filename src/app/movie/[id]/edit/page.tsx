@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Trash2, Upload, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2, Upload, Sparkles, Loader2, X } from 'lucide-react';
 import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
 import { autoTagMovies } from '@/ai/flows/auto-tag-movies';
 import Image from 'next/image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 const castMemberSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -44,7 +45,7 @@ const movieEditSchema = z.object({
   cast: z.array(castMemberSchema).optional(),
   alternatePosters: z.array(z.string().url('Must be a valid URL')).optional(),
   rewatchCount: z.coerce.number().min(0).optional(),
-  scriptUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  scriptUrl: z.string().optional().or(z.literal('')),
   collection: z.string().optional(),
 });
 
@@ -61,6 +62,8 @@ export default function MovieEditPage() {
   const backdropFileInputRef = React.useRef<HTMLInputElement>(null);
   const alternatePosterFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [scriptFileName, setScriptFileName] = React.useState<string | null>(null);
+  const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
 
 
   const form = useForm<MovieEditFormValues>({
@@ -99,6 +102,9 @@ export default function MovieEditPage() {
         const movieToEdit = movies.find((m) => m.id === movieId);
         if (movieToEdit) {
           form.reset(movieToEdit);
+          if (movieToEdit.scriptUrl?.startsWith('data:')) {
+            setScriptFileName("Uploaded file");
+          }
         } else {
           toast({ title: 'Error', description: 'Movie not found.', variant: 'destructive' });
           router.push('/dashboard');
@@ -118,6 +124,36 @@ export default function MovieEditPage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         form.setValue(fieldName, reader.result as string, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleScriptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedMimeTypes = [
+        'application/pdf', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain'
+      ];
+      const allowedExtensions = ['.pdf', '.docx', '.txt'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension) || !allowedMimeTypes.includes(file.type)) {
+        toast({
+            title: "Invalid File Type",
+            description: "Please upload a PDF, DOCX, or TXT file.",
+            variant: "destructive"
+        });
+        if (scriptFileInputRef.current) scriptFileInputRef.current.value = "";
+        return;
+      }
+      
+      setScriptFileName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue('scriptUrl', reader.result as string, { shouldValidate: true });
       };
       reader.readAsDataURL(file);
     }
@@ -399,13 +435,75 @@ export default function MovieEditPage() {
                       </FormItem>
                   )} />
                 </div>
-                <FormField control={form.control} name="scriptUrl" render={({ field }) => (
-                  <FormItem>
-                      <FormLabel>Script URL</FormLabel>
-                      <FormControl><Input placeholder="https://..." {...field} /></FormControl>
-                      <FormMessage />
-                  </FormItem>
-                )} />
+                
+                <div className="space-y-2">
+                    <FormLabel>Script</FormLabel>
+                    <Tabs defaultValue={form.getValues('scriptUrl')?.startsWith('data:') ? 'upload' : 'url'} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="url">Link via URL</TabsTrigger>
+                            <TabsTrigger value="upload">Upload File</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="url" className="pt-2">
+                             <FormField
+                                control={form.control}
+                                name="scriptUrl"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="https://..."
+                                            value={field.value?.startsWith('data:') ? '' : field.value || ''}
+                                            onChange={(e) => {
+                                                field.onChange(e.target.value);
+                                                setScriptFileName(null);
+                                                if (scriptFileInputRef.current) scriptFileInputRef.current.value = "";
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </TabsContent>
+                        <TabsContent value="upload" className="pt-2">
+                             <div className="flex items-center gap-4 rounded-lg border p-3">
+                                <Button type="button" variant="outline" onClick={() => scriptFileInputRef.current?.click()}>
+                                    <Upload className="mr-2 h-4 w-4" /> Upload
+                                </Button>
+                                <input
+                                    type="file"
+                                    ref={scriptFileInputRef}
+                                    className="hidden"
+                                    accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                                    onChange={handleScriptFileChange}
+                                />
+                                <div className="flex-grow">
+                                    {scriptFileName ? (
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="truncate text-muted-foreground">{scriptFileName}</span>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 shrink-0"
+                                                onClick={() => {
+                                                    form.setValue('scriptUrl', '');
+                                                    setScriptFileName(null);
+                                                    if (scriptFileInputRef.current) scriptFileInputRef.current.value = "";
+                                                }}
+                                            >
+                                                <X className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">Select a PDF, DOCX or TXT file.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+                
                  <FormField control={form.control} name="backdropUrl" render={({ field }) => (
                   <FormItem>
                       <div className="flex items-center justify-between">
@@ -488,4 +586,3 @@ export default function MovieEditPage() {
     </div>
   );
 }
-
