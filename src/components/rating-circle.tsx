@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -64,7 +65,7 @@ export const RatingCircle = ({ percentage, className }: RatingCircleProps) => {
       </svg>
       <span className="absolute text-sm font-bold text-white">
         {Math.round(percentage)}
-        <sup className="text-xs">%</sup>
+        <sup className="text-[0.6rem]">%</sup>
       </span>
     </div>
   );

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -21,7 +22,7 @@ type MovieCardProps = {
 
 export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
   return (
-    <Card className="overflow-visible border-transparent bg-transparent shadow-none flex flex-col group">
+    <Card className="overflow-visible flex flex-col group">
         <div className="relative">
             <div className="aspect-[2/3] w-full rounded-lg overflow-hidden border border-border/10 shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
                 <Image
@@ -61,7 +62,7 @@ export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
         <p className="text-base font-bold leading-tight truncate" title={movie.title}>
           {movie.title}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">{movie.releaseDate}</p>
+        <p className="text-xs text-muted-foreground mt-1">{movie.releaseDate}</p>
       </CardContent>
     </Card>
   );
