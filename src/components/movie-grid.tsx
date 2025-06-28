@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Movie } from "@/lib/types";
@@ -5,11 +6,10 @@ import { MovieCard } from "./movie-card";
 
 type MovieGridProps = {
   movies: Movie[];
-  onEdit: (movie: Movie) => void;
   onDelete: (movieId: string) => void;
 };
 
-export const MovieGrid = ({ movies, onEdit, onDelete }: MovieGridProps) => {
+export const MovieGrid = ({ movies, onDelete }: MovieGridProps) => {
   if (movies.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
@@ -27,7 +27,6 @@ export const MovieGrid = ({ movies, onEdit, onDelete }: MovieGridProps) => {
         <MovieCard
           key={movie.id}
           movie={movie}
-          onEdit={() => onEdit(movie)}
           onDelete={() => onDelete(movie.id)}
         />
       ))}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -56,11 +57,10 @@ type MovieFormValues = z.infer<typeof movieSchema>;
 type AddMovieDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSave: (movie: Movie | Omit<Movie, "id">) => void;
-  movieToEdit?: Movie;
+  onSave: (movie: Omit<Movie, "id">) => void;
 };
 
-export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMovieDialogProps) => {
+export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProps) => {
   const [tagInput, setTagInput] = React.useState("");
   const [isTagging, setIsTagging] = React.useState(false);
   const { toast } = useToast();
@@ -80,24 +80,20 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
 
   React.useEffect(() => {
     if (isOpen) {
-        if (movieToEdit) {
-            form.reset(movieToEdit);
-        } else {
-            form.reset({
-                title: "",
-                description: "",
-                posterUrl: "https://placehold.co/500x750.png",
-                type: "Movie",
-                status: "Plan to Watch",
-                watchedEpisodes: 0,
-                totalEpisodes: 1,
-                rating: 75,
-                tags: [],
-                releaseDate: "",
-            });
-        }
+        form.reset({
+            title: "",
+            description: "",
+            posterUrl: "https://placehold.co/500x750.png",
+            type: "Movie",
+            status: "Plan to Watch",
+            watchedEpisodes: 0,
+            totalEpisodes: 1,
+            rating: 75,
+            tags: [],
+            releaseDate: "",
+        });
     }
-  }, [movieToEdit, isOpen, form]);
+  }, [isOpen, form]);
 
   const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -133,8 +129,8 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
     const description = form.getValues("description");
     if (!description) {
       toast({
-        title: "No Description",
-        description: "Please enter a description to generate tags.",
+        title: "No Synopsis",
+        description: "Please enter a synopsis to generate tags.",
         variant: "destructive",
       });
       return;
@@ -163,11 +159,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
 
 
   const onSubmit = (data: MovieFormValues) => {
-    if (movieToEdit) {
-      onSave({ ...data, id: movieToEdit.id });
-    } else {
-      onSave(data);
-    }
+    onSave(data);
     setIsOpen(false);
   };
 
@@ -175,9 +167,9 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-        <DialogTitle className="font-headline">{movieToEdit ? "Edit Movie" : "Add Movie"}</DialogTitle>
+        <DialogTitle className="font-headline">Add Movie</DialogTitle>
         <DialogDescription>
-            {movieToEdit ? "Update the details of your entry." : "Add a new movie, series, or anime to your collection."}
+            Add a new movie, series, or anime to your collection.
         </DialogDescription>
         </DialogHeader>
         <Form {...form}>

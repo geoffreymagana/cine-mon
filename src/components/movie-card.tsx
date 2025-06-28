@@ -17,11 +17,10 @@ import { RatingCircle } from "./rating-circle";
 
 type MovieCardProps = {
   movie: Movie;
-  onEdit: () => void;
   onDelete: () => void;
 };
 
-export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
+export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
   // Prevents the link from navigating when a dropdown item is clicked
   const handleInteraction = (e: React.MouseEvent, action: () => void) => {
     e.preventDefault();
@@ -52,10 +51,12 @@ export const MovieCard = ({ movie, onEdit, onDelete }: MovieCardProps) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => handleInteraction(e, onEdit)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
-                        </DropdownMenuItem>
+                        <Link href={`/movie/${movie.id}/edit`} passHref>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              <span>Edit</span>
+                          </DropdownMenuItem>
+                        </Link>
                         <DropdownMenuItem onClick={(e) => handleInteraction(e, onDelete)} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             <span>Delete</span>

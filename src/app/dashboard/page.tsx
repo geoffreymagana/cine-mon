@@ -24,7 +24,6 @@ export default function DashboardPage() {
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
-  const [movieToEdit, setMovieToEdit] = React.useState<Movie | undefined>(undefined);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -56,27 +55,15 @@ export default function DashboardPage() {
     }
   };
 
-  const handleSaveMovie = (movieData: Movie | Omit<Movie, "id">) => {
-    let updatedMovies: Movie[];
-    if ("id" in movieData) {
-      // Update existing movie
-      updatedMovies = movies.map((movie) => (movie.id === movieData.id ? movieData : movie));
-      toast({
-        title: "Success!",
-        description: `${movieData.title} has been updated.`,
-      });
-    } else {
-      // Add new movie
-      const movieWithId = { ...movieData, id: crypto.randomUUID() };
-      updatedMovies = [movieWithId, ...movies];
-      toast({
-        title: "Success!",
-        description: `${movieData.title} has been added to your collection.`,
-      });
-    }
+  const handleSaveMovie = (movieData: Omit<Movie, "id">) => {
+    const movieWithId = { ...movieData, id: crypto.randomUUID() };
+    const updatedMovies = [movieWithId, ...movies];
     setMovies(updatedMovies);
     updateMoviesInStorage(updatedMovies);
-    setMovieToEdit(undefined);
+    toast({
+      title: "Success!",
+      description: `${movieData.title} has been added to your collection.`,
+    });
   };
 
   const handleDeleteMovie = (movieId: string) => {
@@ -89,14 +76,8 @@ export default function DashboardPage() {
       variant: "destructive"
     });
   };
-
-  const handleEdit = (movie: Movie) => {
-    setMovieToEdit(movie);
-    setIsAddMovieOpen(true);
-  };
   
   const handleOpenAddDialog = () => {
-    setMovieToEdit(undefined);
     setIsAddMovieOpen(true);
   };
 
@@ -198,7 +179,6 @@ export default function DashboardPage() {
           <div className="flex-grow p-4 md:p-8">
             <MovieGrid
               movies={filteredMovies}
-              onEdit={handleEdit}
               onDelete={handleDeleteMovie}
             />
           </div>
@@ -210,7 +190,6 @@ export default function DashboardPage() {
         isOpen={isAddMovieOpen}
         setIsOpen={setIsAddMovieOpen}
         onSave={handleSaveMovie}
-        movieToEdit={movieToEdit}
       />
 
       <SpinWheelDialog
