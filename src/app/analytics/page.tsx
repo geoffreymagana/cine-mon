@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie } from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { ArrowLeft, Clock, Film, Flame, Medal, Tv, Video } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -182,7 +182,11 @@ export default function AnalyticsPage() {
                                             nameKey="name"
                                             innerRadius={60}
                                             strokeWidth={5}
-                                        />
+                                        >
+                                            {pieData.map((entry) => (
+                                                <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background"/>
+                                            ))}
+                                        </Pie>
                                         <ChartLegend content={<ChartLegendContent nameKey="name" />} />
                                     </PieChart>
                                 </ChartContainer>
