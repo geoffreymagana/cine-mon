@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -38,6 +37,7 @@ import { X, Sparkles, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
 import { Slider } from "./ui/slider";
+import { ScrollArea } from "./ui/scroll-area";
 
 
 const movieSchema = z.object({
@@ -175,234 +175,238 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-headline">{movieToEdit ? "Edit Movie" : "Add Movie"}</DialogTitle>
-          <DialogDescription>
-            {movieToEdit ? "Update the details of your entry." : "Add a new movie, series, or anime to your collection."}
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-             <div className="flex flex-col sm:flex-row gap-6 items-start">
-              <FormField
-                control={form.control}
-                name="posterUrl"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                    <FormLabel>Poster</FormLabel>
-                    <FormControl>
-                      <div className="w-40 h-60 rounded-md overflow-hidden relative border-2 border-dashed border-muted/50 flex items-center justify-center">
-                        <Image
-                          src={field.value || "https://placehold.co/500x750.png"}
-                          alt="Movie Poster Preview"
-                          fill
-                          className="object-cover"
-                          data-ai-hint="movie poster"
-                        />
-                      </div>
-                    </FormControl>
-                     <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Change Poster
-                    </Button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept="image/png, image/jpeg, image/webp"
-                      onChange={handlePosterChange}
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0">
+        <ScrollArea className="h-full">
+            <div className="p-6">
+                <DialogHeader>
+                <DialogTitle className="font-headline">{movieToEdit ? "Edit Movie" : "Add Movie"}</DialogTitle>
+                <DialogDescription>
+                    {movieToEdit ? "Update the details of your entry." : "Add a new movie, series, or anime to your collection."}
+                </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6">
+                    <div className="flex flex-col sm:flex-row gap-6 items-start">
+                    <FormField
+                        control={form.control}
+                        name="posterUrl"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-col items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                            <FormLabel>Poster</FormLabel>
+                            <FormControl>
+                            <div className="w-40 h-60 rounded-md overflow-hidden relative border-2 border-dashed border-muted/50 flex items-center justify-center">
+                                <Image
+                                src={field.value || "https://placehold.co/500x750.png"}
+                                alt="Movie Poster Preview"
+                                fill
+                                className="object-cover"
+                                data-ai-hint="movie poster"
+                                />
+                            </div>
+                            </FormControl>
+                            <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Change Poster
+                            </Button>
+                            <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handlePosterChange}
+                            />
+                            <FormMessage />
+                        </FormItem>
+                        )}
                     />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-4 flex-grow w-full">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Inception" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="A thief who steals corporate secrets..." {...field} rows={8} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+                    <div className="space-y-4 flex-grow w-full">
+                        <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Inception" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="A thief who steals corporate secrets..." {...field} rows={8} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                    </div>
 
-            <div className="grid grid-cols-2 gap-4">
-               <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Movie">Movie</SelectItem>
-                          <SelectItem value="TV Show">TV Shows</SelectItem>
-                          <SelectItem value="Anime">Anime</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Watching">Watching</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                          <SelectItem value="On-Hold">On-Hold</SelectItem>
-                          <SelectItem value="Dropped">Dropped</SelectItem>
-                          <SelectItem value="Plan to Watch">Plan to Watch</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
+                    <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a type" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                <SelectItem value="Movie">Movie</SelectItem>
+                                <SelectItem value="TV Show">TV Shows</SelectItem>
+                                <SelectItem value="Anime">Anime</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a status" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                <SelectItem value="Watching">Watching</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="On-Hold">On-Hold</SelectItem>
+                                <SelectItem value="Dropped">Dropped</SelectItem>
+                                <SelectItem value="Plan to Watch">Plan to Watch</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="releaseDate"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Release Date</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Jul 16, 2010" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="rating"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Rating: {field.value}%</FormLabel>
+                            <FormControl>
+                                <Slider
+                                    defaultValue={[field.value]}
+                                    onValueChange={(value) => field.onChange(value[0])}
+                                    max={100}
+                                    step={1}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                    
+                    {form.watch("type") !== "Movie" && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="watchedEpisodes"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Watched Episodes</FormLabel>
+                                <FormControl>
+                                <Input type="number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="totalEpisodes"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Total Episodes</FormLabel>
+                                <FormControl>
+                                <Input type="number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    </div>
+                    )}
+                    
+                    <FormField
                     control={form.control}
-                    name="releaseDate"
-                    render={({ field }) => (
+                    name="tags"
+                    render={() => (
                         <FormItem>
-                        <FormLabel>Release Date</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Jul 16, 2010" {...field} />
-                        </FormControl>
+                        <div className="flex justify-between items-center">
+                            <FormLabel>Tags</FormLabel>
+                            <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isTagging}>
+                            {isTagging ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="mr-2 h-4 w-4" />
+                            )}
+                            Smart Tag
+                            </Button>
+                        </div>
+                            <FormControl>
+                                <Input 
+                                placeholder="Add tags and press Enter"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={handleTagKeyDown}
+                                />
+                            </FormControl>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {form.watch("tags").map((tag) => (
+                            <Badge key={tag} variant="secondary">
+                                {tag}
+                                <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                            ))}
+                        </div>
                         <FormMessage />
                         </FormItem>
                     )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="rating"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rating: {field.value}%</FormLabel>
-                      <FormControl>
-                        <Slider
-                            defaultValue={[field.value]}
-                            onValueChange={(value) => field.onChange(value[0])}
-                            max={100}
-                            step={1}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
-            
-            {form.watch("type") !== "Movie" && (
-              <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="watchedEpisodes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Watched Episodes</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="totalEpisodes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Total Episodes</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-              </div>
-            )}
-            
-            <FormField
-              control={form.control}
-              name="tags"
-              render={() => (
-                <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel>Tags</FormLabel>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isTagging}>
-                      {isTagging ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2 h-4 w-4" />
-                      )}
-                      Smart Tag
-                    </Button>
-                  </div>
-                    <FormControl>
-                        <Input 
-                        placeholder="Add tags and press Enter"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        />
-                    </FormControl>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {form.watch("tags").map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                        <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    />
 
-            <DialogFooter className="flex-row justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+                    <DialogFooter className="flex-row justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                    <Button type="submit">Save</Button>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
