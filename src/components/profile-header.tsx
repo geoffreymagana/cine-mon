@@ -99,7 +99,10 @@ export const ProfileHeader = () => {
                         </div>
                         <p className="text-muted-foreground">@cinemon_user</p>
                     </div>
-                    <Button variant="outline">Edit Profile</Button>
+                    <Button variant="outline" size="icon">
+                        <Edit className="h-5 w-5"/>
+                        <span className="sr-only">Edit Profile</span>
+                    </Button>
                 </div>
             </div>
         </div>
