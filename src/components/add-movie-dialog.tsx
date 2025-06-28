@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -396,7 +397,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
               )}
             />
 
-            <DialogFooter>
+            <DialogFooter className="flex-row justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
               <Button type="submit">Save</Button>
             </DialogFooter>
