@@ -241,7 +241,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                 name="description"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Synopsis</FormLabel>
                     <FormControl>
                         <Textarea placeholder="A thief who steals corporate secrets..." {...field} rows={8} />
                     </FormControl>
