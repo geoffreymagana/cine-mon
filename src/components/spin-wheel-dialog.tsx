@@ -266,7 +266,6 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
                         Spin Again
                     </Button>
                     <Button onClick={handleAcceptFate} className="w-32">
-                        <Check className="mr-2 h-4 w-4" />
                         Accept Fate
                     </Button>
                 </>
