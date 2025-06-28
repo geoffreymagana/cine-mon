@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Trash2, Upload, Sparkles, Loader2, X } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2, Upload, Sparkles, Loader2, X, ChevronDown } from 'lucide-react';
 import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { autoTagMovies } from '@/ai/flows/auto-tag-movies';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 
 const castMemberSchema = z.object({
@@ -68,6 +70,7 @@ export default function MovieEditPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [scriptFileName, setScriptFileName] = React.useState<string | null>(null);
   const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isCastOpen, setIsCastOpen] = React.useState(false);
 
 
   const form = useForm<MovieEditFormValues>({
@@ -396,41 +399,50 @@ export default function MovieEditPage() {
             )}
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Cast & Crew</CardTitle>
-                    <CardDescription>Add director and cast members.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <FormField control={form.control} name="director" render={({ field }) => (
-                      <FormItem>
-                          <FormLabel>Director</FormLabel>
-                          <FormControl><Input placeholder="Christopher Nolan" {...field} value={field.value ?? ''} /></FormControl>
-                          <FormMessage />
-                      </FormItem>
-                    )} />
+              <Collapsible open={isCastOpen} onOpenChange={setIsCastOpen}>
+                <CollapsibleTrigger asChild>
+                  <div className="flex w-full cursor-pointer items-center justify-between p-6">
                     <div>
-                      <FormLabel>Cast</FormLabel>
-                      <div className="space-y-4 mt-2">
-                        {castFields.map((field, index) => (
-                          <div key={field.id} className="flex flex-col md:flex-row gap-2 items-start p-3 border rounded-lg">
-                            <FormField control={form.control} name={`cast.${index}.name`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Name</FormLabel><FormControl><Input placeholder="Leonardo DiCaprio" {...field} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                            <FormField control={form.control} name={`cast.${index}.character`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Character</FormLabel><FormControl><Input placeholder="Cobb" {...field} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                            <FormField control={form.control} name={`cast.${index}.avatarUrl`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Avatar URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removeCast(index)} className="mt-4"><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" size="sm" onClick={() => appendCast({ name: '', character: '', avatarUrl: '' })}>
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Cast Member
-                        </Button>
-                      </div>
+                      <CardTitle>Cast & Crew</CardTitle>
+                      <CardDescription>Add director and cast members.</CardDescription>
                     </div>
-                </CardContent>
+                    <ChevronDown className={cn("h-5 w-5 transition-transform", isCastOpen && "rotate-180")} />
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-6">
+                      <FormField control={form.control} name="director" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Director</FormLabel>
+                            <FormControl><Input placeholder="Christopher Nolan" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                      )} />
+                      <div>
+                        <FormLabel>Cast</FormLabel>
+                        <div className="space-y-4 mt-2">
+                          {castFields.map((field, index) => (
+                            <div key={field.id} className="flex flex-col md:flex-row gap-2 items-start p-3 border rounded-lg">
+                              <FormField control={form.control} name={`cast.${index}.name`} render={({ field }) => (
+                                  <FormItem className="flex-1"><FormLabel className="text-xs">Name</FormLabel><FormControl><Input placeholder="Leonardo DiCaprio" {...field} /></FormControl><FormMessage /></FormItem>
+                              )}/>
+                              <FormField control={form.control} name={`cast.${index}.character`} render={({ field }) => (
+                                  <FormItem className="flex-1"><FormLabel className="text-xs">Character</FormLabel><FormControl><Input placeholder="Cobb" {...field} /></FormControl><FormMessage /></FormItem>
+                              )}/>
+                              <FormField control={form.control} name={`cast.${index}.avatarUrl`} render={({ field }) => (
+                                  <FormItem className="flex-1"><FormLabel className="text-xs">Avatar URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                              )}/>
+                              <Button type="button" variant="ghost" size="icon" onClick={() => removeCast(index)} className="mt-4"><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                            </div>
+                          ))}
+                          <Button type="button" variant="outline" size="sm" onClick={() => appendCast({ name: '', character: '', avatarUrl: '' })}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Cast Member
+                          </Button>
+                        </div>
+                      </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
             </Card>
 
             <Card>
