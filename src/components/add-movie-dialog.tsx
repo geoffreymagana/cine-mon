@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X, Sparkles, Loader2 } from "lucide-react";
+import { X, Sparkles, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
 
@@ -40,7 +41,7 @@ import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
 const movieSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  posterUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  posterUrl: z.string().min(1, "A poster image is required."),
   type: z.enum(["Movie", "TV Show", "Anime"]),
   status: z.enum(["Watching", "Completed", "On-Hold", "Dropped", "Plan to Watch"]),
   watchedEpisodes: z.coerce.number().min(0),
@@ -62,6 +63,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
   const [tagInput, setTagInput] = React.useState("");
   const [isTagging, setIsTagging] = React.useState(false);
   const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<MovieFormValues>({
     resolver: zodResolver(movieSchema),
@@ -75,22 +77,35 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
   });
 
   React.useEffect(() => {
-    if (movieToEdit) {
-      form.reset(movieToEdit);
-    } else {
-      form.reset({
-        title: "",
-        description: "",
-        posterUrl: "https://placehold.co/500x750.png",
-        type: "Movie",
-        status: "Plan to Watch",
-        watchedEpisodes: 0,
-        totalEpisodes: 1,
-        rating: 0,
-        tags: [],
-      });
+    if (isOpen) {
+        if (movieToEdit) {
+            form.reset(movieToEdit);
+        } else {
+            form.reset({
+                title: "",
+                description: "",
+                posterUrl: "https://placehold.co/500x750.png",
+                type: "Movie",
+                status: "Plan to Watch",
+                watchedEpisodes: 0,
+                totalEpisodes: 1,
+                rating: 0,
+                tags: [],
+            });
+        }
     }
   }, [movieToEdit, isOpen, form]);
+
+  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("posterUrl", reader.result as string, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim() !== "") {
@@ -163,33 +178,70 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Inception" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="A thief who steals corporate secrets..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+             <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <FormField
+                control={form.control}
+                name="posterUrl"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                    <FormLabel>Poster</FormLabel>
+                    <FormControl>
+                      <div className="w-40 h-60 rounded-md overflow-hidden relative border-2 border-dashed border-muted/50 flex items-center justify-center">
+                        <Image
+                          src={field.value || "https://placehold.co/500x750.png"}
+                          alt="Movie Poster Preview"
+                          fill
+                          className="object-cover"
+                          data-ai-hint="movie poster"
+                        />
+                      </div>
+                    </FormControl>
+                     <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Change Poster
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/png, image/jpeg, image/webp"
+                      onChange={handlePosterChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-4 flex-grow w-full">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Inception" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="A thief who steals corporate secrets..." {...field} rows={8} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
                <FormField
                   control={form.control}
@@ -197,7 +249,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a type" />
@@ -219,7 +271,7 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave, movieToEdit }: AddMo
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a status" />
