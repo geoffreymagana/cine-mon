@@ -8,12 +8,11 @@
 
 feat(release): Version 1.0.0 - The Cinematic Overhaul
 =======
-# Changelog
->>>>>>> 0a73ab4 (CHANGELOG PAGE STILL EMPTY, NOT READING AND PARSING FROM CHANGELOG.MD)
+
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.0 (2024-07-27)
+## 1.0.0 (2025-06-30)
 
 ### Features
 
