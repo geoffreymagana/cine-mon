@@ -145,7 +145,7 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
                             <span className="sr-only">Movie actions</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={handleInteraction}>
+                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={handleEdit}>
                             <Edit className="mr-2 h-4 w-4" />
                             <span>Edit</span>
@@ -154,7 +154,7 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
                         <DropdownMenuSeparator />
 
                         <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>
+                          <DropdownMenuSubTrigger onClick={handleInteraction}>
                             <Lock className="mr-2 h-4 w-4" />
                             <span>Add to Vault</span>
                           </DropdownMenuSubTrigger>
@@ -170,7 +170,7 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
                         </DropdownMenuSub>
 
                         <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>
+                          <DropdownMenuSubTrigger onClick={handleInteraction}>
                             <Projector className="mr-2 h-4 w-4" />
                             <span>Add to Spotlight</span>
                           </DropdownMenuSubTrigger>
