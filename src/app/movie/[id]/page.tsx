@@ -27,7 +27,8 @@ import {
     CircleOff,
     Bookmark,
     ChevronDown,
-    Play
+    Play,
+    Edit
 } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -156,7 +157,7 @@ export default function MovieDetailPage() {
                         alt={`${movie.title} backdrop`}
                         layout="fill"
                         objectFit="cover"
-                        className="blur-md opacity-20"
+                        className="scale-110 blur-3xl opacity-50"
                         data-ai-hint="movie background"
                         unoptimized
                     />
@@ -234,7 +235,7 @@ export default function MovieDetailPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                                     {movie.trailerUrl && (
                                         <Button onClick={() => setIsTrailerOpen(true)}>
                                             <Play className="mr-2 h-4 w-4" />
@@ -242,17 +243,33 @@ export default function MovieDetailPage() {
                                         </Button>
                                     )}
                                     <Link href={`/movie/${movie.id}/edit`}>
-                                        <Button variant="outline">Edit</Button>
+                                        <Button variant="outline"><Edit className="mr-2 h-4 w-4" />Edit</Button>
                                     </Link>
                                 </div>
                             </div>
 
                             <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="mb-4">
-                                    <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
-                                    {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
-                                    {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
-                                </TabsList>
+                                <div className="flex justify-between items-center mb-4">
+                                    <TabsList>
+                                        <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
+                                        {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
+                                        {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
+                                    </TabsList>
+                                    <div className="flex md:hidden items-center gap-2">
+                                        {movie.trailerUrl && (
+                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon" variant="outline">
+                                                <Play className="h-4 w-4" />
+                                                <span className="sr-only">Play Trailer</span>
+                                            </Button>
+                                        )}
+                                        <Link href={`/movie/${movie.id}/edit`}>
+                                            <Button size="icon" variant="outline">
+                                                <Edit className="h-4 w-4" />
+                                                <span className="sr-only">Edit</span>
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
                                 
                                 <TabsContent value="details">
                                     <Card>
