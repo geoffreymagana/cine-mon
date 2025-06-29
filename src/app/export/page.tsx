@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, FileJson, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ExportPage() {
+    const router = useRouter();
     const { toast } = useToast();
     const [movies, setMovies] = React.useState<Movie[]>([]);
 
@@ -74,10 +75,10 @@ export default function ExportPage() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
             <div className="w-full max-w-4xl">
-                 <Link href="/profile" className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
+                 <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back to Profile</span>
-                </Link>
+                    <span>Back</span>
+                </button>
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-3xl font-headline">Data Backup / Export</CardTitle>
@@ -98,3 +99,5 @@ export default function ExportPage() {
         </div>
     );
 }
+
+    

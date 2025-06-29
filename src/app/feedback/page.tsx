@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Send } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 
 export default function FeedbackPage() {
+    const router = useRouter();
     const { toast } = useToast();
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -29,10 +30,10 @@ export default function FeedbackPage() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
             <div className="w-full max-w-4xl">
-                 <Link href="/profile" className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
+                 <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back to Profile</span>
-                </Link>
+                    <span>Back</span>
+                </button>
                 <form onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
@@ -74,3 +75,5 @@ export default function FeedbackPage() {
         </div>
     );
 }
+
+    
