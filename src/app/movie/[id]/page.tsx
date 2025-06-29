@@ -295,9 +295,9 @@ export default function MovieDetailPage() {
                         {/* Main Content */}
                         <div className="md:col-span-8 lg:col-span-9">
                             {/* Header */}
-                            <div className="mb-6 flex justify-between items-start">
-                                <div>
-                                    <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2">{movie.title}</h1>
+                            <div className="mb-6 flex justify-between items-start gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-4xl lg:text-5xl font-bold font-headline mb-2 break-words">{movie.title}</h1>
                                     <div className="flex flex-wrap gap-2">
                                         {movie.tags.map(tag => (
                                             <Badge key={tag} variant="secondary">{tag}</Badge>
@@ -466,9 +466,9 @@ export default function MovieDetailPage() {
                                                         <AvatarImage src={person.avatarUrl} alt={person.name} data-ai-hint="person portrait" />
                                                         <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
-                                                    <div>
-                                                        <p className="font-semibold">{person.name}</p>
-                                                        <p className="text-sm text-muted-foreground">{person.character}</p>
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold truncate">{person.name}</p>
+                                                        <p className="text-sm text-muted-foreground truncate">{person.character}</p>
                                                     </div>
                                                 </div>
                                             ))}
