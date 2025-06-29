@@ -34,21 +34,39 @@ async function parseChangelog(): Promise<VersionInfo[]> {
       const date = dateMatch ? dateMatch[1] : '';
 
       const changes: VersionInfo['changes'] = [];
-      let currentType = 'Changes';
+      let currentType = 'General';
+      let currentDescription = '';
 
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
+      // All lines after the version header (e.g., ## [1.0.0] (2024-01-01))
+      const contentLines = lines.slice(1);
+      
+      for (let i = 0; i < contentLines.length; i++) {
+        const line = contentLines[i];
+        
         if (line.startsWith('### ')) {
-          currentType = line.substring(4).trim();
-        } else if (line.startsWith('*')) {
-            const changeMatch = line.match(/^\* (.*)/);
-            if (changeMatch) {
-                 changes.push({
-                    type: currentType,
-                    description: changeMatch[1],
-                });
+            // If we have a description for a previous change, save it.
+            if (currentDescription) {
+                changes.push({ type: currentType, description: currentDescription.trim() });
+                currentDescription = '';
             }
+            // Start a new change type (e.g., Features, Bug Fixes)
+            currentType = line.substring(4).trim();
+        } else if (line.trim().startsWith('* ')) {
+            // If we have a description for a previous change, save it.
+             if (currentDescription) {
+                changes.push({ type: currentType, description: currentDescription.trim() });
+            }
+            // Start a new change description, taking everything after the asterisk.
+            currentDescription = line.substring(line.indexOf('*') + 1).trim();
+        } else if (currentDescription) {
+            // This is a continuation of the previous description (multi-line commit).
+            currentDescription += '\n' + line;
         }
+      }
+
+      // Add the very last item if it exists
+      if (currentDescription) {
+          changes.push({ type: currentType, description: currentDescription.trim() });
       }
       
       return { version, date, changes };
