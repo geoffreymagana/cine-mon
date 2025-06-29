@@ -1,7 +1,7 @@
-
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,11 +25,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Upload } from "lucide-react";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Collection name is required."),
   description: z.string().optional(),
-  coverImageUrl: z.string().url("Must be a valid URL.").or(z.literal("")).optional(),
+  coverImageUrl: z.string().optional(),
 });
 
 type CollectionFormValues = z.infer<typeof collectionSchema>;
@@ -42,6 +43,7 @@ type CreateCollectionDialogProps = {
 };
 
 export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCreated }: CreateCollectionDialogProps) => {
+  const coverImageInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<CollectionFormValues>({
     resolver: zodResolver(collectionSchema),
@@ -58,6 +60,16 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
     }
   }, [isOpen, form]);
 
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("coverImageUrl", reader.result as string, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = (data: CollectionFormValues) => {
     try {
@@ -82,6 +94,8 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
         console.error("Failed to save collection:", error);
     }
   };
+  
+  const coverImageValue = form.watch('coverImageUrl');
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -123,11 +137,34 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
                  <FormField
                     control={form.control}
                     name="coverImageUrl"
-                    render={({ field }) => (
+                    render={() => (
                         <FormItem>
-                            <FormLabel>Cover Image URL (Optional)</FormLabel>
+                            <FormLabel>Cover Image (Optional)</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://..." {...field} />
+                                <div className="flex items-center gap-4">
+                                    <div className="w-40 aspect-video rounded-md overflow-hidden relative border-2 border-dashed border-muted/50 flex items-center justify-center bg-muted/20">
+                                        {coverImageValue ? (
+                                            <Image src={coverImageValue} alt="Cover preview" layout="fill" className="object-cover" data-ai-hint="custom collection cover" />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">Preview</span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <Button type="button" variant="outline" onClick={() => coverImageInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4" /> Upload
+                                        </Button>
+                                         <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("coverImageUrl", "")} className={!coverImageValue ? 'hidden' : ''}>
+                                            Remove
+                                        </Button>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        ref={coverImageInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleCoverImageChange}
+                                    />
+                                </div>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
