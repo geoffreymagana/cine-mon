@@ -102,12 +102,15 @@ export default function DashboardPage() {
   };
 
   const handleDeleteMovie = (movieId: string) => {
+    const movieToDelete = movies.find((movie) => movie.id === movieId);
+    if (!movieToDelete) return;
+
     const updatedMovies = movies.filter((movie) => movie.id !== movieId);
     setMovies(updatedMovies);
     updateMoviesInStorage(updatedMovies);
     toast({
       title: "Movie Removed",
-      description: "The movie has been removed from your collection.",
+      description: `"${movieToDelete.title}" has been removed from your collection.`,
       variant: "destructive"
     });
   };
@@ -223,7 +226,7 @@ export default function DashboardPage() {
                       </Avatar>
                       <div className="flex flex-col items-start">
                           <span className="font-semibold">Cine-Mon User</span>
-                          <span className="text-xs text-muted-foreground">View Profile</span>
+                          <span className="text-xs text-muted-foreground">@cinemon_user</span>
                       </div>
                   </Button>
               </Link>
