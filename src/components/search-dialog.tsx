@@ -149,20 +149,15 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                 </div>
                             )})}
                             {!isLoading && results.length === 0 && (
-                                <div className="text-center py-10 flex flex-col items-center justify-center h-full">
-                                    {query.length > 1 ? (
-                                        <>
+                                <div className="text-center py-10 flex flex-col items-center justify-center h-full space-y-4">
+                                    {query.length > 1 && (
+                                        <div className="text-center">
                                             <p className="font-semibold">No results found for "{query}".</p>
                                             <p className="text-muted-foreground text-sm">Try checking for typos or searching for another title.</p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                                            <p className="font-semibold">Search for something to import</p>
-                                        </>
+                                        </div>
                                     )}
-                                    <div className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 px-2 py-1 mt-6 rounded-md border bg-muted/50 max-w-md text-left">
-                                        <Lightbulb className="h-6 w-6 shrink-0" />
+                                    <div className="text-xs text-muted-foreground flex items-start gap-2 p-3 rounded-lg border max-w-md text-left">
+                                        <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
                                         <span>Tip: You can use the 'y:' filter to narrow your results by year. Example: 'star wars y:1977'.</span>
                                     </div>
                                 </div>
