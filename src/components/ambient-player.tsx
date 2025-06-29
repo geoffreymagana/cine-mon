@@ -68,7 +68,6 @@ export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProp
         }
 
       } catch (e) {
-        console.error("Could not get image data for ambient effect (likely a CORS issue):", e);
         setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
       }
     };
@@ -90,7 +89,7 @@ export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProp
       <div
         className="absolute inset-[-200px] z-0 animate-ambient-flow blur-[120px] transition-opacity duration-1000"
         style={{
-          background: gradient || 'transparent',
+          backgroundImage: gradient || 'transparent',
           backgroundSize: '400% 400%',
           opacity: gradient ? 0.7 : 0,
         }}
