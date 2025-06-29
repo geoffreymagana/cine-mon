@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/geoffreymagana/cine-mon/compare/v1.0.0...v1.1.0) (2025-06-29)
+
+
+### Features
+
+* **release:** Version 1.0.0 - The Cinematic Overhaul ([f7ce96c](https://github.com/geoffreymagana/cine-mon/commit/f7ce96c0b8043a60354080dcbd41f48dabe21229))
+
 feat(release): Version 1.0.0 - The Cinematic Overhaul
 
 This commit marks a major milestone for Cine-Mon, introducing a suite of powerful features designed to transform it from a simple tracker into a comprehensive cinematic universe manager. This release focuses on deep personalization, robust organization, and a more immersive user experience.
