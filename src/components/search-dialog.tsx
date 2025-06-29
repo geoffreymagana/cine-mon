@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -88,21 +87,15 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                     <DialogTitle className="font-headline">Search & Import</DialogTitle>
                     <DialogDescription>Search for movies and TV shows from The Movie Database (TMDB) to add to your collection.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-2">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input
-                            placeholder="Search for a title (e.g., The Matrix, Breaking Bad)..."
-                            className="pl-10 text-base"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            autoFocus
-                        />
-                    </div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 px-1">
-                        <Lightbulb className="h-4 w-4" />
-                        <span>Tip: You can use the 'y:' filter to narrow your results by year. Example: 'star wars y:1977'.</span>
-                    </div>
+                 <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        placeholder="Search for a title (e.g., The Matrix, Breaking Bad)..."
+                        className="pl-10 text-base"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        autoFocus
+                    />
                 </div>
                 <div className="flex-grow overflow-hidden relative pt-2">
                     <ScrollArea className="h-full">
@@ -119,7 +112,7 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                     </div>
                                 ))
                             )}
-                            {!isLoading && results.map((result) => {
+                            {!isLoading && results.length > 0 && results.map((result) => {
                                 const isImported = existingTmdbIds.has(result.id);
                                 const isImporting = importingIds.has(result.id);
                                 const year = (result.release_date || result.first_air_date)?.substring(0, 4);
@@ -156,10 +149,23 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                     </div>
                                 </div>
                             )})}
-                             {!isLoading && query.length > 1 && results.length === 0 && (
-                                <div className="text-center py-10">
-                                    <p className="font-semibold">No results found for "{query}".</p>
-                                    <p className="text-muted-foreground text-sm">Try checking for typos or searching for another title.</p>
+                            {!isLoading && results.length === 0 && (
+                                <div className="text-center py-10 flex flex-col items-center justify-center h-full">
+                                    {query.length > 1 ? (
+                                        <>
+                                            <p className="font-semibold">No results found for "{query}".</p>
+                                            <p className="text-muted-foreground text-sm">Try checking for typos or searching for another title.</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                            <p className="font-semibold">Search for something to import</p>
+                                        </>
+                                    )}
+                                    <div className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 px-2 py-1 mt-6 rounded-md border bg-muted/50 max-w-md text-left">
+                                        <Lightbulb className="h-6 w-6 shrink-0" />
+                                        <span>Tip: You can use the 'y:' filter to narrow your results by year. Example: 'star wars y:1977'.</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
