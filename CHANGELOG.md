@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
     #### ✨ New Core Features
 
     *   **Unified TMDB Search**: Instantly import movies, TV shows, anime, and K-dramas with rich metadata from The Movie Database. The search is now faster and more powerful, with a dedicated dialog.
-        ![TMDB Search Dialog](https://placehold.co/800x400.png)
+        ![TMDB Search Dialog](https://res.cloudinary.com/dwqwwb2fh/image/upload/v1751237799/bvkdvlr3mlmobwyhsm24.png)
 
     *   **Introducing Vaults & Spotlights**: A brand new way to organize your collection.
         *   **Vaults**: Create private, curated collections for your all-time favorites. Manually drag and drop titles to get the perfect order.
