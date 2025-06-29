@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 type AmbientPlayerProps = {
   imageUrl: string;
@@ -11,88 +11,16 @@ type AmbientPlayerProps = {
 };
 
 export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProps) => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const [gradient, setGradient] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
-    if (!ctx || !canvas) return;
-
-    // If the image is a placeholder, it likely won't support CORS for canvas.
-    // Use the fallback gradient immediately to avoid errors.
-    if (imageUrl.includes('placehold.co')) {
-      setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
-      return;
-    }
-
-    const img = new Image();
-    // This is required for getImageData to work on images from other origins
-    img.crossOrigin = "Anonymous"; 
-    img.src = imageUrl;
-
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        const colorCounts: { [key: string]: number } = {};
-        const step = 5; // Process every 5th pixel for performance
-
-        for (let i = 0; i < imageData.length; i += 4 * step) {
-          const r = imageData[i];
-          const g = imageData[i + 1];
-          const b = imageData[i + 2];
-          // Skip transparent or near-black/white pixels to get more vibrant colors
-          if (imageData[i + 3] < 255 || (r < 10 && g < 10 && b < 10) || (r > 245 && g > 245 && b > 245)) {
-              continue;
-          }
-          
-          const key = `${r},${g},${b}`;
-          colorCounts[key] = (colorCounts[key] || 0) + 1;
-        }
-
-        const sortedColors = Object.keys(colorCounts)
-          .sort((a, b) => colorCounts[b] - colorCounts[a])
-          .slice(0, 3); // Get top 3 colors
-        
-        if (sortedColors.length > 0) {
-            const colors = sortedColors.map(c => `rgb(${c})`);
-            const ambientGradient = `radial-gradient(circle at 20% 20%, ${colors[0]} 0%, transparent 70%), radial-gradient(circle at 80% 30%, ${colors[1] || colors[0]} 0%, transparent 60%), radial-gradient(circle at 50% 80%, ${colors[2] || colors[0]} 0%, transparent 50%)`;
-            setGradient(ambientGradient);
-        } else {
-             // Fallback if no suitable colors are found
-            setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
-        }
-
-      } catch (e) {
-        setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
-      }
-    };
-    
-    img.onerror = () => {
-        // This can happen due to CORS policies on the image server when crossOrigin is set.
-        // We'll just fall back to the default gradient without logging an error.
-        setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
-    }
-
-  }, [imageUrl]);
-
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg">
-      {/* Hidden canvas for color extraction */}
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-
-      {/* Ambient background effect */}
-      <div
-        className="absolute inset-[-200px] z-0 animate-ambient-flow blur-[120px] transition-opacity duration-1000"
-        style={{
-          backgroundImage: gradient || 'transparent',
-          backgroundSize: '400% 400%',
-          opacity: gradient ? 0.7 : 0,
-        }}
+    <div className="relative w-full h-full overflow-hidden rounded-lg bg-black">
+      {/* Blurred background image */}
+      <Image
+        src={imageUrl}
+        alt={`Ambient background for ${title}`}
+        layout="fill"
+        objectFit="cover"
+        className="absolute inset-0 z-0 scale-110 blur-3xl opacity-50"
+        unoptimized
       />
       
       {/* Video Player */}
