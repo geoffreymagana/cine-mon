@@ -219,7 +219,19 @@ export default function MovieDetailPage() {
     return (
         <>
             <div className="bg-background min-h-screen">
-                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-8 relative z-10">
+                <div className="relative h-72 md:h-96 w-full">
+                    <Image
+                        src={movie.backdropUrl || movie.posterUrl}
+                        alt={`Backdrop for ${movie.title}`}
+                        fill
+                        className="object-cover object-top blur-lg opacity-30 backdrop-gradient-mask"
+                        priority
+                        data-ai-hint="movie background cinematic"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                </div>
+
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-48 md:-mt-64 relative z-10">
                     <div className="mb-8">
                         <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                             <ArrowLeft className="w-4 h-4"/>
@@ -447,7 +459,7 @@ export default function MovieDetailPage() {
                                         </CardHeader>
                                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {movie.cast?.map(person => (
-                                                <div key={person.name} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50">
+                                                <div key={person.name} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted/50 min-w-0">
                                                     <Avatar>
                                                         <AvatarImage src={person.avatarUrl} alt={person.name} data-ai-hint="person portrait" />
                                                         <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
@@ -531,7 +543,6 @@ export default function MovieDetailPage() {
                 <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0 aspect-video">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Trailer: {movie.title}</DialogTitle>
-                        <DialogDescription>Embedded YouTube video player for the {movie.title} trailer.</DialogDescription>
                     </DialogHeader>
                     {isTrailerOpen && movie.trailerUrl && (
                         <AmbientPlayer 
