@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -155,7 +156,7 @@ export default function CollectionDetailPage() {
                         data-ai-hint="movie background abstract"
                         unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background to-transparent" />
                 </div>
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">
