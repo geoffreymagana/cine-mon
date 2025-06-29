@@ -14,6 +14,7 @@ import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EditCollectionDialog } from '@/components/edit-collection-dialog';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function CollectionDetailPage() {
     const params = useParams();
@@ -142,7 +143,7 @@ export default function CollectionDetailPage() {
     }
     
     return (
-        <>
+        <TooltipProvider>
             <div className="bg-background min-h-screen">
                 <div className="relative h-48 md:h-64 lg:h-80 w-full">
                     <Image
@@ -212,6 +213,6 @@ export default function CollectionDetailPage() {
                 collection={collection}
                 onCollectionUpdated={handleCollectionUpdated}
             />
-        </>
+        </TooltipProvider>
     );
 }
