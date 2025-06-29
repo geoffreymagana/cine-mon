@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import type { Movie } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Clock, CircleCheck, PauseCircle, CircleOff, Bookmark } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,16 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RatingCircle } from "./rating-circle";
-
-type MovieCardProps = {
-  movie: Movie;
-  onDelete: (movieId: string) => void;
-};
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
   const router = useRouter();
 
-  // A single handler for all menu interactions to prevent link navigation.
   const handleInteraction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -40,10 +36,30 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
     onDelete(movie.id);
   };
 
+  const statusInfo = {
+    'Watching': { icon: Clock, className: 'text-chart-1', label: 'Watching' },
+    'Completed': { icon: CircleCheck, className: 'text-chart-2', label: 'Completed' },
+    'On-Hold': { icon: PauseCircle, className: 'text-chart-3', label: 'On Hold' },
+    'Dropped': { icon: CircleOff, className: 'text-destructive', label: 'Dropped' },
+    'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
+  }[movie.status];
+
   return (
     <Link href={`/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
       <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
           <div className="relative">
+              {statusInfo && (
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <div className="absolute top-2 left-2 z-20 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={handleInteraction}>
+                              <statusInfo.icon className={cn("h-4 w-4", statusInfo.className)} />
+                          </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>{statusInfo.label}</p>
+                      </TooltipContent>
+                  </Tooltip>
+              )}
               <div className="aspect-[2/3] w-full rounded-t-lg overflow-hidden border border-border/10">
                   <Image
                       src={movie.posterUrl}

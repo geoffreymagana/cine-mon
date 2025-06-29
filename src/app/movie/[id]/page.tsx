@@ -21,7 +21,12 @@ import {
     DollarSign,
     TrendingUp,
     Clock,
-    Globe
+    Globe,
+    CircleCheck,
+    PauseCircle,
+    CircleOff,
+    Bookmark,
+    ChevronDown
 } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -34,6 +39,23 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RatingProgressBar } from '@/components/rating-progress-bar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+
+const statusOptions = [
+    { value: 'Watching' as const, label: 'Watching', icon: Clock, className: 'text-chart-1' },
+    { value: 'Completed' as const, label: 'Completed', icon: CircleCheck, className: 'text-chart-2' },
+    { value: 'On-Hold' as const, label: 'On Hold', icon: PauseCircle, className: 'text-chart-3' },
+    { value: 'Dropped' as const, label: 'Dropped', icon: CircleOff, className: 'text-destructive' },
+    { value: 'Plan to Watch' as const, label: 'Plan to Watch', icon: Bookmark, className: 'text-muted-foreground' },
+];
 
 export default function MovieDetailPage() {
     const params = useParams();
@@ -42,6 +64,7 @@ export default function MovieDetailPage() {
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
+    const { toast } = useToast();
 
     React.useEffect(() => {
         if (typeof window !== 'undefined' && params.id) {
@@ -76,6 +99,22 @@ export default function MovieDetailPage() {
         setIsCollectionDialogOpen(true);
     };
 
+    const handleStatusChange = (newStatus: Movie['status']) => {
+        if (!movie) return;
+
+        const updatedMovie = { ...movie, status: newStatus };
+        setMovie(updatedMovie);
+
+        const updatedMovies = allMovies.map(m => m.id === movieId ? updatedMovie : m);
+        localStorage.setItem('movies', JSON.stringify(updatedMovies));
+        setAllMovies(updatedMovies);
+        
+        toast({
+            title: "Status Updated",
+            description: `"${movie.title}" is now marked as "${newStatus}".`,
+        });
+    };
+
     if (movie === undefined) {
         return (
             <div className="bg-background min-h-screen p-8">
@@ -107,6 +146,8 @@ export default function MovieDetailPage() {
             </div>
         </div>
     );
+    
+    const currentStatusInfo = statusOptions.find(opt => opt.value === movie.status);
 
     return (
         <>
@@ -196,6 +237,30 @@ export default function MovieDetailPage() {
                                                     <div className="w-5/6">
                                                         <p className="font-semibold">Rating</p>
                                                         <RatingProgressBar percentage={movie.rating} className="mt-2" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start gap-3">
+                                                    {currentStatusInfo && <currentStatusInfo.icon className={cn("w-5 h-5 mt-1 shrink-0", currentStatusInfo.className)} />}
+                                                    <div>
+                                                        <p className="font-semibold">Status</p>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="text-muted-foreground -ml-3 h-auto py-0 px-3 flex items-center gap-1 hover:text-foreground">
+                                                                    {currentStatusInfo?.label}
+                                                                    <ChevronDown className="h-4 w-4 opacity-50" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent>
+                                                                <DropdownMenuRadioGroup value={movie.status} onValueChange={(value) => handleStatusChange(value as Movie['status'])}>
+                                                                    {statusOptions.map(option => (
+                                                                        <DropdownMenuRadioItem key={option.value} value={option.value} className="flex items-center gap-2">
+                                                                            <option.icon className={cn("w-4 h-4", option.className)} />
+                                                                            <span>{option.label}</span>
+                                                                        </DropdownMenuRadioItem>
+                                                                    ))}
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </div>
                                                 </div>
                                                 <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
