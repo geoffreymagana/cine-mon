@@ -19,6 +19,13 @@ export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProp
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     if (!ctx || !canvas) return;
 
+    // If the image is a placeholder, it likely won't support CORS for canvas.
+    // Use the fallback gradient immediately to avoid errors.
+    if (imageUrl.includes('placehold.co')) {
+      setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
+      return;
+    }
+
     const img = new Image();
     // This is required for getImageData to work on images from other origins
     img.crossOrigin = "Anonymous"; 
@@ -67,7 +74,8 @@ export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProp
     };
     
     img.onerror = () => {
-        console.error("Failed to load image for ambient effect.");
+        // This can happen due to CORS policies on the image server when crossOrigin is set.
+        // We'll just fall back to the default gradient without logging an error.
         setGradient('radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 70%)');
     }
 
