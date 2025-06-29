@@ -5,7 +5,7 @@ import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, ChartPie } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
@@ -32,8 +32,10 @@ import {
   arrayMove,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [filter, setFilter] = React.useState<'All' | Movie['type']>('All');
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
@@ -170,6 +172,17 @@ export default function DashboardPage() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
+                </SidebarGroup>
+                <SidebarSeparator />
+                <SidebarGroup>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton onClick={() => router.push('/collections')} tooltip="My Vaults & Spotlights">
+                                <Sparkles />
+                                <span>Collections</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
                 </SidebarGroup>
                 <SidebarSeparator />
                 <SidebarGroup>
