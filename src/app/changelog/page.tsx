@@ -20,47 +20,52 @@ async function parseChangelog(): Promise<VersionInfo[]> {
     const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
     const content = await fs.readFile(changelogPath, 'utf-8');
     
-    // Split content into sections for each version
-    const sections = content.split(/^## /m).slice(1);
+    // Split content into sections for each version, using ## as the delimiter
+    const sections = content.split(/^##\s+/m).slice(1);
     
     const versions: VersionInfo[] = sections.map(section => {
       const lines = section.trim().split('\n');
       const titleLine = lines[0];
       
-      const versionMatch = titleLine.match(/\[(.*?)\]/);
-      const dateMatch = titleLine.match(/\((\d{4}-\d{2}-\d{2})\)/);
+      // Match "1.0.0 (2024-01-01)" or similar formats without brackets
+      const titleMatch = titleLine.match(/^(.*?) \((\d{4}-\d{2}-\d{2})\)/);
 
-      const version = versionMatch ? versionMatch[1] : 'Unreleased';
-      const date = dateMatch ? dateMatch[1] : '';
+      if (!titleMatch) {
+          // Fallback for versions without a date, or other formats.
+          return { version: titleLine.trim(), date: '', changes: [] };
+      }
+
+      const version = titleMatch[1].trim();
+      const date = titleMatch[2];
 
       const changes: VersionInfo['changes'] = [];
       let currentType = 'General';
       let currentDescription = '';
 
-      // All lines after the version header (e.g., ## [1.0.0] (2024-01-01))
-      const contentLines = lines.slice(1);
+      // All lines after the version header
+      const contentLines = lines.slice(1).filter(line => line.trim() !== '');
       
-      for (let i = 0; i < contentLines.length; i++) {
-        const line = contentLines[i];
-        
+      for (const line of contentLines) {
+        // A new category starts with ### (e.g., ### Features)
         if (line.startsWith('### ')) {
-            // If we have a description for a previous change, save it.
+            // If we were building a description for a previous change, save it.
             if (currentDescription) {
                 changes.push({ type: currentType, description: currentDescription.trim() });
-                currentDescription = '';
             }
-            // Start a new change type (e.g., Features, Bug Fixes)
+            // Start a new change type and reset description
             currentType = line.substring(4).trim();
-        } else if (line.trim().startsWith('* ')) {
+            currentDescription = '';
+        } else if (line.trim().startsWith('* ')) { // A new item starts with *
             // If we have a description for a previous change, save it.
-             if (currentDescription) {
+            if (currentDescription) {
                 changes.push({ type: currentType, description: currentDescription.trim() });
             }
             // Start a new change description, taking everything after the asterisk.
             currentDescription = line.substring(line.indexOf('*') + 1).trim();
         } else if (currentDescription) {
             // This is a continuation of the previous description (multi-line commit).
-            currentDescription += '\n' + line;
+            // Append with a newline to preserve formatting for markdown.
+            currentDescription += '\n' + line.trim();
         }
       }
 
@@ -70,7 +75,7 @@ async function parseChangelog(): Promise<VersionInfo[]> {
       }
       
       return { version, date, changes };
-    });
+    }).filter(v => v.changes.length > 0); // Only return versions that have parsed changes
 
     return versions;
   } catch (error) {
