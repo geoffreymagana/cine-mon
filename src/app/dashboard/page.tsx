@@ -3,7 +3,6 @@
 
 import * as React from "react";
 import type { Movie } from "@/lib/types";
-import { initialMovies } from "@/lib/data";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
 import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -60,8 +59,9 @@ export default function DashboardPage() {
       if (storedMovies) {
         setMovies(JSON.parse(storedMovies));
       } else {
-        localStorage.setItem('movies', JSON.stringify(initialMovies));
-        setMovies(initialMovies);
+        const emptyMovies: Movie[] = [];
+        localStorage.setItem('movies', JSON.stringify(emptyMovies));
+        setMovies(emptyMovies);
       }
       const storedAvatar = localStorage.getItem('profileAvatar');
       if (storedAvatar) setAvatarUrl(storedAvatar);
@@ -73,7 +73,7 @@ export default function DashboardPage() {
       if (storedUsername) setUsername(storedUsername);
     } catch (error) {
       console.error("Failed to access localStorage:", error);
-      setMovies(initialMovies);
+      setMovies([]);
     }
   }, []);
 
