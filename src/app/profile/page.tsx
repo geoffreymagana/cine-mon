@@ -16,7 +16,8 @@ import {
     DownloadCloud,
     FileText,
     Mail,
-    BarChart3
+    BarChart3,
+    Sparkles
 } from "lucide-react";
 
 import { ProfileHeader } from "@/components/profile-header";
@@ -256,6 +257,24 @@ export default function ProfilePage() {
                                         <CardDescription>Find help, learn more about the app, or provide feedback.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Link href="/collections" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <Sparkles className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>My Vaults & Spotlights</span>
+                                                   <span className="text-xs text-muted-foreground">Curate personal collections.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
+                                        <Link href="/analytics" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <BarChart3 className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Stats for nerds</span>
+                                                   <span className="text-xs text-muted-foreground">Go to your analytics.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
                                         <Link href="/about" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
                                                 <Info className="mr-3 text-primary"/>
@@ -307,15 +326,6 @@ export default function ProfilePage() {
                                                 <div className="flex flex-col">
                                                    <span>Data Backup / Export</span>
                                                    <span className="text-xs text-muted-foreground">Export your collection.</span>
-                                                </div>
-                                            </Button>
-                                        </Link>
-                                        <Link href="/analytics" passHref>
-                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
-                                                <BarChart3 className="mr-3 text-primary"/>
-                                                <div className="flex flex-col">
-                                                   <span>Stats for nerds</span>
-                                                   <span className="text-xs text-muted-foreground">Go to your analytics.</span>
                                                 </div>
                                             </Button>
                                         </Link>

@@ -4,22 +4,47 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Movie } from "@/lib/types";
+import * as React from "react";
+import type { Movie, UserCollection } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Edit, Trash2, Clock, CircleCheck, PauseCircle, CircleOff, Bookmark } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Clock, CircleCheck, PauseCircle, CircleOff, Bookmark, Lock, Projector } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { RatingCircle } from "./rating-circle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+
+type MovieCardProps = {
+  movie: Movie;
+  onDelete: (movieId: string) => void;
+};
 
 export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
   const router = useRouter();
+  const [collections, setCollections] = React.useState<UserCollection[]>([]);
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    try {
+        const storedCollections = localStorage.getItem('collections');
+        if (storedCollections) {
+            setCollections(JSON.parse(storedCollections));
+        }
+    } catch (error) {
+        console.error("Failed to load collections from localStorage", error);
+    }
+  }, []);
 
   const handleInteraction = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,6 +60,45 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
     handleInteraction(e);
     onDelete(movie.id);
   };
+  
+  const handleAddToCollection = (e: React.MouseEvent, collectionId: string) => {
+    handleInteraction(e);
+    try {
+        const storedCollections = localStorage.getItem('collections');
+        const allCollections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
+        
+        const targetCollection = allCollections.find(c => c.id === collectionId);
+        if (!targetCollection) return;
+
+        if (targetCollection.movieIds.includes(movie.id)) {
+            toast({
+                title: "Already in Collection",
+                description: `"${movie.title}" is already in "${targetCollection.name}".`
+            });
+            return;
+        }
+        
+        const updatedCollections = allCollections.map(c => 
+            c.id === collectionId
+                ? { ...c, movieIds: [...c.movieIds, movie.id] }
+                : c
+        );
+
+        localStorage.setItem('collections', JSON.stringify(updatedCollections));
+        setCollections(updatedCollections);
+        toast({
+            title: "Added to Collection",
+            description: `"${movie.title}" added to "${targetCollection.name}".`
+        });
+    } catch (error) {
+        console.error("Failed to add to collection:", error);
+        toast({
+            title: "Error",
+            description: "Could not add movie to collection.",
+            variant: "destructive"
+        });
+    }
+  };
 
   const statusInfo = {
     'Watching': { icon: Clock, className: 'text-chart-1', label: 'Watching' },
@@ -43,6 +107,9 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
     'Dropped': { icon: CircleOff, className: 'text-destructive', label: 'Dropped' },
     'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
   }[movie.status];
+
+  const vaults = collections.filter(c => c.type === 'Vault');
+  const spotlights = collections.filter(c => c.type === 'Spotlight');
 
   return (
     <Link href={`/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
@@ -78,11 +145,48 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
                             <span className="sr-only">Movie actions</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" onClick={handleInteraction}>
                         <DropdownMenuItem onClick={handleEdit}>
                             <Edit className="mr-2 h-4 w-4" />
                             <span>Edit</span>
                         </DropdownMenuItem>
+
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Lock className="mr-2 h-4 w-4" />
+                            <span>Add to Vault</span>
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              {vaults.length > 0 ? vaults.map(vault => (
+                                <DropdownMenuItem key={vault.id} onClick={(e) => handleAddToCollection(e, vault.id)}>
+                                  {vault.name}
+                                </DropdownMenuItem>
+                              )) : <DropdownMenuItem disabled>No vaults created</DropdownMenuItem>}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Projector className="mr-2 h-4 w-4" />
+                            <span>Add to Spotlight</span>
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              {spotlights.length > 0 ? spotlights.map(spotlight => (
+                                <DropdownMenuItem key={spotlight.id} onClick={(e) => handleAddToCollection(e, spotlight.id)}>
+                                  {spotlight.name}
+                                </DropdownMenuItem>
+                              )) : <DropdownMenuItem disabled>No spotlights created</DropdownMenuItem>}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuSeparator />
+
                         <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             <span>Delete</span>

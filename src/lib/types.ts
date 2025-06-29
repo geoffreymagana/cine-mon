@@ -25,3 +25,12 @@ export type Movie = {
   runtime?: number;
   productionCountries?: string;
 };
+
+export type UserCollection = {
+  id: string;
+  name: string;
+  type: 'Vault' | 'Spotlight';
+  description?: string;
+  coverImageUrl?: string;
+  movieIds: string[];
+};
