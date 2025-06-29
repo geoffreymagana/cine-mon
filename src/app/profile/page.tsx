@@ -147,11 +147,14 @@ export default function ProfilePage() {
                 const json = event.target?.result as string;
                 const parsedData = JSON.parse(json);
 
-                if (!Array.isArray(parsedData)) {
-                    throw new Error("Invalid JSON structure: data is not an array.");
+                let importedMovies: any[] = [];
+                if (Array.isArray(parsedData)) {
+                    importedMovies = parsedData;
+                } else if (typeof parsedData === 'object' && parsedData !== null && Array.isArray(parsedData.movies)) {
+                    importedMovies = parsedData.movies;
+                } else {
+                    throw new Error("Invalid JSON structure: The file should contain an array of movies, optionally within a 'movies' key.");
                 }
-
-                const importedMovies: any[] = parsedData;
 
                 const storedMoviesRaw = localStorage.getItem('movies');
                 const existingMovies: Movie[] = storedMoviesRaw ? JSON.parse(storedMoviesRaw) : [];
