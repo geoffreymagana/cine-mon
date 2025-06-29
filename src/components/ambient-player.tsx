@@ -87,11 +87,12 @@ export const AmbientPlayer = ({ imageUrl, trailerUrl, title }: AmbientPlayerProp
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* Ambient background effect */}
-      <div 
-        className="absolute inset-[-200px] z-0 blur-[120px] opacity-50 transition-all duration-1000"
+      <div
+        className="absolute inset-[-200px] z-0 animate-ambient-flow blur-[120px] transition-opacity duration-1000"
         style={{
-            background: gradient || 'transparent',
-            opacity: gradient ? 0.6 : 0,
+          background: gradient || 'transparent',
+          backgroundSize: '400% 400%',
+          opacity: gradient ? 0.7 : 0,
         }}
       />
       

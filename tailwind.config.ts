@@ -96,11 +96,16 @@ export default {
           'from': { transform: 'scale(0.8)', opacity: '0.2' },
           'to': { transform: 'scale(1.2)', opacity: '0.4' },
         },
+        'ambient-flow': {
+          '0%, 100%': { 'background-position': '0% 50%' },
+          '50%': { 'background-position': '100% 50%' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-glow': 'pulse-glow 8s infinite alternate',
+        'ambient-flow': 'ambient-flow 20s ease infinite',
       },
     },
   },
