@@ -59,18 +59,12 @@ const statusOptions = [
 
 export default function MovieDetailPage() {
     const params = useParams();
-    const [movieId, setMovieId] = React.useState<string | null>(null);
+    const movieId = params.id as string;
     const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
-
-    React.useEffect(() => {
-        if (typeof window !== 'undefined' && params.id) {
-            setMovieId(params.id as string);
-        }
-    }, [params.id]);
 
     React.useEffect(() => {
         if (!movieId) return;

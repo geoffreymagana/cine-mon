@@ -19,6 +19,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function CollectionDetailPage() {
     const params = useParams();
+    const collectionId = params.id as string;
     const router = useRouter();
     const { toast } = useToast();
     const [collection, setCollection] = React.useState<UserCollection | null | undefined>(undefined);
@@ -31,7 +32,6 @@ export default function CollectionDetailPage() {
     );
 
     const loadCollectionData = React.useCallback(() => {
-        const collectionId = params.id as string;
         if (!collectionId) return;
 
         try {
@@ -54,13 +54,13 @@ export default function CollectionDetailPage() {
             console.error("Failed to load collection from localStorage:", error);
             setCollection(null);
         }
-    }, [params.id]);
+    }, [collectionId]);
 
     React.useEffect(() => {
-        if (params.id) {
+        if (collectionId) {
             loadCollectionData();
         }
-    }, [params.id, loadCollectionData]);
+    }, [collectionId, loadCollectionData]);
     
     const handleDeleteMovie = (movieId: string) => {
         if (!collection) return;
@@ -145,7 +145,7 @@ export default function CollectionDetailPage() {
     
     return (
         <TooltipProvider>
-            <div className="bg-background min-h-screen">
+            <div className="bg-background min-h-screen dotted-background-permanent">
                 <div className="relative h-48 md:h-64 lg:h-80 w-full">
                     <Image
                         src={collection.coverImageUrl || 'https://placehold.co/1280x720.png'}
@@ -156,7 +156,7 @@ export default function CollectionDetailPage() {
                         data-ai-hint="movie background abstract"
                         unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
                 </div>
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">

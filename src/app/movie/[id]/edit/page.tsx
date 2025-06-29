@@ -59,9 +59,9 @@ type MovieEditFormValues = z.infer<typeof movieEditSchema>;
 
 export default function MovieEditPage() {
   const params = useParams();
+  const movieId = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
-  const [movieId, setMovieId] = React.useState<string | null>(null);
   const [tagInput, setTagInput] = React.useState('');
   const [isTagging, setIsTagging] = React.useState(false);
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -97,12 +97,6 @@ export default function MovieEditPage() {
     }
   });
 
-  React.useEffect(() => {
-    if (params.id) {
-      setMovieId(params.id as string);
-    }
-  }, [params.id]);
-  
   const { fields: castFields, append: appendCast, remove: removeCast } = useFieldArray({
     control: form.control,
     name: 'cast',
