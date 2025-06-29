@@ -219,21 +219,7 @@ export default function MovieDetailPage() {
     return (
         <>
             <div className="bg-background min-h-screen">
-                {/* Backdrop */}
-                <div className="relative h-48 md:h-64 lg:h-80 w-full">
-                    <Image
-                        src={movie.backdropUrl || movie.posterUrl}
-                        alt={`${movie.title} backdrop`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="scale-110 blur-3xl opacity-50"
-                        data-ai-hint="movie background"
-                        unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-                </div>
-
-                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-8 relative z-10">
                     <div className="mb-8">
                         <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                             <ArrowLeft className="w-4 h-4"/>
@@ -293,7 +279,7 @@ export default function MovieDetailPage() {
                         </aside>
 
                         {/* Main Content */}
-                        <div className="md:col-span-8 lg:col-span-9">
+                        <div className="md:col-span-8 lg:col-span-9 min-w-0">
                             {/* Header */}
                             <div className="mb-6 flex justify-between items-start gap-4">
                                 <div className="min-w-0 flex-1">
@@ -397,7 +383,7 @@ export default function MovieDetailPage() {
                                     </TabsList>
                                     <div className="flex md:hidden items-center gap-2">
                                         {movie.trailerUrl && (
-                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon">
+                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon" className="bg-primary hover:bg-primary/90">
                                                 <Play className="h-4 w-4" />
                                                 <span className="sr-only">Play Trailer</span>
                                             </Button>
