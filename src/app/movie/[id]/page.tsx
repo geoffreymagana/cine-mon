@@ -26,7 +26,8 @@ import {
     PauseCircle,
     CircleOff,
     Bookmark,
-    ChevronDown
+    ChevronDown,
+    Play
 } from 'lucide-react';
 
 import type { Movie } from '@/lib/types';
@@ -63,6 +64,7 @@ export default function MovieDetailPage() {
     const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
+    const [isTrailerOpen, setIsTrailerOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
 
@@ -231,9 +233,17 @@ export default function MovieDetailPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <Link href={`/movie/${movie.id}/edit`}>
-                                    <Button variant="outline">Edit</Button>
-                                </Link>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    {movie.trailerUrl && (
+                                        <Button onClick={() => setIsTrailerOpen(true)}>
+                                            <Play className="mr-2 h-4 w-4" />
+                                            Play Trailer
+                                        </Button>
+                                    )}
+                                    <Link href={`/movie/${movie.id}/edit`}>
+                                        <Button variant="outline">Edit</Button>
+                                    </Link>
+                                </div>
                             </div>
 
                             <Tabs defaultValue="details" className="w-full">
@@ -371,6 +381,20 @@ export default function MovieDetailPage() {
                             )}
                         </div>
                     </ScrollArea>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={isTrailerOpen} onOpenChange={setIsTrailerOpen}>
+                <DialogContent className="max-w-4xl p-0 bg-transparent border-0">
+                    <div className="aspect-video">
+                        <iframe
+                            className="w-full h-full rounded-lg"
+                            src={`https://www.youtube.com/embed/${movie.trailerUrl}`}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                        ></iframe>
+                    </div>
                 </DialogContent>
             </Dialog>
         </>

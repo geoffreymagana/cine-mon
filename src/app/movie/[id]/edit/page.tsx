@@ -53,6 +53,7 @@ const movieEditSchema = z.object({
   revenue: z.coerce.number().min(0).optional(),
   runtime: z.coerce.number().min(0).optional(),
   productionCountries: z.string().optional(),
+  trailerUrl: z.string().optional(),
 });
 
 type MovieEditFormValues = z.infer<typeof movieEditSchema>;

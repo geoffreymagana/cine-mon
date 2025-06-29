@@ -19,6 +19,7 @@ export type Movie = {
   scriptUrl?: string;
   collection?: string;
   backdropUrl?: string;
+  trailerUrl?: string;
   // Fields for more details
   budget?: number;
   revenue?: number;
