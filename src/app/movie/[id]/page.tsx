@@ -385,6 +385,10 @@ export default function MovieDetailPage() {
             </Dialog>
             <Dialog open={isTrailerOpen} onOpenChange={setIsTrailerOpen}>
                 <DialogContent className="max-w-4xl p-0 bg-transparent border-0">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Trailer: {movie.title}</DialogTitle>
+                        <DialogDescription>Embedded YouTube video player for the {movie.title} trailer.</DialogDescription>
+                    </DialogHeader>
                     <div className="aspect-video">
                         <iframe
                             className="w-full h-full rounded-lg"
