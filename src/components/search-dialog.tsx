@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Check, Plus, Search } from "lucide-react";
+import { Loader2, Check, Plus, Search, Lightbulb } from "lucide-react";
 import type { Movie } from "@/lib/types";
 import { getMovieDetails, getTvDetails, getPosterUrl, searchMulti, mapTmdbResultToMovie } from "@/lib/tmdb";
 import { Skeleton } from "./ui/skeleton";
@@ -88,17 +88,23 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                     <DialogTitle className="font-headline">Search & Import</DialogTitle>
                     <DialogDescription>Search for movies and TV shows from The Movie Database (TMDB) to add to your collection.</DialogDescription>
                 </DialogHeader>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        placeholder="Search for a title (e.g., The Matrix, Breaking Bad)..."
-                        className="pl-10 text-base"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        autoFocus
-                    />
+                <div className="space-y-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="Search for a title (e.g., The Matrix, Breaking Bad)..."
+                            className="pl-10 text-base"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 px-1">
+                        <Lightbulb className="h-4 w-4" />
+                        <span>Tip: You can use the 'y:' filter to narrow your results by year. Example: 'star wars y:1977'.</span>
+                    </div>
                 </div>
-                <div className="flex-grow overflow-hidden relative">
+                <div className="flex-grow overflow-hidden relative pt-2">
                     <ScrollArea className="h-full">
                         <div className="space-y-4 pr-6">
                             {isLoading && query.length > 1 && (

@@ -11,11 +11,38 @@ export const getPosterUrl = (path: string | null, size: 'w500' | 'original' = 'w
 
 export const searchMulti = async (query: string) => {
     if (!query) return [];
+
+    let year: string | null = null;
+    let searchQuery = query;
+
+    const yearMatch = query.match(/\s+y:(\d{4})$/);
+    if (yearMatch) {
+        year = yearMatch[1];
+        searchQuery = query.replace(/\s+y:\d{4}$/, '').trim();
+    }
+    
+    if (!searchQuery) return [];
+
     try {
-        const response = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`);
-        if (!response.ok) throw new Error('Failed to fetch search results');
-        const data = await response.json();
-        return data.results.filter((r: any) => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path);
+        if (year) {
+            const moviePromise = fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&primary_release_year=${year}&include_adult=false&language=en-US&page=1`).then(res => res.json());
+            const tvPromise = fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&first_air_date_year=${year}&include_adult=false&language=en-US&page=1`).then(res => res.json());
+            
+            const [movieResults, tvResults] = await Promise.all([moviePromise, tvPromise]);
+
+            const movies = (movieResults.results || []).map((r: any) => ({ ...r, media_type: 'movie' }));
+            const tvs = (tvResults.results || []).map((r: any) => ({ ...r, media_type: 'tv' }));
+            
+            const combinedResults = [...movies, ...tvs].sort((a, b) => b.popularity - a.popularity);
+
+            return combinedResults.filter((r: any) => r.poster_path);
+
+        } else {
+            const response = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(searchQuery)}&include_adult=false&language=en-US&page=1`);
+            if (!response.ok) throw new Error('Failed to fetch search results');
+            const data = await response.json();
+            return data.results.filter((r: any) => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path);
+        }
     } catch (error) {
         console.error("TMDB search error:", error);
         return [];
@@ -37,7 +64,7 @@ export const getMovieDetails = (id: number) => fetchDetails(id, 'movie');
 export const getTvDetails = (id: number) => fetchDetails(id, 'tv');
 
 export const mapTmdbResultToMovie = (tmdbResult: any): Omit<Movie, 'id'> => {
-    const isMovie = tmdbResult.media_type === 'movie';
+    const isMovie = tmdbResult.media_type === 'movie' || !('name' in tmdbResult);
     const isAnime = tmdbResult.genres?.some((g: any) => g.id === 16) || tmdbResult.origin_country?.includes('JP');
 
     return {
