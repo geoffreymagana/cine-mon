@@ -145,7 +145,7 @@ export default function CollectionDetailPage() {
     
     return (
         <TooltipProvider>
-            <div className="bg-background min-h-screen dotted-background-permanent">
+            <div className="bg-background min-h-screen">
                 <div className="relative h-48 md:h-64 lg:h-80 w-full">
                     <Image
                         src={collection.coverImageUrl || 'https://placehold.co/1280x720.png'}
