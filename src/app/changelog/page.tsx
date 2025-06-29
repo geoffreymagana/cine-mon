@@ -28,7 +28,7 @@ async function parseChangelog(): Promise<VersionInfo[]> {
       const titleLine = lines[0];
       
       // Match "1.0.0 (2024-01-01)" or similar formats without brackets
-      const titleMatch = titleLine.match(/^(.*?) \((\d{4}-\d{2}-\d{2})\)/);
+      const titleMatch = titleLine.match(/^(?:\[)?(.*?)(?:\])?(?:\(.*\))?\s\((\d{4}-\d{2}-\d{2})\)/);
 
       if (!titleMatch) {
           // Fallback for versions without a date, or other formats.
