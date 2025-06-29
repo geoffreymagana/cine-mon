@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -144,37 +145,80 @@ export default function ProfilePage() {
         reader.onload = (event) => {
             try {
                 const json = event.target?.result as string;
-                const importedMovies: Movie[] = JSON.parse(json);
+                const parsedData = JSON.parse(json);
 
-                if (!Array.isArray(importedMovies) || (importedMovies.length > 0 && !('id' in importedMovies[0] && 'title' in importedMovies[0]))) {
-                    throw new Error("Invalid JSON structure for movies.");
+                if (!Array.isArray(parsedData)) {
+                    throw new Error("Invalid JSON structure: data is not an array.");
                 }
+
+                const importedMovies: any[] = parsedData;
 
                 const storedMoviesRaw = localStorage.getItem('movies');
                 const existingMovies: Movie[] = storedMoviesRaw ? JSON.parse(storedMoviesRaw) : [];
-                
+
                 const movieMap = new Map(existingMovies.map(m => [m.id, m]));
                 let newCount = 0;
-                importedMovies.forEach(movie => {
-                    if (!movieMap.has(movie.id)) newCount++;
-                    movieMap.set(movie.id, movie);
+                let updatedCount = 0;
+                let skippedCount = 0;
+
+                importedMovies.forEach(importedMovie => {
+                    if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
+                        skippedCount++;
+                        return; // Skip invalid entries
+                    }
+
+                    const movieToProcess = { ...importedMovie };
+
+                    if (movieToProcess.id && movieMap.has(movieToProcess.id)) {
+                        const existingMovie = movieMap.get(movieToProcess.id)!;
+                        movieMap.set(movieToProcess.id, { ...existingMovie, ...movieToProcess });
+                        updatedCount++;
+                    } else {
+                        if (!movieToProcess.id || movieMap.has(movieToProcess.id)) {
+                            movieToProcess.id = crypto.randomUUID();
+                        }
+                        
+                        const newMovie: Movie = {
+                            id: movieToProcess.id,
+                            title: movieToProcess.title,
+                            description: movieToProcess.description || '',
+                            posterUrl: movieToProcess.posterUrl || 'https://placehold.co/500x750.png',
+                            type: ['Movie', 'TV Show', 'Anime'].includes(movieToProcess.type) ? movieToProcess.type : 'Movie',
+                            status: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(movieToProcess.status) ? movieToProcess.status : 'Plan to Watch',
+                            watchedEpisodes: typeof movieToProcess.watchedEpisodes === 'number' ? movieToProcess.watchedEpisodes : 0,
+                            totalEpisodes: typeof movieToProcess.totalEpisodes === 'number' && movieToProcess.totalEpisodes > 0 ? movieToProcess.totalEpisodes : 1,
+                            rating: typeof movieToProcess.rating === 'number' ? movieToProcess.rating : 0,
+                            tags: Array.isArray(movieToProcess.tags) ? movieToProcess.tags : [],
+                            releaseDate: typeof movieToProcess.releaseDate === 'string' ? movieToProcess.releaseDate : '',
+                            ...movieToProcess
+                        };
+                        movieMap.set(newMovie.id, newMovie);
+                        newCount++;
+                    }
                 });
 
                 const updatedMovies = Array.from(movieMap.values());
                 localStorage.setItem('movies', JSON.stringify(updatedMovies));
 
+                let toastDescription = `${newCount} new titles added and ${updatedCount} updated.`;
+                if (skippedCount > 0) {
+                    toastDescription += ` ${skippedCount} entries were skipped due to invalid format.`;
+                }
+                toastDescription += " The page will now reload.";
+
                 toast({
                     title: "Import Successful!",
-                    description: `${newCount} new titles added and ${importedMovies.length - newCount} updated. The page will now reload.`,
+                    description: toastDescription,
                 });
                 
-                setTimeout(() => window.location.reload(), 2000);
+                setTimeout(() => window.location.reload(), 3000);
 
             } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : "The selected file could not be imported. Please check the file format.";
                 console.error("Failed to parse or process JSON:", error);
                 toast({
                     title: "Import Failed",
-                    description: "The selected file could not be imported. Please check the file format.",
+                    description: errorMessage,
                     variant: "destructive",
                 });
             } finally {
