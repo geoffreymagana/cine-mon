@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -52,8 +51,8 @@ export default function GuidePage() {
                              <AccordionItem value="item-4">
                                 <AccordionTrigger className="text-lg font-semibold">How can I import my existing collection?</AccordionTrigger>
                                 <AccordionContent className="text-muted-foreground space-y-2">
-                                    <p>You can import your library from a CSV file. Go to your Profile page, find the "Settings" card, and click the "Import CSV" button. This will open a file dialog for you to select your file.</p>
-                                    <p>Please ensure your CSV has columns for `title`, `description`, `type`, `status`, and other relevant fields.</p>
+                                    <p>You can import your library from a JSON file. Go to your Profile page, find the "Settings" card, and click the "Import JSON" button. This will open a file dialog for you to select your file.</p>
+                                    <p>The JSON file should be in the same format as the one created from the "Data Backup / Export" page. This will add new titles and update existing ones.</p>
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>

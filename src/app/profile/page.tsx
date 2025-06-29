@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -30,6 +29,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import type { Movie } from '@/lib/types';
 
 const themes = [
     { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
@@ -125,6 +125,63 @@ export default function ProfilePage() {
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== 'application/json') {
+            toast({
+                title: "Invalid File Type",
+                description: "Please select a valid JSON file.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const json = event.target?.result as string;
+                const importedMovies: Movie[] = JSON.parse(json);
+
+                if (!Array.isArray(importedMovies) || (importedMovies.length > 0 && !('id' in importedMovies[0] && 'title' in importedMovies[0]))) {
+                    throw new Error("Invalid JSON structure for movies.");
+                }
+
+                const storedMoviesRaw = localStorage.getItem('movies');
+                const existingMovies: Movie[] = storedMoviesRaw ? JSON.parse(storedMoviesRaw) : [];
+                
+                const movieMap = new Map(existingMovies.map(m => [m.id, m]));
+                let newCount = 0;
+                importedMovies.forEach(movie => {
+                    if (!movieMap.has(movie.id)) newCount++;
+                    movieMap.set(movie.id, movie);
+                });
+
+                const updatedMovies = Array.from(movieMap.values());
+                localStorage.setItem('movies', JSON.stringify(updatedMovies));
+
+                toast({
+                    title: "Import Successful!",
+                    description: `${newCount} new titles added and ${importedMovies.length - newCount} updated. The page will now reload.`,
+                });
+                
+                setTimeout(() => window.location.reload(), 2000);
+
+            } catch (error) {
+                console.error("Failed to parse or process JSON:", error);
+                toast({
+                    title: "Import Failed",
+                    description: "The selected file could not be imported. Please check the file format.",
+                    variant: "destructive",
+                });
+            } finally {
+                if (e.target) e.target.value = "";
+            }
+        };
+        reader.readAsText(file);
     };
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -288,12 +345,12 @@ export default function ProfilePage() {
                                          <div className="flex items-center justify-between">
                                             <div>
                                               <Label>Import Library</Label>
-                                              <p className="text-sm text-muted-foreground">Import your collection from a CSV file.</p>
+                                              <p className="text-sm text-muted-foreground">Import your collection from a JSON file.</p>
                                             </div>
                                             <Button variant="outline" onClick={handleImportClick}>
-                                                <Upload className="mr-2 h-4 w-4" /> Import CSV
+                                                <Upload className="mr-2 h-4 w-4" /> Import JSON
                                             </Button>
-                                            <input type="file" ref={fileInputRef} className="hidden" accept=".csv" />
+                                            <input type="file" ref={fileInputRef} className="hidden" accept=".json,application/json" onChange={handleFileImport} />
                                         </div>
                                     </CardContent>
                                 </Card>
