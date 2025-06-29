@@ -257,7 +257,7 @@ export default function MovieDetailPage() {
                                     </TabsList>
                                     <div className="flex md:hidden items-center gap-2">
                                         {movie.trailerUrl && (
-                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon" variant="outline">
+                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon">
                                                 <Play className="h-4 w-4" />
                                                 <span className="sr-only">Play Trailer</span>
                                             </Button>
