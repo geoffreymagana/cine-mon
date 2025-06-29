@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from 'react';
@@ -11,21 +12,38 @@ export const ProfileHeader = () => {
     const { toast } = useToast();
     const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/200x200.png");
     const [bannerUrl, setBannerUrl] = React.useState("https://placehold.co/1200x400.png");
+    const [name, setName] = React.useState("Cine-Mon User");
+    const [username, setUsername] = React.useState("cinemon_user");
     
     const avatarInputRef = React.useRef<HTMLInputElement>(null);
     const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
-    React.useEffect(() => {
+    const loadData = React.useCallback(() => {
         try {
             const storedAvatar = localStorage.getItem('profileAvatar');
             if (storedAvatar) setAvatarUrl(storedAvatar);
 
             const storedBanner = localStorage.getItem('profileBanner');
             if (storedBanner) setBannerUrl(storedBanner);
+
+            const storedName = localStorage.getItem('profileName');
+            if (storedName) setName(storedName);
+
+            const storedUsername = localStorage.getItem('profileUsername');
+            if (storedUsername) setUsername(storedUsername);
         } catch (error) {
             console.error("Failed to access localStorage:", error);
         }
     }, []);
+
+    React.useEffect(() => {
+        loadData();
+        
+        window.addEventListener('profileUpdated', loadData);
+        return () => {
+            window.removeEventListener('profileUpdated', loadData);
+        }
+    }, [loadData]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
         const file = e.target.files?.[0];
@@ -80,7 +98,7 @@ export const ProfileHeader = () => {
                 <div className="relative group">
                     <Avatar className="h-32 w-32 border-4 border-background ring-4 ring-primary shadow-lg">
                         <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait" />
-                        <AvatarFallback>U</AvatarFallback>
+                        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <button 
                         className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -94,15 +112,16 @@ export const ProfileHeader = () => {
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-3xl font-bold font-headline">Cine-Mon User</h2>
+                            <h2 className="text-3xl font-bold font-headline">{name}</h2>
                             <BadgeCheck className="h-7 w-7 text-primary" />
                         </div>
-                        <p className="text-muted-foreground">@cinemon_user</p>
+                        <p className="text-muted-foreground">@{username}</p>
                     </div>
-                    <Button variant="outline" size="icon">
+                    {/* This button is decorative for now. Functionality can be added to open an edit modal */}
+                    {/* <Button variant="outline" size="icon">
                         <Edit className="h-5 w-5"/>
                         <span className="sr-only">Edit Profile</span>
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
         </div>

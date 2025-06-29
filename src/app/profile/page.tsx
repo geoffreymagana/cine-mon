@@ -29,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 const themes = [
     { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
@@ -39,6 +40,11 @@ const themes = [
 ];
 
 export default function ProfilePage() {
+    const [name, setName] = React.useState('Cine-Mon User');
+    const [username, setUsername] = React.useState('cinemon_user');
+    const [bio, setBio] = React.useState('');
+    const { toast } = useToast();
+
     const [isDarkMode, setIsDarkMode] = React.useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [activeSection, setActiveSection] = React.useState('personal-info');
@@ -67,6 +73,20 @@ export default function ProfilePage() {
         if (storedTheme !== 'purple') {
             document.documentElement.classList.add(`theme-${storedTheme}`);
         }
+
+        try {
+            const storedName = localStorage.getItem('profileName');
+            if (storedName) setName(storedName);
+
+            const storedUsername = localStorage.getItem('profileUsername');
+            if (storedUsername) setUsername(storedUsername);
+
+            const storedBio = localStorage.getItem('profileBio');
+            if (storedBio) setBio(storedBio);
+        } catch (error) {
+            console.error("Failed to access localStorage:", error);
+        }
+
     }, []);
 
     React.useEffect(() => {
@@ -135,6 +155,26 @@ export default function ProfilePage() {
         document.documentElement.classList.toggle("dark", isDark);
     };
 
+    const handleSaveChanges = () => {
+        try {
+            localStorage.setItem('profileName', name);
+            localStorage.setItem('profileUsername', username);
+            localStorage.setItem('profileBio', bio);
+            window.dispatchEvent(new Event('profileUpdated'));
+            toast({
+                title: "Profile Updated",
+                description: "Your changes have been saved successfully.",
+            });
+        } catch (error) {
+            console.error("Failed to save to localStorage:", error);
+            toast({
+                title: "Error",
+                description: "Could not save your changes.",
+                variant: "destructive",
+            });
+        }
+    };
+
     return (
         <div className="flex h-screen flex-col bg-background">
             <header className="mx-auto w-full max-w-screen-xl px-4 pt-8 sm:px-6 lg:px-8">
@@ -172,15 +212,24 @@ export default function ProfilePage() {
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="name">Name</Label>
-                                            <Input id="name" defaultValue="Cine-Mon User" />
+                                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="username">Username</Label>
+                                            <div className="relative">
+                                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                                    <span className="text-muted-foreground sm:text-sm">@</span>
+                                                </div>
+                                                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="pl-7" />
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="bio">Bio</Label>
-                                            <Textarea id="bio" placeholder="Tell us a little about yourself" rows={3} />
+                                            <Textarea id="bio" placeholder="Tell us a little about yourself" rows={3} value={bio} onChange={(e) => setBio(e.target.value)} />
                                         </div>
                                     </CardContent>
                                     <CardFooter>
-                                        <Button>Save Changes</Button>
+                                        <Button onClick={handleSaveChanges}>Save Changes</Button>
                                     </CardFooter>
                                 </Card>
                             </div>

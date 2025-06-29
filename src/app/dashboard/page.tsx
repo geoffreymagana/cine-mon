@@ -42,6 +42,8 @@ export default function DashboardPage() {
   const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
+  const [name, setName] = React.useState("Cine-Mon User");
+  const [username, setUsername] = React.useState("cinemon_user");
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -62,9 +64,13 @@ export default function DashboardPage() {
         setMovies(initialMovies);
       }
       const storedAvatar = localStorage.getItem('profileAvatar');
-      if (storedAvatar) {
-        setAvatarUrl(storedAvatar);
-      }
+      if (storedAvatar) setAvatarUrl(storedAvatar);
+
+      const storedName = localStorage.getItem('profileName');
+      if (storedName) setName(storedName);
+
+      const storedUsername = localStorage.getItem('profileUsername');
+      if (storedUsername) setUsername(storedUsername);
     } catch (error) {
       console.error("Failed to access localStorage:", error);
       setMovies(initialMovies);
@@ -226,8 +232,8 @@ export default function DashboardPage() {
                           <AvatarFallback>U</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start">
-                          <span className="font-semibold">Cine-Mon User</span>
-                          <span className="text-xs text-muted-foreground">@cinemon_user</span>
+                          <span className="font-semibold">{name}</span>
+                          <span className="text-xs text-muted-foreground">@{username}</span>
                       </div>
                   </Button>
               </Link>
