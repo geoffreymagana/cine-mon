@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { VersionInfo } from '@/app/changelog/page';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 type ChangelogDisplayProps = {
   versions: VersionInfo[];
@@ -69,7 +71,21 @@ export const ChangelogDisplay = ({ versions }: ChangelogDisplayProps) => {
                                                         <Badge variant={getBadgeVariant(change.type)} className="whitespace-nowrap mt-1">
                                                             {getBadgeLabel(change.type)}
                                                         </Badge>
-                                                        <span dangerouslySetInnerHTML={{ __html: change.description.replace(/`([^`]+)`/g, '<code class="bg-muted text-muted-foreground px-1 py-0.5 rounded-sm font-mono text-xs">\$1</code>') }} />
+                                                        <div className="pt-0.5 text-foreground/90">
+                                                            <ReactMarkdown
+                                                                remarkPlugins={[remarkGfm]}
+                                                                components={{
+                                                                    p: ({node, ...props}) => <p className="m-0 leading-relaxed" {...props} />,
+                                                                    a: ({node, ...props}) => <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                                                    code: ({node, ...props}) => <code className="bg-muted text-muted-foreground px-1 py-0.5 rounded-sm font-mono text-xs" {...props} />,
+                                                                    img: ({node, ...props}) => <img className="max-w-full md:max-w-md rounded-md border my-4 shadow-md" {...props} />,
+                                                                    ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2" {...props} />,
+                                                                    ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-2" {...props} />,
+                                                                }}
+                                                            >
+                                                                {change.description}
+                                                            </ReactMarkdown>
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>
