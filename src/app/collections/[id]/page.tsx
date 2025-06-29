@@ -62,7 +62,7 @@ export default function CollectionDetailPage() {
         }
     }, [collectionId, loadCollectionData]);
     
-    const handleDeleteMovie = (movieId: string) => {
+    const handleRemoveFromCollection = (movieId: string) => {
         if (!collection) return;
         
         const updatedMovieIds = collection.movieIds.filter(id => id !== movieId);
@@ -203,7 +203,7 @@ export default function CollectionDetailPage() {
                     >
                         <MovieGrid
                             movies={movies}
-                            onDelete={handleDeleteMovie}
+                            onRemoveFromCollection={handleRemoveFromCollection}
                         />
                     </DndContext>
                 </main>

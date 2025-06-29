@@ -8,10 +8,10 @@ import { SortableContext, useSortable, rectSwappingStrategy } from '@dnd-kit/sor
 
 type MovieGridProps = {
   movies: Movie[];
-  onDelete: (movieId: string) => void;
+  onRemoveFromCollection?: (movieId: string) => void;
 };
 
-const SortableMovieItem = ({ movie, onDelete }: { movie: Movie, onDelete: (movieId: string) => void }) => {
+const SortableMovieItem = ({ movie, onRemoveFromCollection }: { movie: Movie, onRemoveFromCollection?: (movieId: string) => void }) => {
     const {
         attributes,
         listeners,
@@ -32,13 +32,13 @@ const SortableMovieItem = ({ movie, onDelete }: { movie: Movie, onDelete: (movie
         <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
             <MovieCard
                 movie={movie}
-                onDelete={() => onDelete(movie.id)}
+                onRemoveFromCollection={onRemoveFromCollection}
             />
         </div>
     );
 };
 
-export const MovieGrid = ({ movies, onDelete }: MovieGridProps) => {
+export const MovieGrid = ({ movies, onRemoveFromCollection }: MovieGridProps) => {
   if (movies.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
@@ -57,7 +57,7 @@ export const MovieGrid = ({ movies, onDelete }: MovieGridProps) => {
           <SortableMovieItem
             key={movie.id}
             movie={movie}
-            onDelete={onDelete}
+            onRemoveFromCollection={onRemoveFromCollection}
           />
         ))}
       </div>

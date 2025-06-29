@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -28,10 +28,15 @@ import {
     Bookmark,
     ChevronDown,
     Play,
-    Edit
+    Edit,
+    MoreVertical,
+    Lock,
+    Projector,
+    Trash2,
+    Check
 } from 'lucide-react';
 
-import type { Movie } from '@/lib/types';
+import type { Movie, UserCollection } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,13 +49,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { AmbientPlayer } from '@/components/ambient-player';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 const statusOptions = [
     { value: 'Watching' as const, label: 'Watching', icon: Clock, className: 'text-chart-1' },
@@ -63,8 +76,10 @@ const statusOptions = [
 export default function MovieDetailPage() {
     const params = useParams();
     const movieId = params.id as string;
+    const router = useRouter();
     const [movie, setMovie] = React.useState<Movie | null | undefined>(undefined);
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
+    const [allCollections, setAllCollections] = React.useState<UserCollection[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
     const [isTrailerOpen, setIsTrailerOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
@@ -83,6 +98,12 @@ export default function MovieDetailPage() {
             } else {
                 setMovie(null);
             }
+
+            const storedCollections = localStorage.getItem('collections');
+            if (storedCollections) {
+                setAllCollections(JSON.parse(storedCollections));
+            }
+
         } catch (error) {
             console.error("Failed to access localStorage:", error);
             setMovie(null);
@@ -111,6 +132,52 @@ export default function MovieDetailPage() {
             title: "Status Updated",
             description: `"${movie.title}" is now marked as "${newStatus}".`,
         });
+    };
+    
+    const handleDeleteMovie = () => {
+        if (!movie) return;
+
+        // Remove from movies list
+        const updatedMovies = allMovies.filter(m => m.id !== movie.id);
+        localStorage.setItem('movies', JSON.stringify(updatedMovies));
+
+        // Remove from all collections
+        const storedCollections = localStorage.getItem('collections');
+        if (storedCollections) {
+            let collections: UserCollection[] = JSON.parse(storedCollections);
+            collections.forEach(c => {
+                c.movieIds = c.movieIds.filter(id => id !== movie.id);
+            });
+            localStorage.setItem('collections', JSON.stringify(collections));
+        }
+
+        toast({
+            title: "Movie Deleted",
+            description: `"${movie.title}" has been permanently deleted.`,
+            variant: "destructive"
+        });
+        
+        router.push('/dashboard');
+    };
+
+    const handleAddToCollection = (collectionId: string) => {
+        if (!movie) return;
+
+        const storedCollections = localStorage.getItem('collections');
+        let collections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
+        
+        const targetCollection = collections.find(c => c.id === collectionId);
+        if (!targetCollection) return;
+        
+        if (targetCollection.movieIds.includes(movie.id)) {
+            toast({ title: "Already in Collection", description: `This title is already in "${targetCollection.name}".` });
+            return;
+        }
+
+        targetCollection.movieIds.push(movie.id);
+        localStorage.setItem('collections', JSON.stringify(collections));
+        setAllCollections(collections);
+        toast({ title: "Success!", description: `Added to "${targetCollection.name}".` });
     };
 
     if (movie === undefined) {
@@ -146,6 +213,8 @@ export default function MovieDetailPage() {
     );
     
     const currentStatusInfo = statusOptions.find(opt => opt.value === movie.status);
+    const vaults = allCollections.filter(c => c.type === 'Vault');
+    const spotlights = allCollections.filter(c => c.type === 'Spotlight');
 
     return (
         <>
@@ -245,6 +314,77 @@ export default function MovieDetailPage() {
                                     <Link href={`/movie/${movie.id}/edit`}>
                                         <Button variant="outline"><Edit className="mr-2 h-4 w-4" />Edit</Button>
                                     </Link>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                            <span className="sr-only">More options</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger>
+                                                    <Lock className="mr-2 h-4 w-4" />
+                                                    <span>Add to Vault</span>
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        {vaults.length > 0 ? vaults.map(vault => (
+                                                            <DropdownMenuItem
+                                                                key={vault.id}
+                                                                disabled={vault.movieIds.includes(movie.id)}
+                                                                onClick={() => handleAddToCollection(vault.id)}
+                                                            >
+                                                                {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                                                {vault.name}
+                                                            </DropdownMenuItem>
+                                                        )) : <DropdownMenuItem disabled>No vaults created</DropdownMenuItem>}
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger>
+                                                    <Projector className="mr-2 h-4 w-4" />
+                                                    <span>Add to Spotlight</span>
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        {spotlights.length > 0 ? spotlights.map(spotlight => (
+                                                            <DropdownMenuItem
+                                                                key={spotlight.id}
+                                                                disabled={spotlight.movieIds.includes(movie.id)}
+                                                                onClick={() => handleAddToCollection(spotlight.id)}
+                                                            >
+                                                                {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                                                {spotlight.name}
+                                                            </DropdownMenuItem>
+                                                        )) : <DropdownMenuItem disabled>No spotlights created</DropdownMenuItem>}
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
+                                            <DropdownMenuSeparator />
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>Delete</span>
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the movie from your collection and all associated vaults and spotlights.
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={handleDeleteMovie}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
 

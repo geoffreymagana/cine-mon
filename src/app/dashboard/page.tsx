@@ -32,6 +32,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { useRouter } from "next/navigation";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -106,20 +107,6 @@ export default function DashboardPage() {
     toast({
       title: "Success!",
       description: `${movieData.title} has been added to your collection.`,
-    });
-  };
-
-  const handleDeleteMovie = (movieId: string) => {
-    const movieToDelete = movies.find((movie) => movie.id === movieId);
-    if (!movieToDelete) return;
-
-    const updatedMovies = movies.filter((movie) => movie.id !== movieId);
-    setMovies(updatedMovies);
-    updateMoviesInStorage(updatedMovies);
-    toast({
-      title: "Movie Removed",
-      description: `"${movieToDelete.title}" has been removed from your collection.`,
-      variant: "destructive"
     });
   };
   
@@ -245,16 +232,17 @@ export default function DashboardPage() {
         <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
           <DashboardHeader onAddMovieClick={handleOpenAddDialog} onSearchClick={handleOpenSearchDialog} />
           <div className="flex-grow p-4 md:p-8">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <MovieGrid
-                movies={filteredMovies}
-                onDelete={handleDeleteMovie}
-              />
-            </DndContext>
+            <TooltipProvider>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <MovieGrid
+                    movies={filteredMovies}
+                  />
+                </DndContext>
+            </TooltipProvider>
           </div>
         </main>
          {isMobile && <BottomNav filter={filter} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
