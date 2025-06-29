@@ -203,18 +203,6 @@ export default function DashboardPage() {
                 <SidebarSeparator />
               </>
             )}
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="View your watch statistics">
-                    <Link href="/analytics">
-                        <ChartPie />
-                        <span>Analytics</span>
-                    </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
           <div className="p-2">

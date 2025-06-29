@@ -310,6 +310,15 @@ export default function ProfilePage() {
                                                 </div>
                                             </Button>
                                         </Link>
+                                        <Link href="/analytics" passHref>
+                                            <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
+                                                <BarChart3 className="mr-3 text-primary"/>
+                                                <div className="flex flex-col">
+                                                   <span>Stats for nerds</span>
+                                                   <span className="text-xs text-muted-foreground">Go to your analytics.</span>
+                                                </div>
+                                            </Button>
+                                        </Link>
                                         <Link href="/legal" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
                                                 <FileText className="mr-3 text-primary"/>

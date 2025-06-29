@@ -187,15 +187,41 @@ export default function MovieDetailPage() {
                                     data-ai-hint="movie poster"
                                 />
                             </Card>
+                            
+                            <Card>
+                                <CardContent className="p-3">
+                                    <p className="font-semibold text-xs mb-2 text-muted-foreground px-1">STATUS</p>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="w-full justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    {currentStatusInfo && <currentStatusInfo.icon className={cn("w-4 h-4", currentStatusInfo.className)} />}
+                                                    <span>{currentStatusInfo?.label}</span>
+                                                </div>
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            <DropdownMenuRadioGroup value={movie.status} onValueChange={(value) => handleStatusChange(value as Movie['status'])}>
+                                                {statusOptions.map(option => (
+                                                    <DropdownMenuRadioItem key={option.value} value={option.value} className="flex items-center gap-2">
+                                                        <option.icon className={cn("w-4 h-4", option.className)} />
+                                                        <span>{option.label}</span>
+                                                    </DropdownMenuRadioItem>
+                                                ))}
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </CardContent>
+                            </Card>
+
                             {movie.scriptUrl && (
-                                <div className="px-4">
-                                    <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer">
-                                        <Button variant="outline" className="w-full">
-                                            <Download className="mr-2"/>
-                                            Download Script
-                                        </Button>
-                                    </a>
-                                </div>
+                                <a href={movie.scriptUrl} download target="_blank" rel="noopener noreferrer" className="block">
+                                    <Button variant="outline" className="w-full">
+                                        <Download className="mr-2"/>
+                                        Download Script
+                                    </Button>
+                                </a>
                             )}
                         </aside>
 
@@ -237,30 +263,6 @@ export default function MovieDetailPage() {
                                                     <div className="w-5/6">
                                                         <p className="font-semibold">Rating</p>
                                                         <RatingProgressBar percentage={movie.rating} className="mt-2" />
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-start gap-3">
-                                                    {currentStatusInfo && <currentStatusInfo.icon className={cn("w-5 h-5 mt-1 shrink-0", currentStatusInfo.className)} />}
-                                                    <div>
-                                                        <p className="font-semibold">Status</p>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" className="text-muted-foreground -ml-3 h-auto py-0 px-3 flex items-center gap-1 hover:text-foreground">
-                                                                    {currentStatusInfo?.label}
-                                                                    <ChevronDown className="h-4 w-4 opacity-50" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent>
-                                                                <DropdownMenuRadioGroup value={movie.status} onValueChange={(value) => handleStatusChange(value as Movie['status'])}>
-                                                                    {statusOptions.map(option => (
-                                                                        <DropdownMenuRadioItem key={option.value} value={option.value} className="flex items-center gap-2">
-                                                                            <option.icon className={cn("w-4 h-4", option.className)} />
-                                                                            <span>{option.label}</span>
-                                                                        </DropdownMenuRadioItem>
-                                                                    ))}
-                                                                </DropdownMenuRadioGroup>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
                                                     </div>
                                                 </div>
                                                 <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
