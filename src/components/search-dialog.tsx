@@ -90,7 +90,6 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                  <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="Search for a title (e.g., The Matrix, Breaking Bad)..."
                         className="pl-10 text-base"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
