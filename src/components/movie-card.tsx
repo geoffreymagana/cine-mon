@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -17,7 +18,7 @@ import { RatingCircle } from "./rating-circle";
 
 type MovieCardProps = {
   movie: Movie;
-  onDelete: () => void;
+  onDelete: (movieId: string) => void;
 };
 
 export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
@@ -36,7 +37,7 @@ export const MovieCard = ({ movie, onDelete }: MovieCardProps) => {
 
   const handleDelete = (e: React.MouseEvent) => {
     handleInteraction(e);
-    onDelete();
+    onDelete(movie.id);
   };
 
   return (
