@@ -2,13 +2,12 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function ChangelogPage() {
-    const router = useRouter();
     const versions = [
         {
             version: "1.1.0",
@@ -50,10 +49,10 @@ export default function ChangelogPage() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
             <div className="w-full max-w-4xl">
-                 <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+                <Link href="/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back</span>
-                </button>
+                    <span>Back to Collection</span>
+                </Link>
                 <div className="text-center mb-16">
                     <h1 className="text-5xl font-bold font-headline">Changelog</h1>
                     <p className="text-muted-foreground mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
@@ -111,5 +110,3 @@ export default function ChangelogPage() {
         </div>
     );
 }
-
-    

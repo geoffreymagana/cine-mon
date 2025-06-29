@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { 
     ArrowLeft, 
@@ -104,7 +103,6 @@ const generateChartConfig = (data: { name: string; value: number }[]) => {
 };
 
 export default function AnalyticsPage() {
-    const router = useRouter();
     const [movies, setMovies] = React.useState<Movie[]>([]);
 
     React.useEffect(() => {
@@ -223,10 +221,10 @@ export default function AnalyticsPage() {
     return (
         <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8">
             <div className="w-full max-w-7xl mx-auto">
-                <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+                <Link href="/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back</span>
-                </button>
+                    <span>Back to Collection</span>
+                </Link>
 
                 <div className="text-left mb-8">
                     <h1 className="text-5xl font-bold font-headline">Your Watchverse</h1>
@@ -342,7 +340,4 @@ export default function AnalyticsPage() {
             </div>
         </div>
     );
-
-    
-
-    
+}

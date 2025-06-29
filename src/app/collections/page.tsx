@@ -4,7 +4,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Lock, Projector, Folder } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,6 @@ const CollectionCard = ({ collection }: { collection: UserCollection }) => (
 
 
 export default function CollectionsPage() {
-    const router = useRouter();
     const [collections, setCollections] = React.useState<UserCollection[]>([]);
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [dialogType, setDialogType] = React.useState<'Vault' | 'Spotlight'>('Vault');
@@ -92,10 +90,10 @@ export default function CollectionsPage() {
         <>
             <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8 dotted-background-permanent">
                 <div className="w-full max-w-7xl mx-auto">
-                    <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+                    <Link href="/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                         <ArrowLeft className="w-5 h-5"/>
-                        <span>Back</span>
-                    </button>
+                        <span>Back to Collection</span>
+                    </Link>
 
                     <div className="text-left mb-8">
                         <h1 className="text-5xl font-bold font-headline">My Vaults & Spotlights</h1>
@@ -125,5 +123,3 @@ export default function CollectionsPage() {
         </>
     );
 }
-
-    

@@ -2,22 +2,20 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowLeft, Clapperboard, Film, Popcorn, Plus, Shuffle, Tv } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 
 export default function GuidePage() {
-    const router = useRouter();
-
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
             <div className="w-full max-w-4xl">
-                 <button onClick={() => router.back()} className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
+                 <Link href="/dashboard" className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back</span>
-                </button>
+                    <span>Back to Collection</span>
+                </Link>
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-3xl font-headline">Getting Started Guide</CardTitle>
@@ -65,5 +63,3 @@ export default function GuidePage() {
         </div>
     );
 }
-
-    
