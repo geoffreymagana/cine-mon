@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { AmbientPlayer } from '@/components/ambient-player';
 
 const statusOptions = [
     { value: 'Watching' as const, label: 'Watching', icon: Clock, className: 'text-chart-1' },
@@ -384,21 +385,18 @@ export default function MovieDetailPage() {
                 </DialogContent>
             </Dialog>
             <Dialog open={isTrailerOpen} onOpenChange={setIsTrailerOpen}>
-                <DialogContent className="max-w-4xl p-0 bg-transparent border-0">
+                <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0 aspect-video">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Trailer: {movie.title}</DialogTitle>
                         <DialogDescription>Embedded YouTube video player for the {movie.title} trailer.</DialogDescription>
                     </DialogHeader>
-                    <div className="aspect-video">
-                        <iframe
-                            className="w-full h-full rounded-lg"
-                            src={`https://www.youtube.com/embed/${movie.trailerUrl}`}
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                        ></iframe>
-                    </div>
+                    {isTrailerOpen && movie.trailerUrl && (
+                        <AmbientPlayer 
+                            imageUrl={movie.backdropUrl || movie.posterUrl} 
+                            trailerUrl={movie.trailerUrl} 
+                            title={movie.title}
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
         </>
