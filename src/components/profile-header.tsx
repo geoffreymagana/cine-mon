@@ -81,7 +81,7 @@ export const ProfileHeader = () => {
                     alt="Banner"
                     width={1200}
                     height={400}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-top"
                     data-ai-hint="abstract cinematic"
                 />
                 <Button 
