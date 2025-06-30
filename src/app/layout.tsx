@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeInitializer } from '@/components/theme-initializer';
 
+
 export const metadata: Metadata = {
   title: 'Cine-Mon',
   description: 'Your personal movie and series tracker.',
