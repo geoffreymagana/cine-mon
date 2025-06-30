@@ -6,6 +6,7 @@ import { ThemeInitializer } from '@/components/theme-initializer';
 export const metadata: Metadata = {
   title: 'Cine-Mon',
   description: 'Your personal movie and series tracker.',
+  manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {
@@ -13,6 +14,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: '#09091a' },
+  ],
 };
 
 export default function RootLayout({
