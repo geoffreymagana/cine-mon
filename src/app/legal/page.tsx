@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -29,7 +30,7 @@ function LegalPageContent() {
                         <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard" target="_blank" rel="noopener noreferrer">
+                        <Link href="/app/dashboard" target="_blank" rel="noopener noreferrer">
                             <Button>
                                 Go to App <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>

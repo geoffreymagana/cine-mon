@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { VersionInfo } from '@/app/changelog/page';
+import type { VersionInfo } from '@/app/app/changelog/page';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -35,7 +36,7 @@ export const ChangelogDisplay = ({ versions }: ChangelogDisplayProps) => {
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
             <div className="w-full max-w-4xl">
-                <Link href="/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+                <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
                     <span>Back to Collection</span>
                 </Link>
