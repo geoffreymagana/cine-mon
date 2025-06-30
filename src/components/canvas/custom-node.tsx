@@ -5,6 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { cn } from '@/lib/utils';
+
 
 type CustomNodeData = {
   label: string;
@@ -29,9 +31,6 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       
       const length = textarea.value.length;
       textarea.setSelectionRange(length, length);
-      
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [isEditing]);
   
@@ -46,12 +45,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLabel(e.target.value);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${e.target.scrollHeight}px`;
-    }
   };
-
+  
   const getBorderColor = () => {
     if (selected) {
       return 'hsl(var(--primary))';
@@ -60,10 +55,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     if (!color || color === 'hsl(var(--card))' || color === 'hsl(var(--muted))') {
       return 'hsl(var(--border))';
     }
-    if (color.includes('/')) {
-        return color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
-    }
-    return color;
+    const newColor = color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
+    return newColor;
   };
 
   return (
@@ -71,7 +64,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       className="nopan nowheel rounded-lg shadow-md border-2 h-full flex flex-col"
       style={{ 
         borderColor: getBorderColor(),
-        backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.5)') : 'hsl(var(--card))'
+        backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.7)') : 'hsl(var(--card))'
       }}
       onDoubleClick={handleDoubleClick}
     >
@@ -88,19 +81,19 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
       <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
 
-      <div className="w-full h-full overflow-y-auto text-card-foreground p-3 break-words">
+      <div className="w-full h-full overflow-y-auto text-card-foreground p-3 break-words pr-4">
         {isEditing ? (
           <textarea
             ref={textareaRef}
             value={label}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Start typing..."
-            className="w-full min-h-[20px] border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
+            placeholder="Double-click to edit..."
+            className="w-full h-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
             style={{ resize: 'none' }}
           />
         ) : (
-          <div className="w-full text-xs prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 dark:prose-invert">
+          <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs")}>
              {label ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
              ) : (
