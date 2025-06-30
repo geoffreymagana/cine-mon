@@ -27,6 +27,7 @@ function LegalPageContent() {
                         <Link href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</Link>
                         <Link href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</Link>
                         <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
+                        <Link href="/changelog" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Changelog</Link>
                         <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
                     </div>
                     <div className="flex items-center gap-4">
@@ -180,6 +181,7 @@ function LegalPageContent() {
                     </div>
                     <div className="flex gap-6 text-gray-400">
                     <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+                    <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
                     <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
                     <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
