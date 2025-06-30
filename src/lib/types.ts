@@ -54,3 +54,9 @@ export type UserCollection = {
   coverImageUrl?: string;
   movieIds: string[];
 };
+
+export type VersionInfo = {
+  version: string;
+  date: string;
+  content: string;
+};
