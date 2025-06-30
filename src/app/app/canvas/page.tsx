@@ -3,7 +3,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
-  Controls,
   MiniMap,
   type Connection,
   type Edge,
@@ -16,7 +15,7 @@ import ReactFlow, {
   MarkerType,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Spline } from 'lucide-react';
 import CustomNode from '@/components/canvas/custom-node';
 import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
@@ -25,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
 import { NodeCreator } from '@/components/canvas/node-creator';
 import { ColorPickerToolbar } from '@/components/canvas/color-picker-toolbar';
-
+import { EdgeToolbar } from '@/components/canvas/edge-toolbar';
 
 import 'reactflow/dist/style.css';
 
@@ -51,6 +50,7 @@ function CanvasFlow() {
   const [isSnapToGrid, setIsSnapToGrid] = useState(true);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [selectedNodes, setSelectedNodes] = React.useState<Node[]>([]);
+  const [selectedEdges, setSelectedEdges] = React.useState<Edge[]>([]);
   
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
@@ -77,7 +77,12 @@ function CanvasFlow() {
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
-       const newEdge = { ...params, markerEnd: { type: MarkerType.ArrowClosed } };
+       const newEdge = { 
+           ...params, 
+           type: 'smoothstep',
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 2 },
+           markerEnd: { type: MarkerType.ArrowClosed } 
+        };
        setEdges((eds) => addEdge(newEdge, eds));
     },
     [setEdges]
@@ -91,7 +96,7 @@ function CanvasFlow() {
 
     const newNode: Node = {
       id: `node-${crypto.randomUUID()}`,
-      type: type,
+      type: 'custom',
       position: targetPosition,
       data: { 
         label: '', 
@@ -126,9 +131,32 @@ function CanvasFlow() {
     },
     [project]
   );
+  
+  const onEdgeColorChange = useCallback((color: string) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (selectedEdges.some(selected => selected.id === edge.id)) {
+          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 2 } };
+        }
+        return edge;
+      })
+    );
+  }, [selectedEdges, setEdges]);
 
-  const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
+  const onEdgeTypeChange = useCallback((type: 'smoothstep' | 'straight') => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (selectedEdges.some(selected => selected.id === edge.id)) {
+          return { ...edge, type };
+        }
+        return edge;
+      })
+    );
+  }, [selectedEdges, setEdges]);
+
+  const onSelectionChange = useCallback(({ nodes, edges: selEdges }: { nodes: Node[], edges: Edge[] }) => {
     setSelectedNodes(nodes);
+    setSelectedEdges(selEdges);
   }, []);
 
   const [canUndo] = useState(false);
@@ -195,6 +223,14 @@ function CanvasFlow() {
             selectedNodes.forEach(node => onColorChange(node.id, color));
           }}
         />
+      )}
+
+      {selectedEdges.length > 0 && selectedNodes.length === 0 && (
+          <EdgeToolbar
+              selectedEdges={selectedEdges}
+              onEdgeColorChange={onEdgeColorChange}
+              onEdgeTypeChange={onEdgeTypeChange}
+          />
       )}
 
       <CanvasToolbar 
