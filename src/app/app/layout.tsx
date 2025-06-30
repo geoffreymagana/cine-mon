@@ -31,6 +31,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const [username, setUsername] = React.useState("cinemon_user");
     
     const filter = searchParams.get('filter') || 'All';
+
+    // This will check if the current page is a movie detail or edit page
+    const isMoviePage = pathname.startsWith('/app/movie');
     
     React.useEffect(() => {
         try {
@@ -66,6 +69,16 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const setFilter = (newFilter: string) => {
         router.push(`/app/dashboard?filter=${newFilter}`);
     };
+    
+    if (isMoviePage) {
+        // Render movie pages without the main sidebar for a full-screen experience.
+        // We still need the TooltipProvider for components on this page.
+        return (
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+        );
+    }
 
     return (
         <SidebarProvider>
