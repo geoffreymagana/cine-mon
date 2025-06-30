@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, View } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,7 +33,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const filter = searchParams.get('filter') || 'All';
 
     // This will check if the current page is a movie detail or edit page
-    const isMoviePage = pathname.startsWith('/app/movie');
+    const isImmersivePage = pathname.startsWith('/app/movie') || pathname.startsWith('/app/canvas');
     
     React.useEffect(() => {
         try {
@@ -70,9 +70,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         router.push(`/app/dashboard?filter=${newFilter}`);
     };
     
-    if (isMoviePage) {
-        // Render movie pages without the main sidebar for a full-screen experience.
-        // We still need the TooltipProvider for components on this page.
+    if (isImmersivePage) {
+        // Render immersive pages without the main sidebar for a full-screen experience.
         return (
             <TooltipProvider>
               {children}
@@ -111,6 +110,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                         <span>Collections</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
+                                {!isMobile && (
+                                     <SidebarMenuItem>
+                                        <SidebarMenuButton onClick={() => router.push('/app/canvas')} tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
+                                            <View />
+                                            <span>Canvas</span>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )}
                             </SidebarMenu>
                         </SidebarGroup>
                         <SidebarSeparator />

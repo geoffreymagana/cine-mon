@@ -1,4 +1,6 @@
 
+import type { Node, Edge } from 'reactflow';
+
 export type Episode = {
   episodeNumber: number;
   name: string;
@@ -71,4 +73,11 @@ export type Feedback = {
   feedbackType: string;
   message: string;
   submittedAt: string; // ISO string
+};
+
+export type CanvasBoard = {
+    id: string;
+    name: string;
+    nodes: Node[];
+    edges: Edge[];
 };
