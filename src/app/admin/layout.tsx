@@ -9,12 +9,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 import { Loader2 } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
     const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    const { toast } = useToast();
 
     React.useEffect(() => {
         try {
@@ -32,9 +37,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
     }, [pathname, router]);
 
-    const handleLogout = () => {
-        sessionStorage.removeItem('isAdminAuthenticated');
-        router.push('/admin/login');
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            sessionStorage.removeItem('isAdminAuthenticated');
+            toast({ title: 'Logged out successfully.' });
+            router.push('/admin/login');
+        } catch (error) {
+            console.error("Logout failed:", error);
+            toast({
+                title: 'Logout Failed',
+                description: 'An error occurred while logging out. Please try again.',
+                variant: 'destructive'
+            });
+        }
     };
 
     if (pathname === '/admin/login') {
