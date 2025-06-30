@@ -1,9 +1,65 @@
 # [1.2.0](https://github.com/geoffreymagana/cine-mon/compare/v1.1.0...v1.2.0) (2025-06-30)
 
 
+# Changelog
+
+## [1.0.0] - 2025-07-01
+
 ### Features
 
-* **tracking:** Implement detailed season and episode tracking ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
+#### TV Show & Anime Tracking
+
+- **Season and Episode Tracking:**  
+  - Added the ability to track individual seasons and episodes for TV shows and anime.
+  - Automatically fetches full season and episode data from TMDB when a series is added.
+  - Introduced a new "Seasons" tab in the TV show detail view.
+  - Each season features an accordion UI with individual episode checkboxes for tracking.
+  - Season-level progress bars and overall series completion percentages are now automatically calculated.
+
+- **UI Refactor for Episode Tracking:**  
+  - Removed manual episode count fields from the TV show edit page.
+  - Episode progress is now fully automated based on tracked episodes.
+
+#### PWA and Mobile Experience
+
+- **PWA Manifest:**  
+  - Added `manifest.webmanifest` configured for a standalone, app-like experience.
+  - Linked the manifest in the root layout for installability.
+
+- **Mobile UI Enhancements:**  
+  - Disabled pinch-to-zoom on mobile to create a more native feel.
+  - Implemented long-press gesture to initiate drag-and-drop on touch devices.
+  - Replaced sidebar toggle with a profile avatar link in the header.
+  - Shifted primary navigation to bottom nav on mobile.
+  - Updated the landing page's install button text to "Launch App" for improved clarity.
+
+#### Changelog and UI Layout
+
+- **Public Changelog:**  
+  - Added a new public-facing changelog page that parses and renders the `CHANGELOG.md` file.
+  - Updated all site navigation links to include the changelog.
+
+- **Layout Improvements:**  
+  - Made the main sidebar conditional to allow immersive, full-screen views for movie detail and edit pages.
+  - On smaller screens, converted the "Play Trailer" and "Edit" buttons to icon-only for improved spacing and clarity.
+
+---
+
+### Fixes
+
+- **Routing Fix:**  
+  - Corrected the movie detail page link in `MovieCard` to resolve a 404 error.
+
+- **UI Bug Fixes:**  
+  - Ensured that the "More options" menu on movie detail pages remains visible and correctly positioned on mobile devices.
+
+---
+
+### Chores
+
+- **Landing Page Content Update:**  
+  - Replaced placeholder screenshots on the landing page with finalised application visuals.
+ ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
 
 <<<<<<< HEAD
 # [1.1.0](https://github.com/geoffreymagana/cine-mon/compare/v1.0.0...v1.1.0) (2025-06-29)
@@ -19,7 +75,7 @@ feat(release): Version 1.0.0 - The Cinematic Overhaul
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.0 (2025-06-30)
+## 1.0.0 (2025-06-29)
 
 ### Features
 
