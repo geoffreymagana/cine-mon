@@ -167,7 +167,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                <Link href="/app/dashboard">
                   <Button size="lg" className="w-full sm:w-auto shadow-neon hover:shadow-neon-hover transition-shadow duration-300">
-                    Install Web App
+                    Launch App
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
@@ -299,7 +299,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/app/dashboard">
                   <Button size="lg" className="w-full sm:w-auto shadow-neon hover:shadow-neon-hover transition-shadow duration-300">
-                    Install Web App
+                    Launch App
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
