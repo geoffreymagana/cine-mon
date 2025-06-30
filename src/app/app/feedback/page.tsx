@@ -10,13 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { submitFeedback } from '@/ai/flows/submit-feedback';
+import type { Feedback } from '@/lib/types';
 
 export default function FeedbackPage() {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
 
@@ -35,17 +35,28 @@ export default function FeedbackPage() {
         }
 
         try {
-            await submitFeedback({ feedbackType, message });
+            const newFeedback: Feedback = {
+                id: crypto.randomUUID(),
+                feedbackType,
+                message,
+                submittedAt: new Date().toISOString(),
+            };
+
+            const storedFeedback = localStorage.getItem('feedbackSubmissions');
+            const feedback: Feedback[] = storedFeedback ? JSON.parse(storedFeedback) : [];
+            feedback.unshift(newFeedback); // Add new feedback to the top
+            localStorage.setItem('feedbackSubmissions', JSON.stringify(feedback));
+
             toast({
                 title: "Feedback Submitted!",
-                description: "Thank you for helping us improve Cine-Mon.",
+                description: "Thank you for your feedback. It has been saved locally.",
             });
             (e.target as HTMLFormElement).reset();
         } catch (error) {
             console.error("Feedback submission error:", error);
             toast({
                 title: "Submission Failed",
-                description: "There was an error submitting your feedback. Please try again later.",
+                description: "There was an error saving your feedback. Please try again.",
                 variant: "destructive",
             });
         } finally {

@@ -65,3 +65,10 @@ export type VersionInfo = {
   date: string;
   sections: ChangeSection[];
 };
+
+export type Feedback = {
+  id: string;
+  feedbackType: string;
+  message: string;
+  submittedAt: string; // ISO string
+};
