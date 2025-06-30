@@ -232,11 +232,98 @@ export default function MovieDetailPage() {
                 </div>
 
                 <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-48 md:-mt-64 relative z-10">
-                    <div className="mb-8">
+                    <div className="mb-8 flex justify-between items-center">
                         <Link href="/app/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                             <ArrowLeft className="w-4 h-4"/>
-                            <span>Back to Collection</span>
+                            <span className="hidden sm:inline">Back to Collection</span>
+                            <span className="sm:hidden">Back</span>
                         </Link>
+                        
+                        <div className="flex md:hidden items-center gap-2">
+                            {movie.trailerUrl && (
+                                <Button onClick={() => setIsTrailerOpen(true)} size="icon" className="bg-primary hover:bg-primary/90">
+                                    <Play className="h-4 w-4" />
+                                    <span className="sr-only">Play Trailer</span>
+                                </Button>
+                            )}
+                            <Link href={`/app/movie/${movie.id}/edit`}>
+                                <Button size="icon" variant="outline">
+                                    <Edit className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                </Button>
+                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                    <span className="sr-only">More options</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Lock className="mr-2 h-4 w-4" />
+                                            <span>Add to Vault</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                {vaults.length > 0 ? vaults.map(vault => (
+                                                    <DropdownMenuItem
+                                                        key={vault.id}
+                                                        disabled={vault.movieIds.includes(movie.id)}
+                                                        onClick={() => handleAddToCollection(vault.id)}
+                                                    >
+                                                        {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                                        {vault.name}
+                                                    </DropdownMenuItem>
+                                                )) : <DropdownMenuItem disabled>No vaults created</DropdownMenuItem>}
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Projector className="mr-2 h-4 w-4" />
+                                            <span>Add to Spotlight</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent>
+                                                {spotlights.length > 0 ? spotlights.map(spotlight => (
+                                                    <DropdownMenuItem
+                                                        key={spotlight.id}
+                                                        disabled={spotlight.movieIds.includes(movie.id)}
+                                                        onClick={() => handleAddToCollection(spotlight.id)}
+                                                    >
+                                                        {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                                        {spotlight.name}
+                                                    </DropdownMenuItem>
+                                                )) : <DropdownMenuItem disabled>No spotlights created</DropdownMenuItem>}
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuSeparator />
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>Delete</span>
+                                            </DropdownMenuItem>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the movie from your collection and all associated vaults and spotlights.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteMovie}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
@@ -393,20 +480,6 @@ export default function MovieDetailPage() {
                                         {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
                                         {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
                                     </TabsList>
-                                    <div className="flex md:hidden items-center gap-2">
-                                        {movie.trailerUrl && (
-                                            <Button onClick={() => setIsTrailerOpen(true)} size="icon" className="bg-primary hover:bg-primary/90">
-                                                <Play className="h-4 w-4" />
-                                                <span className="sr-only">Play Trailer</span>
-                                            </Button>
-                                        )}
-                                        <Link href={`/app/movie/${movie.id}/edit`}>
-                                            <Button size="icon" variant="outline">
-                                                <Edit className="h-4 w-4" />
-                                                <span className="sr-only">Edit</span>
-                                            </Button>
-                                        </Link>
-                                    </div>
                                 </div>
                                 
                                 <TabsContent value="details">
