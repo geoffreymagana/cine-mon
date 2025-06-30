@@ -18,9 +18,9 @@ import { ArrowLeft } from 'lucide-react';
 import CustomNode from '@/components/canvas/custom-node';
 import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
-import { NodeCreator } from '@/components/canvas/node-creator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
 
 import 'reactflow/dist/style.css';
 
@@ -36,6 +36,16 @@ function CanvasFlow() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { project } = useReactFlow();
+
+  const [contextMenu, setContextMenu] = useState<{
+    top: number;
+    left: number;
+    panePosition: { x: number; y: number };
+  } | null>(null);
+  
+  const [isSnapToGrid, setIsSnapToGrid] = useState(true);
+  const [isSnapToObjects, setIsSnapToObjects] = useState(true);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -53,32 +63,49 @@ function CanvasFlow() {
     );
   }, [setNodes]);
   
-  const addNode = useCallback((type: string) => {
-    if (!reactFlowWrapper.current) return;
-
-    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-    const position = project({
-      x: reactFlowBounds.width / 2,
-      y: reactFlowBounds.height / 2,
-    });
-
-    const newNode = {
+  const addNode = useCallback((type: string, position: {x: number, y: number}) => {
+    const newNode: Node = {
       id: `node-${crypto.randomUUID()}`,
       type: type,
       position,
       data: { label: 'New Card', onLabelChange },
+      width: 200,
+      height: 80,
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [project, onLabelChange, setNodes]);
+  }, [onLabelChange, setNodes]);
 
+  const handlePaneContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      if (!reactFlowWrapper.current) return;
+      
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const panePosition = project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
 
-  // Dummy undo/redo state for now. A full implementation is a future step.
+      setContextMenu({
+        top: event.clientY,
+        left: event.clientX,
+        panePosition,
+      });
+    },
+    [project]
+  );
+
   const [canUndo] = useState(false);
   const [canRedo] = useState(false);
 
   return (
-    <div ref={reactFlowWrapper} style={{ height: '100vh', width: '100vw' }} className="bg-background">
+    <div 
+      ref={reactFlowWrapper} 
+      style={{ height: '100vh', width: '100vw' }} 
+      className="bg-background"
+      onClick={() => setContextMenu(null)}
+    >
       <div className="absolute top-4 left-4 z-10 flex items-center gap-4">
         <Link href="/app/dashboard" passHref>
           <Button variant="outline" size="icon" aria-label="Back to Dashboard">
@@ -101,9 +128,30 @@ function CanvasFlow() {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
+        onPaneContextMenu={handlePaneContextMenu}
+        snapToGrid={isSnapToGrid}
+        snapGrid={[20, 20]}
+        nodesDraggable={!isReadOnly}
+        nodesConnectable={!isReadOnly}
+        elementsSelectable={!isReadOnly}
       >
-        <Background variant="dots" gap={16} size={1} color="hsl(var(--border) / 0.5)" />
+        <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
       </ReactFlow>
+
+      {contextMenu && (
+        <CanvasContextMenu
+          {...contextMenu}
+          onClose={() => setContextMenu(null)}
+          onAddCard={() => addNode('custom', contextMenu.panePosition)}
+          isSnapToGrid={isSnapToGrid}
+          setIsSnapToGrid={setIsSnapToGrid}
+          isSnapToObjects={isSnapToObjects}
+          setIsSnapToObjects={setIsSnapToObjects}
+          isReadOnly={isReadOnly}
+          setIsReadOnly={setIsReadOnly}
+          canUndo={canUndo}
+        />
+      )}
 
       <CanvasToolbar 
         onUndo={() => {}}
@@ -112,8 +160,6 @@ function CanvasFlow() {
         canRedo={canRedo}
         onShowHelp={() => setIsHelpOpen(true)}
       />
-
-      <NodeCreator onAddNode={addNode} />
 
       <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
     </div>
