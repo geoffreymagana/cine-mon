@@ -55,13 +55,8 @@ export type UserCollection = {
   movieIds: string[];
 };
 
-export type ChangeSection = {
-  type: 'Features' | 'Fixes' | 'Breaking Changes';
-  content: string;
-};
-
 export type VersionInfo = {
   version: string;
   date: string;
-  sections: ChangeSection[];
+  content: string;
 };
