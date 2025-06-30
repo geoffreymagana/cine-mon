@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
   type Connection,
@@ -11,12 +11,14 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   ReactFlowProvider,
+  useReactFlow,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import CustomNode from '@/components/canvas/custom-node';
 import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
+import { NodeCreator } from '@/components/canvas/node-creator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -32,6 +34,8 @@ function CanvasFlow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [canvasName, setCanvasName] = useState('My Cinematic Universe');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { project } = useReactFlow();
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -48,13 +52,33 @@ function CanvasFlow() {
       })
     );
   }, [setNodes]);
+  
+  const addNode = useCallback((type: string) => {
+    if (!reactFlowWrapper.current) return;
+
+    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+    const position = project({
+      x: reactFlowBounds.width / 2,
+      y: reactFlowBounds.height / 2,
+    });
+
+    const newNode = {
+      id: `node-${crypto.randomUUID()}`,
+      type: type,
+      position,
+      data: { label: 'New Card', onLabelChange },
+    };
+
+    setNodes((nds) => nds.concat(newNode));
+  }, [project, onNodeLabelChange, setNodes]);
+
 
   // Dummy undo/redo state for now. A full implementation is a future step.
   const [canUndo] = useState(false);
   const [canRedo] = useState(false);
 
   return (
-    <div style={{ height: '100vh', width: '100vw' }} className="bg-background">
+    <div ref={reactFlowWrapper} style={{ height: '100vh', width: '100vw' }} className="bg-background">
       <div className="absolute top-4 left-4 z-10 flex items-center gap-4">
         <Link href="/app/dashboard" passHref>
           <Button variant="outline" size="icon" aria-label="Back to Dashboard">
@@ -88,6 +112,8 @@ function CanvasFlow() {
         canRedo={canRedo}
         onShowHelp={() => setIsHelpOpen(true)}
       />
+
+      <NodeCreator onAddNode={addNode} />
 
       <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
     </div>
