@@ -23,7 +23,8 @@ import {
     Shuffle, 
     Clapperboard, 
     WifiOff,
-    Bell
+    Bell,
+    Lock
 } from 'lucide-react';
 import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 
@@ -156,13 +157,16 @@ export default function AboutPage() {
                                  <p>
                                     I'd love to hear what you're building with Cine-Mon, how you’re using it, or what scene made you cry last night. Feedback, bug reports, or feature requests — I’m all ears.
                                 </p>
-                                 <div className="flex flex-col sm:flex-row gap-6 mt-6">
+                                 <div className="flex flex-col sm:flex-row items-center gap-6 mt-6">
                                     <a href="mailto:geoffreymagana21@gmail.com" className="flex items-center gap-2 text-primary hover:underline font-semibold">
                                         <Mail className="w-5 h-5" /> <span>Email Me</span>
                                     </a>
                                     <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline font-semibold">
                                         <Github className="w-5 h-5" /> <span>Fork on GitHub</span>
                                     </a>
+                                    <Link href="/admin/login" title="Admin Login" className="text-primary hover:text-primary/80">
+                                        <Lock className="w-5 h-5" />
+                                    </Link>
                                 </div>
                             </Section>
                         </div>
@@ -178,13 +182,16 @@ export default function AboutPage() {
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
                         <span className="text-lg font-bold">Cine-Mon</span>
                     </div>
-                    <div className="flex gap-6 text-gray-400">
+                    <div className="flex items-center gap-6 text-gray-400">
                     <Link href="/about" className="hover:text-primary transition-colors">About</Link>
                     <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
                     <Link href="/legal?tab=privacy" className="hover:text-primary transition-colors">Privacy</Link>
                     <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
                     <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
+                    <Link href="/admin/login" title="Admin Login" className="hover:text-primary transition-colors">
+                        <Lock className="w-4 h-4" />
+                    </Link>
                     </div>
                 </div>
                 <div className="text-center text-gray-500 text-sm mt-8">
