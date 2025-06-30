@@ -138,7 +138,6 @@ function CanvasFlow() {
         onPaneContextMenu={handlePaneContextMenu}
         snapToGrid={isSnapToGrid}
         snapToObjects={isSnapToObjects}
-        snapGrid={[20, 20]}
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
