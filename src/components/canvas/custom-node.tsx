@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Handle, Position, NodeResizer, NodeProps } from 'reactflow';
+import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 
 type CustomNodeData = {
   label: string;
@@ -49,7 +49,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
+      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex justify-center"
       onDoubleClick={handleDoubleClick}
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
@@ -79,11 +79,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="w-full border-none bg-transparent p-0 text-base text-card-foreground outline-none text-center nodrag"
+          className="w-full border-none bg-transparent p-0 text-sm text-card-foreground outline-none text-center nodrag"
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-base text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
+        <div className="text-sm text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
       )}
     </div>
   );

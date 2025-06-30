@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -137,6 +136,7 @@ function CanvasFlow() {
         fitView
         onPaneContextMenu={handlePaneContextMenu}
         snapToGrid={isSnapToGrid}
+        snapToObjects={isSnapToObjects}
         snapGrid={[20, 20]}
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
