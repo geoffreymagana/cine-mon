@@ -80,7 +80,7 @@ function CanvasFlow() {
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, setNodes, project]);
+  }, [onLabelChange, project, setNodes]);
 
 
   const handlePaneContextMenu = useCallback(
