@@ -4,6 +4,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
+  Controls,
   MiniMap,
   type Connection,
   type Edge,
@@ -24,6 +25,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
 import { NodeCreator } from '@/components/canvas/node-creator';
+import { ColorPickerToolbar } from '@/components/canvas/color-picker-toolbar';
+
 
 import 'reactflow/dist/style.css';
 
@@ -47,8 +50,8 @@ function CanvasFlow() {
   } | null>(null);
   
   const [isSnapToGrid, setIsSnapToGrid] = useState(true);
-  const [isSnapToObjects, setIsSnapToObjects] = useState(true);
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const [selectedNodes, setSelectedNodes] = React.useState<Node[]>([]);
   
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
@@ -61,8 +64,23 @@ function CanvasFlow() {
     );
   }, [setNodes]);
 
+  const onColorChange = useCallback((nodeId: string, color: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          // Create a new data object to ensure React detects the change
+          node.data = { ...node.data, color };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
+
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params, markerEnd: { type: MarkerType.ArrowClosed } }, eds)),
+    (params: Edge | Connection) => {
+       const newEdge = { ...params, markerEnd: { type: MarkerType.ArrowClosed } };
+       setEdges((eds) => addEdge(newEdge, eds));
+    },
     [setEdges]
   );
   
@@ -76,13 +94,18 @@ function CanvasFlow() {
       id: `node-${crypto.randomUUID()}`,
       type: type,
       position: targetPosition,
-      data: { label: '', onLabelChange },
+      data: { 
+        label: '', 
+        color: 'hsl(var(--card))',
+        onLabelChange,
+        onColorChange,
+      },
       width: 200,
       height: 80,
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, project, setNodes]);
+  }, [onLabelChange, onColorChange, project, setNodes]);
 
 
   const handlePaneContextMenu = useCallback(
@@ -104,6 +127,10 @@ function CanvasFlow() {
     },
     [project]
   );
+
+  const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
+    setSelectedNodes(nodes);
+  }, []);
 
   const [canUndo] = useState(false);
   const [canRedo] = useState(false);
@@ -139,13 +166,15 @@ function CanvasFlow() {
         fitView
         onPaneContextMenu={handlePaneContextMenu}
         snapToGrid={isSnapToGrid}
-        snapToObjects={isSnapToObjects}
+        snapToGrid={[20, 20]}
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
+        onSelectionChange={onSelectionChange}
       >
         <Background variant="dot" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
-        <MiniMap nodeStrokeWidth={3} zoomable pannable />
+        <MiniMap />
+        <Controls />
       </ReactFlow>
 
       {contextMenu && (
@@ -155,11 +184,20 @@ function CanvasFlow() {
           onAddCard={() => addNode('custom', contextMenu.panePosition)}
           isSnapToGrid={isSnapToGrid}
           setIsSnapToGrid={setIsSnapToGrid}
-          isSnapToObjects={isSnapToObjects}
-          setIsSnapToObjects={setIsSnapToObjects}
+          isSnapToObjects={false}
+          setIsSnapToObjects={() => {}}
           isReadOnly={isReadOnly}
           setIsReadOnly={setIsReadOnly}
           canUndo={canUndo}
+        />
+      )}
+
+      {selectedNodes.length > 0 && (
+        <ColorPickerToolbar
+          node={selectedNodes[0]}
+          onColorChange={(color) => {
+            selectedNodes.forEach(node => onColorChange(node.id, color));
+          }}
         />
       )}
 

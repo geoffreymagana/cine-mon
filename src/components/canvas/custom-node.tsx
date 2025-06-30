@@ -6,7 +6,9 @@ import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 
 type CustomNodeData = {
   label: string;
+  color?: string;
   onLabelChange: (id: string, label: string) => void;
+  onColorChange: (id: string, color: string) => void;
 };
 
 const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
@@ -50,11 +52,12 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nodrag nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
-      onDoubleClick={handleDoubleClick}
+      className="nopan nowheel rounded-sm p-3 shadow-md border-2 h-full flex flex-col justify-center overflow-hidden"
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+        backgroundColor: data.color || 'hsl(var(--card))'
       }}
+      onDoubleClick={handleDoubleClick}
     >
       <NodeResizer 
         isVisible={selected} 
@@ -64,34 +67,51 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         lineClassName="border-primary"
       />
 
-      {/* Target handles (top, left) and Source handles (bottom, right) */}
-      <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-2 !h-2" />
-      <Handle type="source" position={Position.Top} id="source-top" className="!bg-green-500 !w-2 !h-2" />
+      {/* Target handles - for incoming connections */}
+      <Handle 
+        type="target" 
+        position={Position.Left} 
+        id="target-left" 
+        className="!bg-blue-500 !w-1.5 !h-1.5" 
+      />
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        id="target-top" 
+        className="!bg-blue-500 !w-1.5 !h-1.5" 
+      />
       
-      <Handle type="target" position={Position.Right} id="target-right" className="!bg-blue-500 !w-2 !h-2" />
-      <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-2 !h-2" />
+      {/* Source handles - for outgoing connections */}
+      <Handle 
+        type="source" 
+        position={Position.Right} 
+        id="source-right" 
+        className="!bg-green-500 !w-1.5 !h-1.5" 
+      />
+      <Handle 
+        type="source" 
+        position={Position.Bottom} 
+        id="source-bottom" 
+        className="!bg-green-500 !w-1.5 !h-1.5" 
+      />
 
-      <Handle type="target" position={Position.Bottom} id="target-bottom" className="!bg-blue-500 !w-2 !h-2" />
-      <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-2 !h-2" />
-
-      <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-2 !h-2" />
-      <Handle type="source" position={Position.Left} id="source-left" className="!bg-green-500 !w-2 !h-2" />
-
-      {isEditing ? (
-        <textarea
-          ref={textareaRef}
-          value={label}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="New Card"
-          className="w-full border-none bg-transparent p-0 text-[10px] text-card-foreground outline-none text-center nodrag"
-          style={{ resize: 'none' }}
-        />
-      ) : (
-        <div className="text-[10px] text-card-foreground text-center break-all line-clamp-3">
-            {label || <span className="text-muted-foreground">New Card</span>}
-        </div>
-      )}
+      <div className="w-full h-full overflow-y-auto text-card-foreground text-center break-all p-1">
+        {isEditing ? (
+          <textarea
+            ref={textareaRef}
+            value={label}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="New Card"
+            className="w-full h-full min-h-[20px] border-none bg-transparent p-0 text-[10px] text-card-foreground outline-none text-center nodrag"
+            style={{ resize: 'none' }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[10px]">
+            <span>{label || <span className="text-muted-foreground opacity-50">New Card</span>}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
