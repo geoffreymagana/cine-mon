@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactFlow, {
   useNodesState,
   useEdgesState,
@@ -12,37 +12,10 @@ import ReactFlow, {
   type Edge,
   type Node,
 } from 'reactflow';
+import CustomNode from '@/components/canvas/custom-node';
 
 import 'reactflow/dist/style.css';
 
-const initialNodes: Node[] = [
-  {
-    id: '1',
-    type: 'input',
-    data: { label: 'The Matrix (1999)' },
-    position: { x: 0, y: 50 },
-    style: { background: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))', border: '1px solid hsl(var(--primary))' },
-  },
-  {
-    id: '2',
-    data: { label: 'Ghost in the Shell (1995)' },
-    position: { x: -250, y: 250 },
-    style: { background: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))', border: '1px solid hsl(var(--border))' },
-  },
-  {
-    id: '3',
-    data: { label: 'Neuromancer (1984)' },
-    position: { x: 250, y: 250 },
-     style: { background: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))', border: '1px solid hsl(var(--border))' },
-  },
-  {
-      id: '4',
-      type: 'default',
-      data: { label: 'A text note about cyberpunk themes, philosophy, and the nature of reality.' },
-      position: { x: 0, y: 450 },
-      style: { background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', border: '1px dashed hsl(var(--border))', width: 300 },
-  }
-];
 
 const initialEdges: Edge[] = [
   { id: 'e1-2', source: '1', target: '2', label: 'Inspired by' },
@@ -51,7 +24,51 @@ const initialEdges: Edge[] = [
   { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: 'hsl(var(--primary))' } },
 ];
 
+const nodeTypes = {
+  custom: CustomNode,
+};
+
 export default function CanvasPage() {
+  const onNodeLabelChange = useCallback((nodeId: string, label: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          // It's important to create a new object here to trigger a re-render
+          node.data = { ...node.data, label };
+        }
+        return node;
+      })
+    );
+  }, []);
+
+  const initialNodes = useMemo<Node<any>[]>(() => [
+    {
+      id: '1',
+      type: 'custom',
+      data: { label: 'The Matrix (1999)', onLabelChange: onNodeLabelChange },
+      position: { x: 0, y: 50 },
+    },
+    {
+      id: '2',
+      type: 'custom',
+      data: { label: 'Ghost in the Shell (1995)', onLabelChange: onNodeLabelChange },
+      position: { x: -250, y: 250 },
+    },
+    {
+      id: '3',
+      type: 'custom',
+      data: { label: 'Neuromancer (1984)', onLabelChange: onNodeLabelChange },
+      position: { x: 250, y: 250 },
+    },
+    {
+        id: '4',
+        type: 'custom',
+        data: { label: 'A text note about cyberpunk themes, philosophy, and the nature of reality.', onLabelChange: onNodeLabelChange },
+        position: { x: 0, y: 450 },
+        style: { width: 300, height: 120 },
+    }
+  ], [onNodeLabelChange]);
+  
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -68,6 +85,7 @@ export default function CanvasPage() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background variant="dots" gap={16} size={1} color="hsl(var(--border) / 0.5)" />
