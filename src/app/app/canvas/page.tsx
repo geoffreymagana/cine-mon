@@ -21,6 +21,7 @@ import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
+import { NodeCreator } from '@/components/canvas/node-creator';
 
 import 'reactflow/dist/style.css';
 
@@ -63,18 +64,24 @@ function CanvasFlow() {
     );
   }, [setNodes]);
   
-  const addNode = useCallback((type: string, position: {x: number, y: number}) => {
+  const addNode = useCallback((type: string, position?: {x: number, y: number}) => {
+    const targetPosition = position ?? project({
+        x: reactFlowWrapper.current!.clientWidth / 2,
+        y: reactFlowWrapper.current!.clientHeight / 2,
+    });
+
     const newNode: Node = {
       id: `node-${crypto.randomUUID()}`,
       type: type,
-      position,
+      position: targetPosition,
       data: { label: 'New Card', onLabelChange },
       width: 200,
       height: 80,
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, setNodes]);
+  }, [onLabelChange, setNodes, project]);
+
 
   const handlePaneContextMenu = useCallback(
     (event: React.MouseEvent) => {
@@ -161,6 +168,8 @@ function CanvasFlow() {
         onShowHelp={() => setIsHelpOpen(true)}
       />
 
+      <NodeCreator onAddNode={() => addNode('custom')} />
+      
       <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
     </div>
   );
