@@ -13,6 +13,7 @@ import ReactFlow, {
   addEdge,
   ReactFlowProvider,
   useReactFlow,
+  MarkerType,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -61,7 +62,7 @@ function CanvasFlow() {
   }, [setNodes]);
 
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params, markerEnd: { type: MarkerType.ArrowClosed } }, eds)),
     [setEdges]
   );
   
@@ -143,7 +144,7 @@ function CanvasFlow() {
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
       >
-        <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
+        <Background variant="dot" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap nodeStrokeWidth={3} zoomable pannable />
       </ReactFlow>
 

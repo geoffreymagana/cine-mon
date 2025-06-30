@@ -50,7 +50,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
+      className="nodrag nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
       onDoubleClick={handleDoubleClick}
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
@@ -64,15 +64,18 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         lineClassName="border-primary"
       />
 
-      {/* Overlapping source and target handles on all four sides for flexible connections */}
-      <Handle type="source" position={Position.Top} id="top-s" className="!bg-primary" />
-      <Handle type="target" position={Position.Top} id="top-t" className="!bg-primary" />
-      <Handle type="source" position={Position.Right} id="right-s" className="!bg-primary" />
-      <Handle type="target" position={Position.Right} id="right-t" className="!bg-primary" />
-      <Handle type="source" position={Position.Bottom} id="bottom-s" className="!bg-primary" />
-      <Handle type="target" position={Position.Bottom} id="bottom-t" className="!bg-primary" />
-      <Handle type="source" position={Position.Left} id="left-s" className="!bg-primary" />
-      <Handle type="target" position={Position.Left} id="left-t" className="!bg-primary" />
+      {/* Target handles (top, left) and Source handles (bottom, right) */}
+      <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-2 !h-2" />
+      <Handle type="source" position={Position.Top} id="source-top" className="!bg-green-500 !w-2 !h-2" />
+      
+      <Handle type="target" position={Position.Right} id="target-right" className="!bg-blue-500 !w-2 !h-2" />
+      <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-2 !h-2" />
+
+      <Handle type="target" position={Position.Bottom} id="target-bottom" className="!bg-blue-500 !w-2 !h-2" />
+      <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-2 !h-2" />
+
+      <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-2 !h-2" />
+      <Handle type="source" position={Position.Left} id="source-left" className="!bg-green-500 !w-2 !h-2" />
 
       {isEditing ? (
         <textarea
