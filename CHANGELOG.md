@@ -1,9 +1,8 @@
-# [1.2.0](https://github.com/geoffreymagana/cine-mon/compare/v1.1.0...v1.2.0) (2025-06-30)
-
-
 # Changelog
 
-## [1.2.0] - 2025-06-30
+All notable changes to this project will be documented in this file.
+
+## [1.2.0] (2025-06-30)
 
 ### Features
 
@@ -61,21 +60,13 @@
   - Replaced placeholder screenshots on the landing page with finalised application visuals.
  ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
 
-<<<<<<< HEAD
-# [1.1.0](https://github.com/geoffreymagana/cine-mon/compare/v1.0.0...v1.1.0) (2025-06-29)
-
+## [1.1.0] (2025-06-29)
 
 ### Features
 
 * **release:** Version 1.0.0 - The Cinematic Overhaul ([f7ce96c](https://github.com/geoffreymagana/cine-mon/commit/f7ce96c0b8043a60354080dcbd41f48dabe21229))
 
-feat(release): Version 1.0.0 - The Cinematic Overhaul
-=======
-
-
-All notable changes to this project will be documented in this file.
-
-## 1.0.0 (2025-06-29)
+## [1.0.0] (2025-06-29)
 
 ### Features
 
