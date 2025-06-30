@@ -4,7 +4,7 @@
 import * as React from 'react';
 import {
   FileText, BookText, Clapperboard, Link2, BoxSelect, Undo2,
-  ClipboardPaste, Grid, Combine, Lock, Check
+  ClipboardPaste, Grid, Lock, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -39,8 +39,6 @@ type CanvasContextMenuProps = {
     onAddCard: () => void;
     isSnapToGrid: boolean;
     setIsSnapToGrid: (value: boolean) => void;
-    isSnapToObjects: boolean;
-    setIsSnapToObjects: (value: boolean) => void;
     isReadOnly: boolean;
     setIsReadOnly: (value: boolean) => void;
     canUndo: boolean;
@@ -54,8 +52,6 @@ export function CanvasContextMenu({
     onAddCard,
     isSnapToGrid,
     setIsSnapToGrid,
-    isSnapToObjects,
-    setIsSnapToObjects,
     isReadOnly,
     setIsReadOnly,
     canUndo,
@@ -98,7 +94,6 @@ export function CanvasContextMenu({
             <MenuItem icon={ClipboardPaste} disabled>Paste</MenuItem>
             <Separator className="my-1" />
             <MenuItem icon={Grid} onClick={() => setIsSnapToGrid(!isSnapToGrid)} isCheckbox checked={isSnapToGrid}>Snap to grid</MenuItem>
-            <MenuItem icon={Combine} onClick={() => setIsSnapToObjects(!isSnapToObjects)} isCheckbox checked={isSnapToObjects}>Snap to objects</MenuItem>
             <MenuItem icon={Lock} onClick={() => setIsReadOnly(!isReadOnly)} isCheckbox checked={isReadOnly}>Read-only</MenuItem>
         </Card>
     );

@@ -50,11 +50,26 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     }
   };
 
+  const getBorderColor = () => {
+    if (selected) {
+      return 'hsl(var(--primary))';
+    }
+    const color = data.color;
+    if (!color || color === 'hsl(var(--card))' || color === 'hsl(var(--muted))') {
+      return 'hsl(var(--border))';
+    }
+    // Assumes color is an HSL string with an opacity value we can replace
+    if (color.includes('/')) {
+        return color.replace(/(\/\s*)[\d.]+\)/, '$10.6)');
+    }
+    return color; // Fallback for solid colors
+  };
+
   return (
     <div
-      className="nopan nowheel rounded-sm p-3 shadow-md border-2 h-full flex flex-col justify-center overflow-hidden"
+      className="nopan nowheel rounded-lg p-3 shadow-md border-2 h-full flex flex-col justify-center overflow-hidden"
       style={{ 
-        borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+        borderColor: getBorderColor(),
         backgroundColor: data.color || 'hsl(var(--card))'
       }}
       onDoubleClick={handleDoubleClick}
@@ -95,7 +110,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         className="!bg-green-500 !w-1.5 !h-1.5" 
       />
 
-      <div className="w-full h-full overflow-y-auto text-card-foreground text-center break-all p-1">
+      <div className="w-full h-full overflow-y-auto text-card-foreground text-center break-all p-1 pr-2">
         {isEditing ? (
           <textarea
             ref={textareaRef}

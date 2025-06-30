@@ -166,7 +166,7 @@ function CanvasFlow() {
         fitView
         onPaneContextMenu={handlePaneContextMenu}
         snapToGrid={isSnapToGrid}
-        snapToGrid={[20, 20]}
+        snapGrid={[20, 20]}
         nodesDraggable={!isReadOnly}
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
@@ -184,8 +184,6 @@ function CanvasFlow() {
           onAddCard={() => addNode('custom', contextMenu.panePosition)}
           isSnapToGrid={isSnapToGrid}
           setIsSnapToGrid={setIsSnapToGrid}
-          isSnapToObjects={false}
-          setIsSnapToObjects={() => {}}
           isReadOnly={isReadOnly}
           setIsReadOnly={setIsReadOnly}
           canUndo={canUndo}

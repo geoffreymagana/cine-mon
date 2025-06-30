@@ -21,12 +21,12 @@ type ColorPickerToolbarProps = {
 const colors = [
   'hsl(var(--card))', // Default
   'hsl(var(--muted))',
-  'hsl(var(--chart-1) / 0.2)',
-  'hsl(var(--chart-2) / 0.2)',
-  'hsl(var(--chart-3) / 0.2)',
-  'hsl(var(--chart-4) / 0.2)',
-  'hsl(var(--chart-5) / 0.2)',
-  'hsl(var(--destructive) / 0.2)',
+  'hsl(var(--chart-1) / 0.3)',
+  'hsl(var(--chart-2) / 0.3)',
+  'hsl(var(--chart-3) / 0.3)',
+  'hsl(var(--chart-4) / 0.3)',
+  'hsl(var(--chart-5) / 0.3)',
+  'hsl(var(--destructive) / 0.3)',
 ];
 
 export function ColorPickerToolbar({ node, onColorChange }: ColorPickerToolbarProps) {
