@@ -383,13 +383,16 @@ export default function MovieDetailPage() {
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                     {movie.trailerUrl && (
-                                        <Button onClick={() => setIsTrailerOpen(true)}>
-                                            <Play className="mr-2 h-4 w-4" />
-                                            Play Trailer
+                                        <Button onClick={() => setIsTrailerOpen(true)} size="icon" className="md:w-auto md:px-4">
+                                            <Play className="h-4 w-4 md:mr-2" />
+                                            <span className="hidden md:inline">Play Trailer</span>
                                         </Button>
                                     )}
                                     <Link href={`/app/movie/${movie.id}/edit`}>
-                                        <Button variant="outline"><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                        <Button variant="outline" size="icon" className="md:w-auto md:px-4">
+                                            <Edit className="h-4 w-4 md:mr-2" />
+                                            <span className="hidden md:inline">Edit</span>
+                                        </Button>
                                     </Link>
                                     <div className="hidden md:inline-flex">
                                         <DropdownMenu>
