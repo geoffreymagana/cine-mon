@@ -173,7 +173,6 @@ function CanvasFlow() {
       >
         <Background variant="dot" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap />
-        <Controls />
       </ReactFlow>
 
       {contextMenu && (
@@ -208,7 +207,7 @@ function CanvasFlow() {
 
       <NodeCreator onAddNode={() => addNode('custom')} />
       
-      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsOpen} />
+      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
     </div>
   );
 }
