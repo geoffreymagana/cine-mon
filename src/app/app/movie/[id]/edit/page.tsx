@@ -38,8 +38,6 @@ const movieEditSchema = z.object({
   backdropUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   type: z.enum(['Movie', 'TV Show', 'Anime']),
   status: z.enum(['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch']),
-  watchedEpisodes: z.coerce.number().min(0),
-  totalEpisodes: z.coerce.number().min(1),
   rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
   releaseDate: z.string().optional(),
@@ -220,7 +218,21 @@ export default function MovieEditPage() {
       const storedMovies = localStorage.getItem('movies');
       if (storedMovies) {
         const movies: Movie[] = JSON.parse(storedMovies);
-        const updatedMovies = movies.map((m) => (m.id === movieId ? { ...m, ...data } : m));
+        const originalMovie = movies.find(m => m.id === movieId);
+        if (!originalMovie) {
+          throw new Error("Original movie not found");
+        }
+        
+        // Keep derived fields from original movie
+        const updatedMovieData = { 
+            ...originalMovie,
+            ...data,
+            watchedEpisodes: originalMovie.watchedEpisodes,
+            totalEpisodes: originalMovie.totalEpisodes,
+            seasons: originalMovie.seasons,
+        };
+
+        const updatedMovies = movies.map((m) => (m.id === movieId ? updatedMovieData : m));
         localStorage.setItem('movies', JSON.stringify(updatedMovies));
         toast({ title: 'Success!', description: `${data.title} has been updated.` });
         router.push(`/app/movie/${movieId}`);
@@ -370,28 +382,6 @@ export default function MovieEditPage() {
                     />
               </CardContent>
             </Card>
-
-            {form.watch('type') !== 'Movie' && (
-            <Card>
-                <CardHeader><CardTitle>Series Progress</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="watchedEpisodes" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Watched Episodes</FormLabel>
-                            <FormControl><Input type="number" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="totalEpisodes" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Total Episodes</FormLabel>
-                            <FormControl><Input type="number" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                </CardContent>
-            </Card>
-            )}
 
             <Card>
               <Collapsible open={isCastOpen} onOpenChange={setIsCastOpen}>

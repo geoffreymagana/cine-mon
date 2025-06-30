@@ -46,6 +46,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RatingProgressBar } from '@/components/rating-progress-bar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +88,72 @@ export default function MovieDetailPage() {
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
 
+    const updateMovieData = (updatedMovie: Movie) => {
+        setMovie(updatedMovie);
+        const updatedMovies = allMovies.map(m => m.id === movieId ? updatedMovie : m);
+        localStorage.setItem('movies', JSON.stringify(updatedMovies));
+        setAllMovies(updatedMovies);
+    };
+
+    const handleEpisodeToggle = (seasonNumber: number, episodeNumber: number, watched: boolean) => {
+        if (!movie || !movie.seasons) return;
+
+        const newSeasons = movie.seasons.map(season => {
+            if (season.seasonNumber === seasonNumber) {
+                const newEpisodes = season.episodes.map(episode => {
+                    if (episode.episodeNumber === episodeNumber) {
+                        return { ...episode, watched };
+                    }
+                    return episode;
+                });
+                return { ...season, episodes: newEpisodes };
+            }
+            return season;
+        });
+
+        const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+
+        const updatedMovie = {
+            ...movie,
+            seasons: newSeasons,
+            watchedEpisodes: newWatchedEpisodes,
+        };
+        
+        updateMovieData(updatedMovie);
+    };
+
+    const handleSeasonToggle = (seasonNumber: number) => {
+        if (!movie || !movie.seasons) return;
+
+        const targetSeason = movie.seasons.find(s => s.seasonNumber === seasonNumber);
+        if (!targetSeason) return;
+        
+        const allCurrentlyWatched = targetSeason.episodes.every(e => e.watched);
+        const newWatchedState = !allCurrentlyWatched;
+
+        const newSeasons = movie.seasons.map(season => {
+            if (season.seasonNumber === seasonNumber) {
+                const newEpisodes = season.episodes.map(episode => ({ ...episode, watched: newWatchedState }));
+                return { ...season, episodes: newEpisodes };
+            }
+            return season;
+        });
+
+        const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+
+        const updatedMovie = {
+            ...movie,
+            seasons: newSeasons,
+            watchedEpisodes: newWatchedEpisodes,
+        };
+        
+        updateMovieData(updatedMovie);
+        toast({
+            title: `Season ${seasonNumber} Updated`,
+            description: `All episodes marked as ${newWatchedState ? 'watched' : 'unwatched'}.`
+        });
+    };
+
     React.useEffect(() => {
         if (!movieId) return;
 
@@ -120,14 +189,8 @@ export default function MovieDetailPage() {
 
     const handleStatusChange = (newStatus: Movie['status']) => {
         if (!movie) return;
-
         const updatedMovie = { ...movie, status: newStatus };
-        setMovie(updatedMovie);
-
-        const updatedMovies = allMovies.map(m => m.id === movieId ? updatedMovie : m);
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-        setAllMovies(updatedMovies);
-        
+        updateMovieData(updatedMovie);
         toast({
             title: "Status Updated",
             description: `"${movie.title}" is now marked as "${newStatus}".`,
@@ -137,11 +200,9 @@ export default function MovieDetailPage() {
     const handleDeleteMovie = () => {
         if (!movie) return;
 
-        // Remove from movies list
         const updatedMovies = allMovies.filter(m => m.id !== movie.id);
         localStorage.setItem('movies', JSON.stringify(updatedMovies));
 
-        // Remove from all collections
         const storedCollections = localStorage.getItem('collections');
         if (storedCollections) {
             let collections: UserCollection[] = JSON.parse(storedCollections);
@@ -215,6 +276,7 @@ export default function MovieDetailPage() {
     const currentStatusInfo = statusOptions.find(opt => opt.value === movie.status);
     const vaults = allCollections.filter(c => c.type === 'Vault');
     const spotlights = allCollections.filter(c => c.type === 'Spotlight');
+    const isSeries = movie.type === 'TV Show' || movie.type === 'Anime';
 
     const moreOptionsMenuContent = (
       <DropdownMenuContent align="end">
@@ -412,6 +474,7 @@ export default function MovieDetailPage() {
                                 <div className="flex justify-between items-center mb-4">
                                     <TabsList>
                                         <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
+                                        {isSeries && (movie.seasons?.length ?? 0) > 0 && <TabsTrigger value="seasons"><Tv className="mr-2" />Seasons</TabsTrigger>}
                                         {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
                                         {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
                                     </TabsList>
@@ -434,10 +497,10 @@ export default function MovieDetailPage() {
                                                     </div>
                                                 </div>
                                                 <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
-                                                <DetailItem icon={movie.type === "Movie" ? Film : Tv} label="Type" value={movie.type} />
+                                                <DetailItem icon={isSeries ? Tv : Film} label="Type" value={movie.type} />
                                                 {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
                                                 <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
-                                                {movie.type !== 'Movie' && (
+                                                {isSeries && (
                                                     <DetailItem icon={Tv} label="Progress" value={`${movie.watchedEpisodes} / ${movie.totalEpisodes} episodes`} />
                                                 )}
                                                 {movie.collection && (
@@ -456,6 +519,58 @@ export default function MovieDetailPage() {
                                                 <DetailItem icon={DollarSign} label="Budget" value={movie.budget ? `$${movie.budget.toLocaleString()}` : 'N/A'} />
                                                 <DetailItem icon={TrendingUp} label="Revenue" value={movie.revenue ? `$${movie.revenue.toLocaleString()}` : 'N/A'} />
                                             </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="seasons">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Seasons & Episodes</CardTitle>
+                                            <CardDescription>Track your watch progress for each season.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Accordion type="multiple" className="w-full space-y-4">
+                                                {movie.seasons?.map(season => {
+                                                    const watchedInSeason = season.episodes.filter(e => e.watched).length;
+                                                    const progress = season.episodeCount > 0 ? (watchedInSeason / season.episodeCount) * 100 : 0;
+                                                    const allWatched = watchedInSeason === season.episodeCount;
+
+                                                    return (
+                                                        <AccordionItem key={season.seasonNumber} value={`season-${season.seasonNumber}`} className="border rounded-lg overflow-hidden">
+                                                            <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50 data-[state=open]:border-b">
+                                                                <div className="flex items-center gap-4 w-full pr-4">
+                                                                    <Image src={season.posterPath || movie.posterUrl} alt={`Poster for ${season.name}`} width={80} height={120} className="w-20 h-auto object-cover rounded-md" data-ai-hint="tv season poster" />
+                                                                    <div className="flex-grow text-left space-y-2">
+                                                                        <h4 className="font-bold text-lg">{season.name}</h4>
+                                                                        <p className="text-sm text-muted-foreground">{watchedInSeason} / {season.episodeCount} Episodes</p>
+                                                                        <Progress value={progress} className="h-2" />
+                                                                    </div>
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                            <AccordionContent className="p-4 bg-muted/20">
+                                                                <Button onClick={() => handleSeasonToggle(season.seasonNumber)} size="sm" className="mb-4">
+                                                                    <Check className="mr-2" /> {allWatched ? 'Unmark' : 'Mark'} Season as Watched
+                                                                </Button>
+                                                                <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                                                                    {season.episodes.map(episode => (
+                                                                        <li key={episode.episodeNumber} className="flex items-center gap-3">
+                                                                            <Checkbox 
+                                                                                checked={episode.watched} 
+                                                                                onCheckedChange={(checked) => handleEpisodeToggle(season.seasonNumber, episode.episodeNumber, !!checked)}
+                                                                                id={`s${season.seasonNumber}e${episode.episodeNumber}`}
+                                                                            />
+                                                                            <label htmlFor={`s${season.seasonNumber}e${episode.episodeNumber}`} className="text-sm cursor-pointer">
+                                                                                <span className="font-semibold">E{episode.episodeNumber}: {episode.name}</span>
+                                                                            </label>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    );
+                                                })}
+                                            </Accordion>
                                         </CardContent>
                                     </Card>
                                 </TabsContent>

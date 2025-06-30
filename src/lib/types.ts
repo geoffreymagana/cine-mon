@@ -1,3 +1,21 @@
+
+export type Episode = {
+  episodeNumber: number;
+  name: string;
+  overview: string;
+  stillPath: string | null;
+  watched: boolean;
+};
+
+export type Season = {
+  seasonNumber: number;
+  name: string;
+  overview: string;
+  posterPath: string | null;
+  episodeCount: number;
+  episodes: Episode[];
+};
+
 export type Movie = {
   id: string;
   tmdbId?: number;
@@ -11,6 +29,7 @@ export type Movie = {
   rating: number;
   tags: string[];
   releaseDate: string;
+  seasons?: Season[];
   // New fields for details page
   director?: string;
   cast?: { name: string; character: string; avatarUrl: string }[];

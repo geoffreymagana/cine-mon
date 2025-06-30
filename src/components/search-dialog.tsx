@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -73,7 +74,7 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
         }
 
         if (details) {
-            const movieData = mapTmdbResultToMovie({ ...details, media_type: result.media_type });
+            const movieData = await mapTmdbResultToMovie({ ...details, media_type: result.media_type });
             onSave(movieData);
         }
         
