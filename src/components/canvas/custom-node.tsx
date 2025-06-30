@@ -49,7 +49,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex justify-center items-center"
+      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
       onDoubleClick={handleDoubleClick}
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
@@ -83,7 +83,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-[10px] text-card-foreground break-all whitespace-pre-wrap text-center">{label}</div>
+        <div className="text-[10px] text-card-foreground text-center break-all line-clamp-3">{label}</div>
       )}
     </div>
   );
