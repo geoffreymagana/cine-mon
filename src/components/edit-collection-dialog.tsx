@@ -29,7 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload } from "lucide-react";
+import { Search, Upload } from "lucide-react";
 
 // Schema for the details tab
 const collectionDetailsSchema = z.object({
@@ -52,6 +52,7 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
   const [selectedMovieIds, setSelectedMovieIds] = React.useState<Set<string>>(new Set());
   const { toast } = useToast();
   const coverImageInputRef = React.useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const form = useForm<CollectionDetailsFormValues>({
     resolver: zodResolver(collectionDetailsSchema),
@@ -61,6 +62,12 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
       coverImageUrl: "",
     },
   });
+
+  const filteredMovies = React.useMemo(() => {
+    return allMovies.filter(movie =>
+      movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [allMovies, searchQuery]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -78,6 +85,8 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
       } catch (error) {
         console.error("Failed to load movies from localStorage:", error);
       }
+    } else {
+        setSearchQuery('');
     }
   }, [isOpen, collection, form]);
 
@@ -153,11 +162,20 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
                 <TabsTrigger value="movies">Manage Titles</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
-            <TabsContent value="movies" className="flex-grow overflow-hidden mt-4">
-                <ScrollArea className="h-full pr-4">
-                    <p className="text-sm text-muted-foreground mb-4">Select titles from your library to include in this collection.</p>
+            <TabsContent value="movies" className="flex-grow flex flex-col overflow-hidden mt-4">
+                <p className="text-sm text-muted-foreground mb-2 shrink-0">Select titles from your library to include in this collection.</p>
+                <div className="relative mb-4 shrink-0">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search your library..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+                <ScrollArea className="flex-grow pr-4">
                     <div className="space-y-2">
-                        {allMovies.length > 0 ? allMovies.map(movie => (
+                        {filteredMovies.length > 0 ? filteredMovies.map(movie => (
                             <div key={movie.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
                                 <Checkbox
                                     id={`movie-${movie.id}`}
@@ -179,7 +197,7 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
                                     </div>
                                 </label>
                             </div>
-                        )) : <p className="text-muted-foreground text-center py-8">Your library is empty. Add some titles first!</p>}
+                        )) : <p className="text-muted-foreground text-center py-8">No matching titles found in your library.</p>}
                     </div>
                 </ScrollArea>
             </TabsContent>

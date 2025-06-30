@@ -11,7 +11,7 @@ import type { UserCollection } from '@/lib/types';
 import { CreateCollectionDialog } from '@/components/create-collection-dialog';
 
 const CollectionCard = ({ collection }: { collection: UserCollection }) => (
-    <Link href={`/app/collections/${collection.id}`} className="block group">
+    <Link href={`/app/collections/${collection.id}`} className="block group break-inside-avoid">
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted shadow-md transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-primary/20">
             <Image
                 src={collection.coverImageUrl || 'https://placehold.co/600x400.png'}
@@ -70,7 +70,7 @@ export default function CollectionsPage() {
                     </Button>
                 </div>
                 {items.length > 0 ? (
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
                         {items.map(collection => (
                            <CollectionCard key={collection.id} collection={collection} />
                         ))}
