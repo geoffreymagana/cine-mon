@@ -3,12 +3,15 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Inbox, MessageSquare, Lightbulb, Bug } from 'lucide-react';
+import { ArrowLeft, Inbox, MessageSquare, Lightbulb, Bug, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Feedback } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 const feedbackTypeIcons: Record<string, React.ElementType> = {
     suggestion: Lightbulb,
@@ -18,17 +21,37 @@ const feedbackTypeIcons: Record<string, React.ElementType> = {
 
 export default function FeedbackDashboardPage() {
     const [feedback, setFeedback] = React.useState<Feedback[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const { toast } = useToast();
 
     React.useEffect(() => {
-        try {
-            const storedFeedback = localStorage.getItem('feedbackSubmissions');
-            if (storedFeedback) {
-                setFeedback(JSON.parse(storedFeedback));
+        const fetchFeedback = async () => {
+            try {
+                const feedbackQuery = query(collection(db, "feedback"), orderBy("submittedAt", "desc"));
+                const querySnapshot = await getDocs(feedbackQuery);
+                const feedbackData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        submittedAt: new Date(data.submittedAt).toISOString()
+                    } as Feedback;
+                });
+                setFeedback(feedbackData);
+            } catch (error) {
+                console.error("Failed to load feedback from Firestore:", error);
+                toast({
+                    title: "Error Loading Feedback",
+                    description: "Could not retrieve feedback from the database. Make sure your Firestore security rules are configured correctly.",
+                    variant: "destructive"
+                });
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to load feedback from localStorage:", error);
-        }
-    }, []);
+        };
+
+        fetchFeedback();
+    }, [toast]);
 
     return (
         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
@@ -40,10 +63,14 @@ export default function FeedbackDashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-3xl font-headline">Feedback Submissions</CardTitle>
-                        <CardDescription>Messages from the feedback form are stored locally and displayed here.</CardDescription>
+                        <CardDescription>Messages from users are stored in Firestore and displayed here.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {feedback.length > 0 ? (
+                        {isLoading ? (
+                            <div className="flex justify-center items-center py-20">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                            </div>
+                        ) : feedback.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>

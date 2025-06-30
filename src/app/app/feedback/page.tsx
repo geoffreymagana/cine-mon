@@ -10,13 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import type { Feedback } from '@/lib/types';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function FeedbackPage() {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
 
@@ -35,28 +36,24 @@ export default function FeedbackPage() {
         }
 
         try {
-            const newFeedback: Feedback = {
-                id: crypto.randomUUID(),
+            const newFeedback = {
                 feedbackType,
                 message,
                 submittedAt: new Date().toISOString(),
             };
 
-            const storedFeedback = localStorage.getItem('feedbackSubmissions');
-            const feedback: Feedback[] = storedFeedback ? JSON.parse(storedFeedback) : [];
-            feedback.unshift(newFeedback); // Add new feedback to the top
-            localStorage.setItem('feedbackSubmissions', JSON.stringify(feedback));
+            await addDoc(collection(db, "feedback"), newFeedback);
 
             toast({
                 title: "Feedback Submitted!",
-                description: "Thank you for your feedback. It has been saved locally.",
+                description: "Thank you for your feedback. We've received your message.",
             });
             (e.target as HTMLFormElement).reset();
         } catch (error) {
             console.error("Feedback submission error:", error);
             toast({
                 title: "Submission Failed",
-                description: "There was an error saving your feedback. Please try again.",
+                description: "There was an error sending your feedback. Please try again later.",
                 variant: "destructive",
             });
         } finally {
