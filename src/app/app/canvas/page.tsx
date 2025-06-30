@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -47,11 +46,6 @@ function CanvasFlow() {
   const [isSnapToGrid, setIsSnapToGrid] = useState(true);
   const [isSnapToObjects, setIsSnapToObjects] = useState(true);
   const [isReadOnly, setIsReadOnly] = useState(false);
-
-  const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
   
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
@@ -63,6 +57,11 @@ function CanvasFlow() {
       })
     );
   }, [setNodes]);
+
+  const onConnect = useCallback(
+    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
   
   const addNode = useCallback((type: string, position?: {x: number, y: number}) => {
     const targetPosition = position ?? project({
