@@ -8,6 +8,8 @@ import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 import { ChangelogDisplay } from '@/components/changelog-display';
 import { parseChangelog } from '@/lib/changelog';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PublicChangelogPage() {
   const versions = await parseChangelog();
   

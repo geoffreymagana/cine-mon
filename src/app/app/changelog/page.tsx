@@ -5,6 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 import { ChangelogDisplay } from '@/components/changelog-display';
 import { parseChangelog } from '@/lib/changelog';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ChangelogPage() {
   const versions = await parseChangelog();
   return (
