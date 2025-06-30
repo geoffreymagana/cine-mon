@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -55,13 +54,14 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     if (!color || color === 'hsl(var(--card))' || color === 'hsl(var(--muted))') {
       return 'hsl(var(--border))';
     }
+    // Make the border color a more solid version of the background
     const newColor = color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
     return newColor;
   };
 
   return (
     <div
-      className="nopan nowheel rounded-lg shadow-md border-2 h-full flex flex-col"
+      className="nopan nowheel rounded-lg shadow-md border-[3px] h-full flex flex-col"
       style={{ 
         borderColor: getBorderColor(),
         backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.7)') : 'hsl(var(--card))'
@@ -81,23 +81,23 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
       <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
 
-      <div className="w-full h-full overflow-y-auto text-card-foreground p-3 break-words pr-4">
+      <div className="w-full h-full overflow-y-auto p-3 pr-4">
         {isEditing ? (
           <textarea
             ref={textareaRef}
             value={label}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Double-click to edit..."
+            placeholder="New Card"
             className="w-full h-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
             style={{ resize: 'none' }}
           />
         ) : (
-          <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs")}>
+          <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words")}>
              {label ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
              ) : (
-                <span className="text-muted-foreground opacity-50">Double-click to edit...</span>
+                <span className="text-muted-foreground opacity-50">New Card</span>
              )}
           </div>
         )}

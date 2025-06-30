@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -101,7 +100,7 @@ function CanvasFlow() {
         onColorChange,
       },
       width: 200,
-      height: 80,
+      height: 110,
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -209,7 +208,7 @@ function CanvasFlow() {
 
       <NodeCreator onAddNode={() => addNode('custom')} />
       
-      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
+      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsOpen} />
     </div>
   );
 }
