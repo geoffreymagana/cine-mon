@@ -23,11 +23,9 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       const textarea = textareaRef.current;
       textarea.focus();
       
-      // Move cursor to the end of the text
       const length = textarea.value.length;
       textarea.setSelectionRange(length, length);
       
-      // Auto-resize textarea to fit content
       textarea.style.height = 'auto';
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
@@ -45,7 +43,6 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLabel(e.target.value);
     if (textareaRef.current) {
-      // Auto-resize textarea while typing
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${e.target.scrollHeight}px`;
     }
@@ -67,11 +64,15 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         lineClassName="border-primary"
       />
 
-      {/* Connection handles on all four sides */}
-      <Handle type="target" position={Position.Top} className="!bg-primary" />
-      <Handle type="source" position={Position.Right} className="!bg-primary" />
-      <Handle type="source" position={Position.Bottom} className="!bg-primary" />
-      <Handle type="target" position={Position.Left} className="!bg-primary" />
+      {/* Overlapping source and target handles on all four sides for flexible connections */}
+      <Handle type="source" position={Position.Top} id="top-s" className="!bg-primary" />
+      <Handle type="target" position={Position.Top} id="top-t" className="!bg-primary" />
+      <Handle type="source" position={Position.Right} id="right-s" className="!bg-primary" />
+      <Handle type="target" position={Position.Right} id="right-t" className="!bg-primary" />
+      <Handle type="source" position={Position.Bottom} id="bottom-s" className="!bg-primary" />
+      <Handle type="target" position={Position.Bottom} id="bottom-t" className="!bg-primary" />
+      <Handle type="source" position={Position.Left} id="left-s" className="!bg-primary" />
+      <Handle type="target" position={Position.Left} id="left-t" className="!bg-primary" />
 
       {isEditing ? (
         <textarea
