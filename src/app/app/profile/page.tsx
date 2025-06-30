@@ -54,7 +54,7 @@ export default function ProfilePage() {
     const mainContentRef = React.useRef<HTMLDivElement>(null);
     const [activeTheme, setActiveTheme] = React.useState(themes[0].name);
 
-    const sections = ['personal-info', 'appearance', 'administration', 'settings', 'resources'];
+    const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
         acc[sec] = React.createRef<HTMLDivElement>();
         return acc;
@@ -297,7 +297,6 @@ export default function ProfilePage() {
                                 <nav className="flex flex-col gap-1">
                                     <a href="#personal-info" onClick={(e) => handleNavClick(e, 'personal-info')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'personal-info' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Personal Information</a>
                                     <a href="#appearance" onClick={(e) => handleNavClick(e, 'appearance')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'appearance' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Appearance</a>
-                                    <a href="#administration" onClick={(e) => handleNavClick(e, 'administration')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'administration' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Administration</a>
                                     <a href="#settings" onClick={(e) => handleNavClick(e, 'settings')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'settings' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Settings</a>
                                     <a href="#resources" onClick={(e) => handleNavClick(e, 'resources')} className={cn("block px-3 py-2 rounded-md text-sm font-medium transition-colors", activeSection === 'resources' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>Resources & Support</a>
                                 </nav>
@@ -377,44 +376,24 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
                             </div>
-                            
-                            <div id="administration" ref={sectionRefs['administration']} className="pt-8 -mt-8">
+
+                            <div id="settings" ref={sectionRefs['settings']} className="pt-8 -mt-8">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Administration</CardTitle>
-                                        <CardDescription>Manage application data and settings.</CardDescription>
+                                        <CardTitle>Settings</CardTitle>
+                                        <CardDescription>Manage your application preferences and data.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                              <Label>Feedback Inbox</Label>
-                                              <p className="text-sm text-muted-foreground">View all submitted feedback messages.</p>
-                                            </div>
-                                            <Link href="/app/admin/feedback" passHref>
-                                                <Button variant="outline">View Feedback</Button>
-                                            </Link>
-                                        </div>
-                                         <div className="flex items-center justify-between">
-                                            <div>
-                                              <Label>Import Library</Label>
-                                              <p className="text-sm text-muted-foreground">Import your collection from a JSON file.</p>
+                                                <Label>Import Library</Label>
+                                                <p className="text-sm text-muted-foreground">Import your collection from a JSON file.</p>
                                             </div>
                                             <Button variant="outline" onClick={handleImportClick}>
                                                 <Upload className="mr-2 h-4 w-4" /> Import JSON
                                             </Button>
                                             <input type="file" ref={fileInputRef} className="hidden" accept=".json,application/json" onChange={handleFileImport} />
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            <div id="settings" ref={sectionRefs['settings']} className="pt-8 -mt-8">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Settings</CardTitle>
-                                        <CardDescription>Manage your application preferences.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
                                         <div className="flex items-center justify-between">
                                             <div>
                                               <Label htmlFor="notifications">Movie Night Recommendations</Label>
