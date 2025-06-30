@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/geoffreymagana/cine-mon/compare/v1.1.0...v1.2.0) (2025-06-30)
+
+
+### Features
+
+* **tracking:** Implement detailed season and episode tracking ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
+
 <<<<<<< HEAD
 # [1.1.0](https://github.com/geoffreymagana/cine-mon/compare/v1.0.0...v1.1.0) (2025-06-29)
 
