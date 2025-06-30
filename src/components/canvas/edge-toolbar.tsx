@@ -1,8 +1,7 @@
-
 'use client';
 
 import * as React from 'react';
-import { Palette, Spline, Minus, Check } from 'lucide-react';
+import { Palette, Spline, Minus, Check, GitBranch } from 'lucide-react';
 import { type Edge } from 'reactflow';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 type EdgeToolbarProps = {
   selectedEdges: Edge[];
   onEdgeColorChange: (color: string) => void;
-  onEdgeTypeChange: (type: 'smoothstep' | 'straight') => void;
+  onEdgeTypeChange: (type: 'smoothstep' | 'straight' | 'bezier') => void;
 };
 
 const edgeColors = [
@@ -38,11 +37,19 @@ export function EdgeToolbar({ selectedEdges, onEdgeColorChange, onEdgeTypeChange
     <Card className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 p-1 flex items-center gap-1 shadow-lg bg-background/80 backdrop-blur-sm">
       <Tooltip>
         <TooltipTrigger asChild>
-            <Button variant={currentType === 'smoothstep' ? 'secondary' : 'ghost'} size="icon" onClick={() => onEdgeTypeChange('smoothstep')}>
+            <Button variant={currentType === 'bezier' ? 'secondary' : 'ghost'} size="icon" onClick={() => onEdgeTypeChange('bezier')}>
                 <Spline className="w-5 h-5" />
             </Button>
         </TooltipTrigger>
-        <TooltipContent side="top"><p>Smooth Edge</p></TooltipContent>
+        <TooltipContent side="top"><p>Bezier Edge</p></TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+            <Button variant={currentType === 'smoothstep' ? 'secondary' : 'ghost'} size="icon" onClick={() => onEdgeTypeChange('smoothstep')}>
+                <GitBranch className="w-5 h-5" />
+            </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top"><p>Smooth Step Edge</p></TooltipContent>
       </Tooltip>
        <Tooltip>
         <TooltipTrigger asChild>

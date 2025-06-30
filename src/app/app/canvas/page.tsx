@@ -80,7 +80,7 @@ function CanvasFlow() {
        const newEdge = { 
            ...params, 
            type: 'smoothstep',
-           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 2 },
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 1.5 },
            markerEnd: { type: MarkerType.ArrowClosed } 
         };
        setEdges((eds) => addEdge(newEdge, eds));
@@ -136,14 +136,14 @@ function CanvasFlow() {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
-          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 2 } };
+          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 1.5 } };
         }
         return edge;
       })
     );
   }, [selectedEdges, setEdges]);
 
-  const onEdgeTypeChange = useCallback((type: 'smoothstep' | 'straight') => {
+  const onEdgeTypeChange = useCallback((type: 'smoothstep' | 'straight' | 'bezier') => {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
