@@ -68,7 +68,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nopan nowheel rounded-lg p-3 shadow-md border-2 h-full flex flex-col"
+      className="nopan nowheel rounded-lg shadow-md border-2 h-full flex flex-col"
       style={{ 
         borderColor: getBorderColor(),
         backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.5)') : 'hsl(var(--card))'
@@ -88,7 +88,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
       <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
 
-      <div className="w-full h-full overflow-y-auto text-card-foreground p-1 pr-2 break-words">
+      <div className="w-full h-full overflow-y-auto text-card-foreground p-3 break-words">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -96,11 +96,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Start typing..."
-            className="w-full h-full min-h-[20px] border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
+            className="w-full min-h-[20px] border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
             style={{ resize: 'none' }}
           />
         ) : (
-          <div className="w-full h-full text-xs prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 dark:prose-invert">
+          <div className="w-full text-xs prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 dark:prose-invert">
              {label ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
              ) : (
