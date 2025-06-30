@@ -33,7 +33,7 @@ export const MovieCard = ({ movie, onRemoveFromCollection }: MovieCardProps) => 
   }[movie.status];
 
   return (
-    <Link href={`/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
+    <Link href={`/app/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
       <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
           <div className="relative">
               {statusInfo && (
