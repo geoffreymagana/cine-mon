@@ -134,9 +134,9 @@ export default function LandingPage() {
             <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
           </div>
           <div className="flex items-center gap-4">
-             <Link href="/app/dashboard" target="_blank" rel="noopener noreferrer">
+             <Link href="/app/dashboard">
                 <Button>
-                    Go to App <ArrowRight className="ml-2 h-4 w-4" />
+                    Launch App <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </Link>
           </div>
@@ -216,7 +216,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-12 relative flex items-center justify-center gap-4 lg:gap-8">
                 <img
-                    src="https://placehold.co/800x600.png"
+                    src="https://res.cloudinary.com/dwqwwb2fh/image/upload/v1751281018/wtx6png8a1ruf4lowumb.png"
                     alt="Cine-Mon on Desktop"
                     width={800}
                     height={600}
@@ -224,7 +224,7 @@ export default function LandingPage() {
                     data-ai-hint="app screenshot desktop"
                 />
                  <img
-                    src="https://placehold.co/300x600.png"
+                    src="https://res.cloudinary.com/dwqwwb2fh/image/upload/v1751280906/fdrn15pumht6dhs4pdgv.png"
                     alt="Cine-Mon on Mobile"
                     width={300}
                     height={600}
