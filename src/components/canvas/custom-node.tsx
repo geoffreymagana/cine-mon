@@ -79,11 +79,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="w-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none text-center nodrag"
+          className="w-full border-none bg-transparent p-0 text-[10px] text-card-foreground outline-none text-center nodrag"
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-xs text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
+        <div className="text-[10px] text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
       )}
     </div>
   );
