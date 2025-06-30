@@ -146,22 +146,24 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </>
                     )}
                 </SidebarContent>
-                <SidebarFooter>
-                <div className="p-2">
-                    <Link href="/app/profile">
-                        <Button variant="ghost" className="w-full justify-start h-auto p-2">
-                            <Avatar className="h-10 w-10 mr-3">
-                                <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
-                                <AvatarFallback>U</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col items-start">
-                                <span className="font-semibold">{name}</span>
-                                <span className="text-xs text-muted-foreground">@{username}</span>
-                            </div>
-                        </Button>
-                    </Link>
-                </div>
-                </SidebarFooter>
+                {!isMobile && (
+                    <SidebarFooter>
+                        <div className="p-2">
+                            <Link href="/app/profile">
+                                <Button variant="ghost" className="w-full justify-start h-auto p-2">
+                                    <Avatar className="h-10 w-10 mr-3">
+                                        <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
+                                        <AvatarFallback>U</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col items-start">
+                                        <span className="font-semibold">{name}</span>
+                                        <span className="text-xs text-muted-foreground">@{username}</span>
+                                    </div>
+                                </Button>
+                            </Link>
+                        </div>
+                    </SidebarFooter>
+                )}
             </Sidebar>
 
             <TooltipProvider>

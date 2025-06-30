@@ -2,10 +2,12 @@
 "use client";
 
 import * as React from "react";
-import { Search, Plus, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
@@ -13,12 +15,38 @@ type DashboardHeaderProps = {
 };
 
 export const DashboardHeader = ({ onAddMovieClick, onSearchClick }: DashboardHeaderProps) => {
-  const { isMobile } = useSidebar();
+  const isMobile = useIsMobile();
+  const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
+
+  // This effect will run on the client to get the avatar from localStorage.
+  // It also listens for profile updates to stay in sync.
+  React.useEffect(() => {
+    try {
+        const storedAvatar = localStorage.getItem('profileAvatar');
+        if (storedAvatar) setAvatarUrl(storedAvatar);
+    } catch (error) {
+        console.error("Failed to access localStorage:", error);
+    }
+
+    const handleProfileUpdate = () => {
+         const storedAvatar = localStorage.getItem('profileAvatar');
+         if (storedAvatar) setAvatarUrl(storedAvatar);
+    };
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
   
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-8">
       <div className="flex items-center gap-4">
-        {isMobile && <SidebarTrigger />}
+        {isMobile ? (
+          <Link href="/app/profile" aria-label="Go to profile">
+            <Avatar className="h-8 w-8">
+                <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
+                <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </Link>
+        ) : null}
         <h1 className="text-xl md:text-2xl font-headline font-semibold">My Collection</h1>
       </div>
       <div className="flex items-center gap-2">
