@@ -20,9 +20,16 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   
   useEffect(() => {
     if (isEditing && textareaRef.current) {
-      textareaRef.current.focus();
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const textarea = textareaRef.current;
+      textarea.focus();
+      
+      // Move cursor to the end of the text
+      const length = textarea.value.length;
+      textarea.setSelectionRange(length, length);
+      
+      // Auto-resize textarea to fit content
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [isEditing]);
   
@@ -38,6 +45,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLabel(e.target.value);
     if (textareaRef.current) {
+      // Auto-resize textarea while typing
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${e.target.scrollHeight}px`;
     }
@@ -45,7 +53,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nodrag nopan nowheel rounded-md p-3 shadow-md bg-card text-card-foreground border-2 h-full"
+      className="nodrag nopan nowheel rounded-md p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
       onDoubleClick={handleDoubleClick}
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
@@ -58,20 +66,25 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         handleClassName="bg-primary rounded-sm w-2 h-2 hover:bg-primary/80"
         lineClassName="border-primary"
       />
+
+      {/* Connection handles on all four sides */}
       <Handle type="target" position={Position.Top} className="!bg-primary" />
+      <Handle type="source" position={Position.Right} className="!bg-primary" />
+      <Handle type="source" position={Position.Bottom} className="!bg-primary" />
+      <Handle type="target" position={Position.Left} className="!bg-primary" />
+
       {isEditing ? (
         <textarea
           ref={textareaRef}
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="w-full border-none bg-transparent p-0 text-base text-card-foreground outline-none"
+          className="w-full border-none bg-transparent p-0 text-base text-card-foreground outline-none text-center"
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-base text-card-foreground break-words whitespace-pre-wrap">{label}</div>
+        <div className="text-base text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-primary" />
     </div>
   );
 };
