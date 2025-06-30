@@ -172,7 +172,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
               </SidebarInset>
             </TooltipProvider>
 
-            {isMobile && <BottomNav filter={filter as any} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
+            {isMobile && pathname === '/app/dashboard' && <BottomNav filter={filter as any} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
 
             <SpinWheelDialog
                 isOpen={isSpinWheelOpen}
