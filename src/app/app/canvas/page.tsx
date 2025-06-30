@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
@@ -80,7 +81,7 @@ function CanvasFlow() {
        const newEdge = { 
            ...params, 
            type: 'smoothstep',
-           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
+           style: { stroke: 'hsl(var(--foreground))' },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
            labelBgPadding: [8, 4] as [number, number],
@@ -157,7 +158,7 @@ function CanvasFlow() {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
-          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 0.5 } };
+          return { ...edge, style: { ...edge.style, stroke: color } };
         }
         return edge;
       })
@@ -183,6 +184,28 @@ function CanvasFlow() {
   const [canUndo] = useState(false);
   const [canRedo] = useState(false);
 
+  const edgesWithHighlight = edges.map(edge => {
+      const isSelected = selectedEdges.some(se => se.id === edge.id);
+      if (isSelected) {
+          return {
+              ...edge,
+              style: {
+                  ...edge.style,
+                  strokeWidth: 2,
+                  stroke: 'hsl(var(--primary))',
+              },
+              zIndex: 10,
+          };
+      }
+      return {
+          ...edge,
+          style: {
+              ...edge.style,
+              strokeWidth: 0.5,
+          }
+      };
+  });
+
   return (
     <div 
       ref={reactFlowWrapper} 
@@ -206,7 +229,7 @@ function CanvasFlow() {
 
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={edgesWithHighlight}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
