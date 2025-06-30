@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeInitializer } from '@/components/theme-initializer';
@@ -6,6 +6,13 @@ import { ThemeInitializer } from '@/components/theme-initializer';
 export const metadata: Metadata = {
   title: 'Cine-Mon',
   description: 'Your personal movie and series tracker.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

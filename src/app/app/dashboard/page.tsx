@@ -23,6 +23,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { Suspense } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -32,9 +33,15 @@ function DashboardContent() {
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const isMobile = useIsMobile();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: isMobile ? 250 : 0,
+        tolerance: isMobile ? 5 : 2,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
