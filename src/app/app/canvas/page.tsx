@@ -42,7 +42,7 @@ function CanvasFlow() {
     [setEdges]
   );
   
-  const onNodeLabelChange = useCallback((nodeId: string, label: string) => {
+  const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
@@ -70,7 +70,7 @@ function CanvasFlow() {
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [project, onNodeLabelChange, setNodes]);
+  }, [project, onLabelChange, setNodes]);
 
 
   // Dummy undo/redo state for now. A full implementation is a future step.
