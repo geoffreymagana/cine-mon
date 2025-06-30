@@ -33,7 +33,8 @@ import {
     Lock,
     Projector,
     Trash2,
-    Check
+    Check,
+    PlusCircle
 } from 'lucide-react';
 
 import type { Movie, UserCollection } from '@/lib/types';
@@ -66,13 +67,14 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { AmbientPlayer } from '@/components/ambient-player';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CreateCollectionDialog } from '@/components/create-collection-dialog';
 
 
 const statusOptions = [
     { value: 'Watching' as const, label: 'Watching', icon: Clock, className: 'text-chart-1' },
     { value: 'Completed' as const, label: 'Completed', icon: CircleCheck, className: 'text-chart-2' },
     { value: 'On-Hold' as const, label: 'On Hold', icon: PauseCircle, className: 'text-chart-3' },
-    { value: 'Dropped' as const, label: 'Dropped', icon: CircleOff, className: 'text-destructive' },
+    { value: 'Dropped' as const, label: 'Dropped', icon: 'text-destructive' },
     { value: 'Plan to Watch' as const, label: 'Plan to Watch', icon: Bookmark, className: 'text-muted-foreground' },
 ];
 
@@ -84,6 +86,8 @@ export default function MovieDetailPage() {
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [allCollections, setAllCollections] = React.useState<UserCollection[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
+    const [isCreateCollectionDialogOpen, setIsCreateCollectionDialogOpen] = React.useState(false);
+    const [createCollectionType, setCreateCollectionType] = React.useState<'Vault' | 'Spotlight'>('Vault');
     const [isTrailerOpen, setIsTrailerOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
@@ -241,6 +245,15 @@ export default function MovieDetailPage() {
         toast({ title: "Success!", description: `Added to "${targetCollection.name}".` });
     };
 
+    const handleCollectionCreated = (newCollection: UserCollection) => {
+        if (!movie) return;
+        setAllCollections(prev => [...prev, newCollection]);
+        toast({
+            title: "Collection Created",
+            description: `"${movie.title}" has been added to your new ${newCollection.type.toLowerCase()} "${newCollection.name}".`,
+        });
+    };
+
     if (movie === undefined) {
         return (
             <div className="bg-background min-h-screen p-8">
@@ -287,16 +300,25 @@ export default function MovieDetailPage() {
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                      {vaults.length > 0 ? vaults.map(vault => (
-                          <DropdownMenuItem
-                              key={vault.id}
-                              disabled={vault.movieIds.includes(movie.id)}
-                              onClick={() => handleAddToCollection(vault.id)}
-                          >
-                              {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
-                              {vault.name}
-                          </DropdownMenuItem>
-                      )) : <DropdownMenuItem disabled>No vaults created</DropdownMenuItem>}
+                      {vaults.length > 0 && (
+                        <>
+                          {vaults.map(vault => (
+                              <DropdownMenuItem
+                                  key={vault.id}
+                                  disabled={vault.movieIds.includes(movie.id)}
+                                  onClick={() => handleAddToCollection(vault.id)}
+                              >
+                                  {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                  {vault.name}
+                              </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setCreateCollectionType('Vault'); setIsCreateCollectionDialogOpen(true); }}>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>New Vault...</span>
+                      </DropdownMenuItem>
                   </DropdownMenuSubContent>
               </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -307,16 +329,25 @@ export default function MovieDetailPage() {
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                      {spotlights.length > 0 ? spotlights.map(spotlight => (
-                          <DropdownMenuItem
-                              key={spotlight.id}
-                              disabled={spotlight.movieIds.includes(movie.id)}
-                              onClick={() => handleAddToCollection(spotlight.id)}
-                          >
-                              {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
-                              {spotlight.name}
-                          </DropdownMenuItem>
-                      )) : <DropdownMenuItem disabled>No spotlights created</DropdownMenuItem>}
+                      {spotlights.length > 0 && (
+                        <>
+                          {spotlights.map(spotlight => (
+                              <DropdownMenuItem
+                                  key={spotlight.id}
+                                  disabled={spotlight.movieIds.includes(movie.id)}
+                                  onClick={() => handleAddToCollection(spotlight.id)}
+                              >
+                                  {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                  {spotlight.name}
+                              </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setCreateCollectionType('Spotlight'); setIsCreateCollectionDialogOpen(true); }}>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>New Spotlight...</span>
+                      </DropdownMenuItem>
                   </DropdownMenuSubContent>
               </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -625,6 +656,13 @@ export default function MovieDetailPage() {
                     </div>
                 </main>
             </div>
+            <CreateCollectionDialog
+                isOpen={isCreateCollectionDialogOpen}
+                setIsOpen={setIsCreateCollectionDialogOpen}
+                type={createCollectionType}
+                onCollectionCreated={handleCollectionCreated}
+                movieIdToAdd={movie.id}
+            />
             <Dialog open={isCollectionDialogOpen} onOpenChange={setIsCollectionDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
