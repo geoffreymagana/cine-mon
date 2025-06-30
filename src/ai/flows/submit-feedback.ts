@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,13 +11,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const SubmitFeedbackInputSchema = z.object({
+const SubmitFeedbackInputSchema = z.object({
   feedbackType: z.string().describe('The type of feedback (e.g., suggestion, bug).'),
   message: z.string().describe('The user-submitted feedback message.'),
 });
 export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackInputSchema>;
 
-export const SubmitFeedbackOutputSchema = z.object({
+const SubmitFeedbackOutputSchema = z.object({
   confirmation: z.string().describe('A confirmation message for the user.'),
 });
 export type SubmitFeedbackOutput = z.infer<typeof SubmitFeedbackOutputSchema>;
