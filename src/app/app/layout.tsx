@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, View } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, LayoutDashboard } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -113,7 +113,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                 {!isMobile && (
                                      <SidebarMenuItem>
                                         <SidebarMenuButton onClick={() => router.push('/app/canvas')} tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
-                                            <View />
+                                            <LayoutDashboard />
                                             <span>Canvas</span>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
