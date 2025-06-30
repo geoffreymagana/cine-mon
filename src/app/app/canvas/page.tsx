@@ -66,7 +66,7 @@ function CanvasFlow() {
       id: `node-${crypto.randomUUID()}`,
       type: type,
       position,
-      data: { label: 'New Card', onLabelChange: onNodeLabelChange },
+      data: { label: 'New Card', onLabelChange },
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -115,7 +115,7 @@ function CanvasFlow() {
 
       <NodeCreator onAddNode={addNode} />
 
-      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsOpen} />
+      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
     </div>
   );
 }
