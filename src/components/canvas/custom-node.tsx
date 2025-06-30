@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -79,11 +80,14 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
+          placeholder="New Card"
           className="w-full border-none bg-transparent p-0 text-[10px] text-card-foreground outline-none text-center nodrag"
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-[10px] text-card-foreground text-center break-all line-clamp-3">{label}</div>
+        <div className="text-[10px] text-card-foreground text-center break-all line-clamp-3">
+            {label || <span className="text-muted-foreground">New Card</span>}
+        </div>
       )}
     </div>
   );

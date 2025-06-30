@@ -4,6 +4,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactFlow, {
   Background,
+  MiniMap,
   type Connection,
   type Edge,
   type Node,
@@ -74,7 +75,7 @@ function CanvasFlow() {
       id: `node-${crypto.randomUUID()}`,
       type: type,
       position: targetPosition,
-      data: { label: 'New Card', onLabelChange },
+      data: { label: '', onLabelChange },
       width: 200,
       height: 80,
     };
@@ -143,6 +144,7 @@ function CanvasFlow() {
         elementsSelectable={!isReadOnly}
       >
         <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
+        <MiniMap nodeStrokeWidth={3} zoomable pannable />
       </ReactFlow>
 
       {contextMenu && (
