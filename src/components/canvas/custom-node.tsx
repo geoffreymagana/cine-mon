@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -50,7 +49,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   return (
     <div
-      className="nodrag nopan nowheel rounded-md p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
+      className="nopan nowheel rounded-sm p-3 shadow-md bg-card text-card-foreground border-2 h-full flex items-center justify-center"
       onDoubleClick={handleDoubleClick}
       style={{ 
         borderColor: selected ? 'hsl(var(--primary))' : 'hsl(var(--border))',
@@ -80,7 +79,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          className="w-full border-none bg-transparent p-0 text-base text-card-foreground outline-none text-center"
+          className="w-full border-none bg-transparent p-0 text-base text-card-foreground outline-none text-center nodrag"
           style={{ resize: 'none' }}
         />
       ) : (
