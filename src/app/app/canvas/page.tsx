@@ -80,8 +80,12 @@ function CanvasFlow() {
        const newEdge = { 
            ...params, 
            type: 'smoothstep',
-           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 1.5 },
-           markerEnd: { type: MarkerType.ArrowClosed } 
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
+           markerEnd: { type: MarkerType.ArrowClosed },
+           label: '',
+           labelBgPadding: [8, 4] as [number, number],
+           labelBgBorderRadius: 4,
+           labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.9 },
         };
        setEdges((eds) => addEdge(newEdge, eds));
     },
@@ -132,11 +136,28 @@ function CanvasFlow() {
     [project]
   );
   
+  const onEdgeDoubleClick = useCallback(
+    (_event: React.MouseEvent, edge: Edge) => {
+      const newLabel = prompt("Edge label:", edge.label as string || "");
+      if (newLabel !== null) {
+        setEdges((eds) =>
+          eds.map((e) => {
+            if (e.id === edge.id) {
+              return { ...e, label: newLabel };
+            }
+            return e;
+          })
+        );
+      }
+    },
+    [setEdges]
+  );
+
   const onEdgeColorChange = useCallback((color: string) => {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
-          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 1.5 } };
+          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 0.5 } };
         }
         return edge;
       })
@@ -192,6 +213,7 @@ function CanvasFlow() {
         nodeTypes={nodeTypes}
         fitView
         onPaneContextMenu={handlePaneContextMenu}
+        onEdgeDoubleClick={onEdgeDoubleClick}
         snapToGrid={isSnapToGrid}
         snapGrid={[20, 20]}
         nodesDraggable={!isReadOnly}
