@@ -83,7 +83,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           style={{ resize: 'none' }}
         />
       ) : (
-        <div className="text-[10px] text-card-foreground break-words whitespace-pre-wrap text-center">{label}</div>
+        <div className="text-[10px] text-card-foreground break-all whitespace-pre-wrap text-center">{label}</div>
       )}
     </div>
   );
