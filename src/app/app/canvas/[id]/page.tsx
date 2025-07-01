@@ -369,11 +369,13 @@ function CanvasFlow() {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      const edgeElement = document
+      const interactionElement = document
         .elementsFromPoint(centerX, centerY)
-        .find((el) => el.classList.contains('react-flow__edge-interaction'))?.parentElement;
+        .find((el) => el.classList.contains('react-flow__edge-interaction'));
       
-      const newOverlappedEdgeId = edgeElement?.dataset.id || null;
+      const edgeElement = interactionElement?.closest('.react-flow__edge');
+      
+      const newOverlappedEdgeId = (edgeElement as HTMLElement)?.dataset.id || null;
       const lastOverlappedEdgeId = overlappedEdgeRef.current;
 
       if (lastOverlappedEdgeId && lastOverlappedEdgeId !== newOverlappedEdgeId) {
@@ -397,19 +399,18 @@ function CanvasFlow() {
       const edge = getEdge(edgeId);
       if (!edge) return;
  
-      // Update the first segment of the edge. It now connects to the dropped node.
       updateEdge(edgeId, { 
+          source: edge.source,
           target: node.id, 
           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } 
       });
  
-      // Create the second segment, inheriting properties from the original edge.
       const newEdge = { 
-           ...edge, // Inherit type, marker, label styles etc.
-           id: `${node.id}->${edge.target}`, // Create a new unique ID
+           ...edge,
+           id: `${node.id}->${edge.target}`,
            source: node.id,
            target: edge.target,
-           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 }, // Reset style
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
       };
 
       addEdges(newEdge);
