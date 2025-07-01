@@ -1,26 +1,27 @@
-feat(canvas): Introduce interactive Canvas for visual organization (Desktop Only)
+feat(ui): Introduce Multi-Select, Bulk Actions, and major UI/UX refinements
 
-This major feature introduces the "Canvas," a free-form, infinite space for users to visually organize their cinematic universe, inspired by tools like Obsidian.
+This release introduces a powerful multi-select feature for managing collections, alongside significant UI/UX enhancements and critical bug fixes to improve usability and visual polish across the app.
 
-- feat(canvas): Create new canvas pages with React Flow for node-based editing.
-- feat(canvas): Support adding text cards and importing movies from the user's collection as nodes.
-- feat(canvas): Implement node connections with customizable edge types and colors.
-- feat(canvas): Add edge intersection, allowing users to drop a node onto an edge to automatically split the connection.
-- feat(ui): Introduce a powerful command palette (Cmd+K) that centralizes all canvas actions (add node, save, zoom), replacing multiple UI toolbars for a cleaner, keyboard-first experience.
-- feat(ui): Implement context-aware keyboard shortcuts (e.g., `Backspace` to delete selected items).
+### ✨ New Features
 
-fix(canvas): Resolve multiple bugs related to canvas stability and functionality
+#### Multi-Select & Bulk Actions
 
-- fix(canvas): Correct the edge-splitting logic in `onNodeDragStop` to ensure connections are properly re-assigned.
-- fix(canvas): Stabilize edge intersection by replacing fragile DOM element detection (`elementsFromPoint`) with a more robust geometric calculation and `.closest()`.
-- fix(state): Fix critical hydration bug where function props on nodes (e.g., `onTitleChange`) were not being restored from `localStorage`, causing the app to crash on reloaded canvases.
-- fix(build): Resolve multiple build and runtime errors, including incorrect `'use client'` directive placement, missing `cmdk` dependency, and deprecated React Flow API usage.
+-   **Selection Mode**: Users can now enter a "selection mode" from the dashboard header to select multiple movie or show cards at once.
+-   **Contextual Header**: When one or more items are selected, a new contextual header appears, showing the number of selected items and providing new bulk action buttons.
+-   **Bulk Delete**: Users can now delete multiple items from their collection simultaneously, with a confirmation dialog to prevent accidental data loss.
+-   **Add to Collection (Foundation)**: The UI for adding multiple selected items to a Vault or Spotlight is now in place, ready for future implementation.
 
-docs(readme): Overhaul documentation to reflect new features and attributions
+### 🎨 UI & UX Enhancements
 
-- docs(readme): Add a new "Canvas" section to the README, detailing its desktop-only nature, use cases (timelines, character webs), and command palette usage.
-- docs(readme): Add a "Technical Insights" section detailing development challenges and solutions, like the edge intersection implementation and the state hydration fix.
-- docs(readme): Add full licensing and attribution for TMDB, React Flow (MIT), and Lucide Icons (ISC).
-- docs(guide): Update the in-app "Getting Started Guide" with a new section explaining how to use the Canvas.
+-   **Personalized Dashboard Title**: The dashboard header is now personalized, displaying "[User]'s Collection" for a more custom feel. The font size has also been refined for a cleaner look.
+-   **Responsive Search Dialog**: The TMDB search dialog has been redesigned to be fully responsive, ensuring a seamless experience on mobile devices. The layout now adapts gracefully to prevent long titles from hiding the "Import" button.
+-   **Improved "Fork on GitHub" Button**: The secondary call-to-action buttons on the landing page now feature a smoother, more engaging "fill from left" hover animation and clearer "Fork on GitHub" text.
+-   **Redesigned Changelog Page**: The public changelog page has been redesigned to match the elegant, single-column "reading mode" layout of the "About" page, significantly improving readability.
 
-chore(ui): Consolidate scattered canvas UI controls into the command palette for a cleaner and more focused editing experience.
+### ⚙️ Fixes & Under the Hood
+
+-   **Build Error Resolution**: Fixed critical "Module not found" errors that were preventing the dashboard from building correctly.
+-   **Theme & Contrast Fix**: Resolved a major bug where the app's light/dark mode theme was incorrectly affecting the text color on public-facing pages (Landing, Changelog, Legal), making text unreadable. These pages now maintain a consistent, high-contrast look.
+-   **UI Bug Fixes**:
+    -   The contextual header for multi-select actions now has a solid background, fixing a transparency issue.
+    -   Corrected a minor layout misalignment in the changelog's timeline view.
