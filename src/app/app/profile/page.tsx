@@ -186,19 +186,48 @@ export default function ProfilePage() {
                     throw new Error("Invalid JSON structure: The file should contain an array of movies, optionally within a 'movies' key.");
                 }
                 
-                const existingMovieMap = new Map(allMovies.map(m => [m.id, m]));
+                const existingMoviesById = new Map(allMovies.map(m => [m.id, m]));
+                const existingMoviesByTmdbId = new Map<number, Movie>();
+                const existingMoviesByTitleAndDate = new Map<string, Movie>();
+
+                allMovies.forEach(movie => {
+                    if (movie.tmdbId) {
+                        existingMoviesByTmdbId.set(movie.tmdbId, movie);
+                    }
+                    const key = `${movie.title.toLowerCase().trim()}|${movie.releaseDate || ''}`;
+                    existingMoviesByTitleAndDate.set(key, movie);
+                });
+
                 const newMovies: Movie[] = [];
                 const conflictingMovies: Movie[] = [];
                 let skippedCount = 0;
 
                 importedMovies.forEach(importedMovie => {
-                    if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.id) {
+                    if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
                         skippedCount++;
                         return;
                     }
 
-                    if (existingMovieMap.has(importedMovie.id)) {
-                        conflictingMovies.push(importedMovie);
+                    let existingMovie: Movie | undefined = undefined;
+
+                    // Priority 1: Check by TMDB ID
+                    if (importedMovie.tmdbId && existingMoviesByTmdbId.has(importedMovie.tmdbId)) {
+                        existingMovie = existingMoviesByTmdbId.get(importedMovie.tmdbId);
+                    } 
+                    // Priority 2: Check by internal ID
+                    else if (importedMovie.id && existingMoviesById.has(importedMovie.id)) {
+                        existingMovie = existingMoviesById.get(importedMovie.id);
+                    }
+                    // Priority 3: Fallback to title and release date
+                    else {
+                        const key = `${importedMovie.title.toLowerCase().trim()}|${importedMovie.releaseDate || ''}`;
+                        if (existingMoviesByTitleAndDate.has(key)) {
+                            existingMovie = existingMoviesByTitleAndDate.get(key);
+                        }
+                    }
+
+                    if (existingMovie) {
+                        conflictingMovies.push({ ...importedMovie, id: existingMovie.id });
                     } else {
                         newMovies.push(importedMovie);
                     }
@@ -209,7 +238,7 @@ export default function ProfilePage() {
                     setIsImportConfirmOpen(true);
                 } else if (newMovies.length > 0) {
                     const moviesToSave = newMovies.map(m => sanitizeMovie(m));
-                    await MovieService.saveAllMovies(moviesToSave);
+                    await MovieService.saveAllMovies([...allMovies, ...moviesToSave]);
                     toast({
                         title: "Import Successful!",
                         description: `${moviesToSave.length} new titles added. ${skippedCount > 0 ? `${skippedCount} invalid entries skipped.`: ''} The page will now reload.`,
@@ -248,41 +277,39 @@ export default function ProfilePage() {
             return;
         }
     
-        let moviesToSave: Movie[] = [];
+        let finalMovies: Movie[] = [...allMovies];
         let toastDescription = "";
     
         if (resolution === 'skip') {
-            moviesToSave = importData.newMovies.map(m => sanitizeMovie(m));
-            toastDescription = `${moviesToSave.length} new titles have been imported. ${importData.conflictingMovies.length} duplicates were skipped.`;
+            const newSanitizedMovies = importData.newMovies.map(m => sanitizeMovie(m));
+            finalMovies.push(...newSanitizedMovies);
+            toastDescription = `${newSanitizedMovies.length} new titles have been imported. ${importData.conflictingMovies.length} duplicates were skipped.`;
         } else if (resolution === 'overwrite') {
             const moviesToProcess = [...importData.newMovies, ...importData.conflictingMovies];
-            moviesToSave = moviesToProcess.map(m => {
-                const existing = allMovies.find(em => em.id === m.id);
-                return sanitizeMovie(m, existing);
+            const finalMovieMap = new Map(allMovies.map(m => [m.id, m]));
+            
+            moviesToProcess.forEach(m => {
+                 const existing = finalMovieMap.get(m.id);
+                 finalMovieMap.set(m.id, sanitizeMovie(m, existing));
             });
+            
+            finalMovies = Array.from(finalMovieMap.values());
             toastDescription = `${importData.newMovies.length} new titles added and ${importData.conflictingMovies.length} existing titles updated.`;
         }
     
-        if (moviesToSave.length > 0) {
-            try {
-                await MovieService.saveAllMovies(moviesToSave);
-                toast({
-                    title: "Import Complete!",
-                    description: `${toastDescription} The page will now reload.`,
-                });
-                setTimeout(() => window.location.reload(), 3000);
-            } catch (error) {
-                console.error("Failed to save movies after confirmation:", error);
-                toast({
-                    title: "Import Failed",
-                    description: "An error occurred while saving the movies.",
-                    variant: "destructive",
-                });
-            }
-        } else if (resolution === 'skip' && importData.newMovies.length === 0) {
+        try {
+            await MovieService.saveAllMovies(finalMovies);
             toast({
-                title: "No New Titles",
-                description: "No new titles to import. The duplicates were skipped.",
+                title: "Import Complete!",
+                description: `${toastDescription} The page will now reload.`,
+            });
+            setTimeout(() => window.location.reload(), 3000);
+        } catch (error) {
+            console.error("Failed to save movies after confirmation:", error);
+            toast({
+                title: "Import Failed",
+                description: "An error occurred while saving the movies.",
+                variant: "destructive",
             });
         }
         
