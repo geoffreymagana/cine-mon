@@ -45,6 +45,7 @@ export type Movie = {
   revenue?: number;
   runtime?: number;
   productionCountries?: string;
+  sortOrder?: number;
 };
 
 export type UserCollection = {

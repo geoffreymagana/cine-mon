@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -166,7 +165,11 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
 
 
   const onSubmit = (data: MovieFormValues) => {
-    onSave(data);
+    const movieData: Omit<Movie, "id"> = {
+      ...data,
+      sortOrder: Date.now()
+    }
+    onSave(movieData);
     setIsOpen(false);
   };
 

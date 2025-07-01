@@ -32,6 +32,12 @@ export class MovieDatabase extends Dexie {
       // Dexie handles adding the new index to existing data automatically.
       // No manual data migration is needed for this upgrade.
     });
+
+    this.version(4).stores({
+        movies: 'id, tmdbId, title, *tags, type, status, collection, sortOrder'
+    }).upgrade(tx => {
+        // Dexie will automatically add the sortOrder index. We will populate the field lazily.
+    });
   }
 }
 

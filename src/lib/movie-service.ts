@@ -9,7 +9,7 @@ export class MovieService {
   }
 
   static async getMovies(): Promise<Movie[]> {
-    return await db.movies.toArray();
+    return await db.movies.orderBy('sortOrder').reverse().toArray();
   }
   
   static async getMovie(id: string): Promise<Movie | undefined> {

@@ -108,8 +108,16 @@ function DashboardContent() {
         if (oldIndex === -1 || newIndex === -1) return items;
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        MovieService.saveAllMovies(newItems);
-        return newItems;
+        
+        // Re-assign sortOrder to all items to persist the manual order
+        const now = Date.now();
+        const newItemsWithOrder = newItems.map((item, index) => ({ 
+            ...item, 
+            sortOrder: now - index 
+        }));
+
+        MovieService.saveAllMovies(newItemsWithOrder);
+        return newItemsWithOrder;
       });
     }
   };

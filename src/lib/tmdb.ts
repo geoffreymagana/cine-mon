@@ -1,4 +1,3 @@
-
 import type { Movie, Season } from './types';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -139,5 +138,6 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         runtime: isMovie ? tmdbResult.runtime : tmdbResult.episode_run_time?.[0],
         productionCountries: tmdbResult.production_countries?.map((c: any) => c.name).join(', '),
         trailerUrl: officialTrailer?.key,
+        sortOrder: Date.now(),
     };
 };
