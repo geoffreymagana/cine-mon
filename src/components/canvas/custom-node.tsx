@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
 
-import { cn } from '@/lib/utils';
+import { cn, isColorLight } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
 import { MovieCard } from '../movie-card';
 
@@ -31,6 +31,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [title, setTitle] = useState(data.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  
+  const textColor = data.color && !isColorLight(data.color) ? 'hsl(var(--card-foreground) / 0.95)' : 'hsl(var(--foreground) / 0.95)';
 
   const isMovieNode = data.nodeType === 'movie' && data.movieData;
 
@@ -96,11 +98,6 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     }
     return color.replace(/(\/\s*)[\d.]+\)/, '$11)');
   };
-  
-  const handlePreventNavigation = (e: React.MouseEvent) => {
-    // This stops the Link inside MovieCard from navigating on a single click
-    e.preventDefault();
-  };
 
   return (
     <div className="relative w-full h-full" onDoubleClick={handleNodeDoubleClick}>
@@ -152,11 +149,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             )} 
         >
           {isMovieNode ? (
-            <div 
-              className="w-full h-full [&>a>div]:border-none [&>a>div]:shadow-none"
-              onClick={handlePreventNavigation}
-            >
-                <MovieCard movie={data.movieData!} />
+            <div className="w-full h-full [&>div>div]:border-none [&>div>div]:shadow-none">
+                <MovieCard movie={data.movieData!} disableLink={true} />
             </div>
           ) : isEditing ? (
             <textarea
@@ -165,11 +159,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Type here..."
-              className="w-full h-full border-none bg-transparent p-3 text-xs text-card-foreground outline-none nodrag"
-              style={{ resize: 'none' }}
+              className="w-full h-full border-none bg-transparent p-3 text-xs outline-none nodrag"
+              style={{ resize: 'none', color: textColor }}
             />
           ) : (
-            <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words p-3")}>
+            <div className={cn("prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words p-3")} style={{ color: textColor }}>
               {label ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
               ) : (

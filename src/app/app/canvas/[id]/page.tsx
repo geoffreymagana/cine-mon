@@ -69,7 +69,7 @@ function downloadImage(dataUrl: string, fileName: string) {
 }
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
-  interactionWidth: 100,
+  interactionWidth: 20,
   style: { strokeWidth: 2 }
 };
 

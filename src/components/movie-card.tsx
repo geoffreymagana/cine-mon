@@ -15,9 +15,10 @@ import { cn } from "@/lib/utils";
 type MovieCardProps = {
   movie: Movie;
   onRemoveFromCollection?: (movieId: string) => void;
+  disableLink?: boolean;
 };
 
-export const MovieCard = ({ movie, onRemoveFromCollection }: MovieCardProps) => {
+export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }: MovieCardProps) => {
 
   const handleInteraction = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,67 +33,75 @@ export const MovieCard = ({ movie, onRemoveFromCollection }: MovieCardProps) => 
     'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
   }[movie.status];
 
-  return (
-    <Link href={`/app/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
-      <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
-          <div className="relative">
-              {statusInfo && (
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <div className="absolute top-2 left-2 z-20 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={handleInteraction}>
-                              <statusInfo.icon className={cn("h-4 w-4", statusInfo.className)} />
-                          </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>{statusInfo.label}</p>
-                      </TooltipContent>
-                  </Tooltip>
-              )}
-              {onRemoveFromCollection && (
-                <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Tooltip>
+  const CardInnerComponent = (
+    <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
+        <div className="relative">
+            {statusInfo && (
+                <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm"
-                            onClick={(e) => {
-                                handleInteraction(e);
-                                onRemoveFromCollection(movie.id);
-                            }}
-                        >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove from collection</span>
-                        </Button>
+                        <div className="absolute top-2 left-2 z-20 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={handleInteraction}>
+                            <statusInfo.icon className={cn("h-4 w-4", statusInfo.className)} />
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Remove from collection</p>
+                        <p>{statusInfo.label}</p>
                     </TooltipContent>
-                    </Tooltip>
-                </div>
-                )}
-              <div className="aspect-[2/3] w-full rounded-t-lg overflow-hidden border border-border/10">
-                  <Image
-                      src={movie.posterUrl}
-                      alt={`Poster for ${movie.title}`}
-                      width={500}
-                      height={750}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={`${movie.type} ${movie.title}`}
-                  />
+                </Tooltip>
+            )}
+            {onRemoveFromCollection && (
+              <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Tooltip>
+                  <TooltipTrigger asChild>
+                      <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm"
+                          onClick={(e) => {
+                              handleInteraction(e);
+                              onRemoveFromCollection(movie.id);
+                          }}
+                      >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Remove from collection</span>
+                      </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                      <p>Remove from collection</p>
+                  </TooltipContent>
+                  </Tooltip>
               </div>
-              <div className="absolute -bottom-5 left-2 z-10">
-                  <RatingCircle percentage={movie.rating} />
-              </div>
-          </div>
-        
-        <CardContent className="pt-8 px-2 flex-grow flex flex-col">
-          <p className="text-base font-bold leading-tight truncate flex-grow" title={movie.title}>
-            {movie.title}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">{movie.releaseDate}</p>
-        </CardContent>
-      </Card>
+              )}
+            <div className="aspect-[2/3] w-full rounded-t-lg overflow-hidden border border-border/10">
+                <Image
+                    src={movie.posterUrl}
+                    alt={`Poster for ${movie.title}`}
+                    width={500}
+                    height={750}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={`${movie.type} ${movie.title}`}
+                />
+            </div>
+            <div className="absolute -bottom-5 left-2 z-10">
+                <RatingCircle percentage={movie.rating} />
+            </div>
+        </div>
+      
+      <CardContent className="pt-8 px-2 flex-grow flex flex-col">
+        <p className="text-base font-bold leading-tight truncate flex-grow" title={movie.title}>
+          {movie.title}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">{movie.releaseDate}</p>
+      </CardContent>
+    </Card>
+  );
+
+  if (disableLink) {
+    return <div className="block group outline-none h-full">{CardInnerComponent}</div>;
+  }
+
+  return (
+    <Link href={`/app/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
+      {CardInnerComponent}
     </Link>
   );
 };

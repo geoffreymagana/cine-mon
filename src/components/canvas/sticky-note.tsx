@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeResizer, type NodeProps, Handle, Position } from 'reactflow';
-import { cn } from '@/lib/utils';
+import { cn, isColorLight } from '@/lib/utils';
 
 type StickyNodeData = {
   text: string;
@@ -13,33 +13,44 @@ type StickyNodeData = {
 };
 
 const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(data.text);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  const [foldColor, setFoldColor] = useState('hsl(var(--card))');
+  const textColor = data.color && !isColorLight(data.color) ? '#FAFAFA' : '#333';
+  
   useEffect(() => {
     setText(data.text || '');
   }, [data.text]);
 
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setFoldColor(isDark ? 'hsl(var(--background))' : 'hsl(var(--card))');
+  }, []);
+
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleDoubleClick = () => setIsEditing(true);
+
   const handleBlur = () => {
+    setIsEditing(false);
     data.onChange(id, text);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
   };
-  
-  const [foldColor, setFoldColor] = useState('hsl(var(--card))');
-  
-  useEffect(() => {
-      // This ensures we only access `document` on the client side.
-      const isDark = document.documentElement.classList.contains('dark');
-      setFoldColor(isDark ? 'hsl(var(--background))' : 'hsl(var(--card))');
-  }, []);
 
   return (
     <div 
-        className={cn("sticky-note w-full h-full rounded-sm", selected && "resizing", !data.color && 'text-black')} 
+        className={cn("sticky-note w-full h-full rounded-sm", selected && "resizing")} 
         style={{ backgroundColor: data.color }}
+        onDoubleClick={handleDoubleClick}
     >
         <NodeResizer
             isVisible={selected}
@@ -53,15 +64,22 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
         <Handle type="target" position={Position.Top} id="target-top" className="!bg-primary/50 !w-8 !h-1.5 !rounded-sm !border-0" />
         <Handle type="source" position={Position.Right} id="source-right" className="!bg-primary/50 !w-1.5 !h-8 !rounded-sm !border-0" />
         <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-primary/50 !w-8 !h-1.5 !rounded-sm !border-0" />
-        <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Write something..."
-            className="w-full h-full border-none bg-transparent outline-none nodrag p-4 text-lg leading-snug"
-            style={{ resize: 'none', fontFamily: `'Kalam', cursive`, color: data.color ? '#333' : undefined }}
-        />
+        
+        {isEditing ? (
+            <textarea
+                ref={textareaRef}
+                value={text}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Write something..."
+                className="w-full h-full border-none bg-transparent outline-none nodrag p-4 text-lg leading-snug"
+                style={{ resize: 'none', fontFamily: `'Kalam', cursive`, color: textColor }}
+            />
+        ) : (
+            <div className="w-full h-full p-4 text-lg leading-snug break-words" style={{ fontFamily: `'Kalam', cursive`, color: textColor }}>
+                {text || <span className="opacity-50">Write something...</span>}
+            </div>
+        )}
     </div>
   );
 };
