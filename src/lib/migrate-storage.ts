@@ -1,3 +1,4 @@
+
 import { db } from './database';
 
 export async function migrateFromLocalStorage() {
@@ -11,12 +12,12 @@ export async function migrateFromLocalStorage() {
     const collections = JSON.parse(localStorage.getItem('collections') || '[]');
     
     if (movies.length > 0) {
-      await db.movies.bulkAdd(movies);
+      await db.movies.bulkPut(movies);
       console.log(`Migrated ${movies.length} movies.`);
     }
     
     if (collections.length > 0) {
-      await db.collections.bulkAdd(collections);
+      await db.collections.bulkPut(collections);
       console.log(`Migrated ${collections.length} collections.`);
     }
     
@@ -31,7 +32,7 @@ export async function migrateFromLocalStorage() {
     ].filter(item => item.value !== null);
 
     if (profileSettings.length > 0) {
-      await db.settings.bulkPut(profileSettings);
+      await db.settings.bulkPut(profileSettings as any);
       console.log(`Migrated ${profileSettings.length} profile settings.`);
     }
     
@@ -39,7 +40,9 @@ export async function migrateFromLocalStorage() {
     
     localStorage.removeItem('movies');
     localStorage.removeItem('collections');
-    profileSettings.forEach(setting => localStorage.removeItem(setting.key));
+    profileSettings.forEach(setting => {
+        if (setting.key) localStorage.removeItem(setting.key);
+    });
 
     console.log('Migration completed successfully. LocalStorage has been cleared.');
   } catch (error) {
