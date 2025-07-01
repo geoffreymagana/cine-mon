@@ -280,9 +280,11 @@ function CanvasFlow() {
         type: 'sticky',
         position: targetPosition,
         data: { 
-          text: 'A sticky note...',
+          text: '',
           onChange: onNodeTextChange,
+          onColorChange: onColorChange,
           nodeType: 'sticky',
+          color: 'hsl(54, 85%, 51%, 0.7)',
         },
         width: 200,
         height: 200,
@@ -627,7 +629,7 @@ function CanvasFlow() {
         />
       )}
 
-      {selectedNodes.length > 0 && selectedNodes[0].type === 'custom' && (
+      {selectedNodes.length > 0 && (selectedNodes[0].type === 'custom' || selectedNodes[0].type === 'sticky') && (
         <ColorPickerToolbar
           node={selectedNodes[0]}
           onColorChange={(color) => {
