@@ -66,7 +66,7 @@ function downloadImage(dataUrl: string, fileName: string) {
 }
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
-  interactionWidth: 75,
+  interactionWidth: 100,
 };
 
 function CanvasFlow() {
@@ -398,12 +398,14 @@ function CanvasFlow() {
       const edge = getEdge(edgeId);
       if (!edge) return;
  
+      // First edge: original source -> dropped node
       updateEdge(edgeId, { 
           source: edge.source,
           target: node.id, 
           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } 
       });
  
+      // Second edge: dropped node -> original target
       const newEdge = { 
            ...edge,
            id: `${node.id}->${edge.target}`,
