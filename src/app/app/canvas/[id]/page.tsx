@@ -42,8 +42,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import type { CanvasBoard } from '@/lib/types';
+import type { CanvasBoard, Movie } from '@/lib/types';
 import { useParams, useRouter } from 'next/navigation';
+import { ImportMovieDialog } from '@/components/canvas/import-movie-dialog';
 
 
 import 'reactflow/dist/style.css';
@@ -88,6 +89,9 @@ function CanvasFlow() {
 
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
   const [currentLabel, setCurrentLabel] = useState('');
+  
+  const [isImportMovieOpen, setIsImportMovieOpen] = React.useState(false);
+  const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
 
   useEffect(() => {
     if (!canvasId) return;
@@ -103,6 +107,11 @@ function CanvasFlow() {
         } else {
             toast({ title: "Canvas not found", variant: "destructive" });
             router.push('/app/canvas');
+        }
+        
+        const storedMovies = localStorage.getItem('movies');
+        if (storedMovies) {
+            setAllMovies(JSON.parse(storedMovies));
         }
     } catch (error) {
         console.error("Failed to load canvas:", error);
@@ -218,6 +227,30 @@ function CanvasFlow() {
 
     setNodes((nds) => nds.concat(newNode));
   }, [onLabelChange, onTitleChange, onColorChange, project, setNodes]);
+
+  const addMovieNode = useCallback((movie: Movie) => {
+    const position = project({
+        x: reactFlowWrapper.current!.clientWidth / 2,
+        y: reactFlowWrapper.current!.clientHeight / 2,
+    });
+
+    const newNode: Node = {
+      id: `node-${crypto.randomUUID()}`,
+      type: 'custom',
+      position,
+      data: { 
+        title: movie.title,
+        label: `*Released: ${movie.releaseDate}*\n\n*Status: ${movie.status}*`,
+        color: 'hsl(var(--card))',
+        onLabelChange,
+        onTitleChange,
+        onColorChange,
+      },
+      width: 250,
+      height: 150,
+    };
+    setNodes((nds) => nds.concat(newNode));
+  }, [project, setNodes, onLabelChange, onTitleChange, onColorChange]);
 
 
   const handlePaneContextMenu = useCallback(
@@ -407,10 +440,17 @@ function CanvasFlow() {
         onShowHelp={() => setIsHelpOpen(true)}
       />
 
-      <NodeCreator onAddNode={() => addNode('custom')} />
+      <NodeCreator onAddNode={() => addNode('custom')} onAddMovieClick={() => setIsImportMovieOpen(true)} />
       
       <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
       
+      <ImportMovieDialog
+        isOpen={isImportMovieOpen}
+        setIsOpen={setIsImportMovieOpen}
+        movies={allMovies}
+        onImport={addMovieNode}
+      />
+
       <Dialog open={!!editingEdge} onOpenChange={(isOpen) => !isOpen && setEditingEdge(null)}>
         <DialogContent>
           <DialogHeader>

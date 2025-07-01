@@ -9,9 +9,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 type NodeCreatorProps = {
   onAddNode: (type: 'custom') => void;
+  onAddMovieClick: () => void;
 };
 
-export function NodeCreator({ onAddNode }: NodeCreatorProps) {
+export function NodeCreator({ onAddNode, onAddMovieClick }: NodeCreatorProps) {
   const handleAddNode = (type: 'custom') => {
     onAddNode(type);
   };
@@ -38,14 +39,14 @@ export function NodeCreator({ onAddNode }: NodeCreatorProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            disabled 
+            onClick={onAddMovieClick} 
             className="transition-all hover:-translate-y-1 hover:bg-primary/20"
           >
             <Clapperboard className="w-5 h-5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Add Title (Coming Soon)</p>
+          <p>Add Title from Collection</p>
         </TooltipContent>
       </Tooltip>
       <Tooltip>
