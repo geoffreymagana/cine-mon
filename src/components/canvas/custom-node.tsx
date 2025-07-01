@@ -88,7 +88,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   return (
     <div className="relative w-full h-full">
       <div 
-        className="absolute bottom-full left-0 mb-1 px-1 nodrag"
+        className="absolute bottom-full left-0 mb-1 px-1 nodrag cursor-text"
         onClick={handleTitleClick}
       >
         {isTitleEditing ? (
@@ -98,12 +98,12 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
             onKeyDown={(e) => { if (e.key === 'Enter') handleTitleBlur(); }}
-            className="w-full bg-transparent p-0 text-xs text-foreground outline-none"
+            className="w-full bg-transparent p-0 text-3xs text-foreground outline-none"
             placeholder="Card title..."
           />
         ) : (
-          <h3 className="text-xs text-muted-foreground cursor-text hover:text-foreground break-words">
-            {title || `Card Title`}
+          <h3 className="text-3xs text-muted-foreground hover:text-foreground break-words">
+            {title || `Card Title...`}
           </h3>
         )}
       </div>
@@ -144,7 +144,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
               {label ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
               ) : (
-                  <span className="text-muted-foreground opacity-50">Type here...</span>
+                  <span className="text-muted-foreground opacity-50">Double-click to edit...</span>
               )}
             </div>
           )}

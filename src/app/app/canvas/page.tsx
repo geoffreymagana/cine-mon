@@ -107,7 +107,7 @@ function CanvasFlow() {
            style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
-           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
+           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem' },
            labelBgPadding: [8, 4] as [number, number],
            labelBgBorderRadius: 4,
            labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
@@ -223,12 +223,11 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
-                  stroke: 'hsl(var(--primary))'
               },
               zIndex: 10,
           };
       }
-      return { ...edge };
+      return { ...edge, style: { ...edge.style, strokeWidth: 0.5 } };
   });
 
   return (
