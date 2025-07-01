@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] (2025-07-01)
+
+### Features
+
+#### Interactive Canvas (Desktop Only)
+
+-   **Free-form Canvas:** Introduced an infinite, zoomable canvas powered by React Flow for visual brainstorming and organization.
+-   **Rich Node Support:** Add resizable text cards with markdown support, or import full movie/series cards directly from your collection.
+-   **Intuitive Connections:** Connect nodes with customizable edges (curved, straight) and colors.
+-   **Edge Intersection Splitting:** Drag and drop a node directly onto an edge to automatically split the connection and insert the node.
+
+#### Command Palette & Keyboard-First UI
+
+-   **Command Palette (`Cmd+K`):** Added a central, searchable command palette to access all canvas actions (add node, save, zoom), streamlining the UI.
+-   **Keyboard Shortcuts:** Implemented context-aware shortcuts, including `Backspace` to delete selected nodes/edges.
+
+### Fixes
+
+#### Canvas Stability & Functionality
+
+-   **Edge Splitting Logic:** Corrected the `onNodeDragStop` logic to ensure edges split correctly, re-assigning `source` and `target` properties properly.
+-   **State Hydration:** Fixed a critical bug that caused canvases to crash on reload by correctly re-hydrating nodes from `localStorage` with their required function props.
+-   **Robust Intersection Detection:** Replaced fragile DOM-based edge detection (`elementsFromPoint`) with a more reliable geometric calculation, preventing intersection failures.
+-   **Build & Runtime Errors:** Resolved multiple underlying issues, including incorrect `'use client'` directive placement, a missing `cmdk` dependency for the command palette, and usage of deprecated React Flow APIs.
+
+### Docs
+
+-   **Comprehensive README Update:** Overhauled the `README.md` to include a detailed section on the new Canvas feature, a "Technical Insights" section about development challenges, and full licensing/attribution for TMDB, React Flow, and Lucide.
+-   **In-App Guide Update:** Updated the "Getting Started" guide within the app to include instructions and use cases for the new Canvas feature.
+
+---
+
+### Chores
+
+-   **UI Cleanup:** Consolidated scattered canvas UI controls into the new command palette for a cleaner, more focused editing experience.
+ ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
+
 ## [1.2.0] (2025-06-30)
 
 ### Features
