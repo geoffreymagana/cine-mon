@@ -76,8 +76,9 @@ export type Feedback = {
 };
 
 export type CanvasBoard = {
-    id: string;
-    name: string;
-    nodes: Node[];
-    edges: Edge[];
+  id: string;
+  name: string;
+  nodes: Node[];
+  edges: Edge[];
+  lastModified: string; // ISO string
 };
