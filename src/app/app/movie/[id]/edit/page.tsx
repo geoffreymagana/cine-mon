@@ -195,14 +195,21 @@ export default function MovieEditPage() {
     }
   };
 
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag) {
+        const currentTags = form.getValues("tags");
+        if (!currentTags.includes(trimmedTag)) {
+            form.setValue("tags", [...currentTags, trimmedTag]);
+        }
+        setTagInput("");
+    }
+  };
+
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim() !== '') {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      const currentTags = form.getValues('tags');
-      if (!currentTags.includes(tagInput.trim())) {
-        form.setValue('tags', [...currentTags, tagInput.trim()]);
-        setTagInput('');
-      }
+      handleAddTag();
     }
   };
 
@@ -356,7 +363,10 @@ export default function MovieEditPage() {
                             </Button>
                         </div>
                             <FormControl>
-                                <Input placeholder="Add tags and press Enter" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagKeyDown}/>
+                                <div className="flex items-center gap-2">
+                                    <Input placeholder="Add a tag..." value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagKeyDown}/>
+                                    <Button type="button" variant="secondary" onClick={handleAddTag}>Add</Button>
+                                </div>
                             </FormControl>
                         <div className="flex flex-wrap gap-2 mt-2">
                             {form.watch("tags").map((tag) => (
