@@ -17,6 +17,8 @@ import ReactFlow, {
   type OnNodeDrag,
   type DefaultEdgeOptions,
   type XYPosition,
+  getRectOfNodes,
+  getTransformForBounds,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote } from 'lucide-react';
@@ -70,7 +72,7 @@ function downloadImage(dataUrl: string, fileName: string) {
 }
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
-  interactionWidth: 2,
+  interactionWidth: 20,
   style: { strokeWidth: 2 }
 };
 
@@ -238,17 +240,37 @@ function CanvasFlow() {
   }, [canvasId, canvasName, nodes, edges, toast]);
 
   const handleSaveAsImage = useCallback(() => {
-    if (reactFlowWrapper.current) {
-        toPng(reactFlowWrapper.current, { cacheBust: true, pixelRatio: 2 })
-            .then((dataUrl) => {
-                downloadImage(dataUrl, `${canvasName.replace(/\s+/g, '-').toLowerCase()}.png`);
-            })
-            .catch((err) => {
-                console.error(err);
-                toast({ title: "Error exporting image", description: "Could not save canvas as an image.", variant: "destructive" });
-            });
+    if (!reactFlowWrapper.current) return;
+    const allNodes = getNodes();
+
+    if (allNodes.length === 0) {
+        toast({ title: "Canvas is empty", description: "Add some nodes to export an image.", variant: "destructive" });
+        return;
     }
-  }, [canvasName, toast]);
+    
+    const imagePadding = 40;
+    const nodesBounds = getRectOfNodes(allNodes);
+    const imageWidth = nodesBounds.width + imagePadding * 2;
+    const imageHeight = nodesBounds.height + imagePadding * 2;
+    
+    const transform = getTransformForBounds(nodesBounds, imageWidth, imageHeight, 0.5, 2);
+
+    toPng(reactFlowWrapper.current.querySelector('.react-flow__viewport') as HTMLElement, {
+        backgroundColor: 'hsl(var(--background))',
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+            width: `${imageWidth}px`,
+            height: `${imageHeight}px`,
+            transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+        },
+    }).then((dataUrl) => downloadImage(dataUrl, `${canvasName.replace(/\s+/g, '-')}.png`))
+      .catch((err) => {
+            console.error(err);
+            toast({ title: "Error exporting image", description: "Could not save canvas as an image.", variant: "destructive" });
+      });
+
+  }, [canvasName, getNodes, toast]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -291,7 +313,7 @@ function CanvasFlow() {
           onChange: onNodeTextChange,
           onColorChange: onColorChange,
           nodeType: 'sticky',
-          color: 'hsl(54, 85%, 51%, 0.7)',
+          color: 'hsla(54, 85%, 51%, 0.7)',
         },
         width: 200,
         height: 200,
@@ -457,7 +479,7 @@ function CanvasFlow() {
       ...edge,
       style: { ...edge.style, strokeWidth, stroke },
       animated,
-      zIndex: isIntersected || isSelected ? 0 : -1,
+      zIndex: -1,
     };
   });
 
@@ -549,6 +571,11 @@ function CanvasFlow() {
   }, [selectedNodes, selectedEdges, setNodes, setEdges]);
   
   const reactFlowInstance = useReactFlow();
+
+  const runCommand = React.useCallback((command: () => unknown) => {
+    setIsCommandPaletteOpen(false);
+    command();
+  }, []);
 
   return (
     <div 
@@ -655,10 +682,10 @@ function CanvasFlow() {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         setIsOpen={setIsCommandPaletteOpen}
-        onAddNode={() => addNode('custom')}
-        onAddMovieNode={() => addNode('movie')}
-        onSave={handleSave}
-        onZoomToFit={() => reactFlowInstance.fitView({ duration: 300 })}
+        onAddNode={() => runCommand(() => addNode('custom'))}
+        onAddMovieNode={() => runCommand(() => addNode('movie'))}
+        onSave={() => runCommand(handleSave)}
+        onZoomToFit={() => runCommand(() => reactFlowInstance.fitView({ duration: 300 }))}
       />
       
       <ImportMovieDialog

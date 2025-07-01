@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { NodeResizer, type NodeProps, Handle, Position } from 'reactflow';
+import { NodeResizer, type NodeProps, Handle, Position, useViewport } from 'reactflow';
 import { cn, isColorLight } from '@/lib/utils';
 
 type StickyNodeData = {
@@ -19,6 +20,9 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
   const [foldColor, setFoldColor] = useState('hsl(var(--card))');
   const textColor = data.color && !isColorLight(data.color) ? '#FAFAFA' : '#333';
   
+  const { zoom } = useViewport();
+  const ZOOM_THRESHOLD = 0.5;
+
   useEffect(() => {
     setText(data.text || '');
   }, [data.text]);
@@ -76,7 +80,7 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
                 style={{ resize: 'none', fontFamily: `'Kalam', cursive`, color: textColor }}
             />
         ) : (
-            <div className="w-full h-full p-4 text-lg leading-snug break-words" style={{ fontFamily: `'Kalam', cursive`, color: textColor }}>
+            <div className={cn("w-full h-full p-4 text-lg leading-snug break-words", zoom < ZOOM_THRESHOLD && 'sticky-note-text-obfuscated')} style={{ fontFamily: `'Kalam', cursive`, color: textColor }}>
                 {text || <span className="opacity-50">Write something...</span>}
             </div>
         )}

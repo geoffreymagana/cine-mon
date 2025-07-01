@@ -254,3 +254,23 @@ body {
     border-color: hsl(var(--primary) / 0.8);
     border-width: 2px;
 }
+
+/* Zoom-based Text Obfuscation */
+.prose-obfuscated :is(h3, p, li, strong, em, code, span, a) {
+    color: transparent !important;
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+    user-select: none;
+}
+.prose-obfuscated li::marker {
+    color: transparent !important;
+}
+.sticky-note-text-obfuscated {
+    color: transparent !important;
+    user-select: none;
+    background-color: hsla(0, 0%, 0%, 0.1) !important;
+    border-radius: 3px;
+}
+.dark .sticky-note-text-obfuscated {
+    background-color: hsla(0, 0%, 100%, 0.1) !important;
+}

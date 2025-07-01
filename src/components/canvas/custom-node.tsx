@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
+import { Handle, Position, NodeResizer, type NodeProps, useViewport } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
@@ -32,6 +33,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [title, setTitle] = useState(data.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   
+  const { zoom } = useViewport();
+  const ZOOM_THRESHOLD = 0.5;
   const textColor = data.color && !isColorLight(data.color) ? 'hsl(var(--card-foreground) / 0.95)' : 'hsl(var(--foreground) / 0.95)';
 
   const isMovieNode = data.nodeType === 'movie' && data.movieData;
@@ -163,7 +166,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
               style={{ resize: 'none', color: textColor }}
             />
           ) : (
-            <div className={cn("prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words p-3")} style={{ color: textColor }}>
+            <div className={cn("prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 w-full text-xs break-words p-3", zoom < ZOOM_THRESHOLD && 'prose-obfuscated')} style={{ color: textColor }}>
               {label ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
               ) : (
