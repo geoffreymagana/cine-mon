@@ -40,5 +40,10 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'T
     };
   });
 
-  return { nodes: layoutedNodes, edges };
+  // Explicitly map over the edges to create new objects.
+  // This ensures all properties, including the 'type', are preserved and passed to React Flow correctly,
+  // preventing it from falling back to its own default edge type ('smoothstep') after the layout change.
+  const layoutedEdges = edges.map(edge => ({ ...edge }));
+
+  return { nodes: layoutedNodes, edges: layoutedEdges };
 };
