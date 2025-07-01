@@ -55,7 +55,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-#### Interactive Canvas (Desktop Only)
+#### Interactive Canvas {Desktop Only}
 
 -   **Free-form Canvas:** Introduced an infinite, zoomable canvas powered by React Flow for visual brainstorming and organisation.
 -   **Rich Node Support:** Add resizable text cards with markdown support, or import full movie or series cards directly from your collection.
