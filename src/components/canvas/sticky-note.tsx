@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeResizer, type NodeProps, Handle, Position, useViewport } from 'reactflow';
-import { cn, isColorLight } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 type StickyNodeData = {
   text: string;
@@ -18,7 +18,6 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
   const [text, setText] = useState(data.text);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [foldColor, setFoldColor] = useState('hsl(var(--card))');
-  const textColor = data.color && !isColorLight(data.color) ? '#FAFAFA' : '#333';
   
   const { zoom } = useViewport();
   const ZOOM_THRESHOLD = 0.5;
@@ -52,7 +51,7 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
 
   return (
     <div 
-        className={cn("sticky-note w-full h-full rounded-sm", selected && "resizing")} 
+        className={cn("sticky-note w-full h-full rounded-sm text-foreground", selected && "resizing")} 
         style={{ backgroundColor: data.color }}
         onDoubleClick={handleDoubleClick}
     >
@@ -77,10 +76,10 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
                 onBlur={handleBlur}
                 placeholder="Write something..."
                 className="w-full h-full border-none bg-transparent outline-none nodrag p-4 text-lg leading-snug"
-                style={{ resize: 'none', fontFamily: `'Kalam', cursive`, color: textColor }}
+                style={{ resize: 'none', fontFamily: `'Kalam', cursive` }}
             />
         ) : (
-            <div className={cn("w-full h-full p-4 text-lg leading-snug break-words", zoom < ZOOM_THRESHOLD && 'sticky-note-text-obfuscated')} style={{ fontFamily: `'Kalam', cursive`, color: textColor }}>
+            <div className={cn("w-full h-full p-4 text-lg leading-snug break-words", zoom < ZOOM_THRESHOLD && 'sticky-note-text-obfuscated')} style={{ fontFamily: `'Kalam', cursive` }}>
                 {text || <span className="opacity-50">Write something...</span>}
             </div>
         )}

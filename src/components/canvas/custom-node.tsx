@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
 
-import { cn, isColorLight } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
 import { MovieCard } from '../movie-card';
 
@@ -35,7 +35,6 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   
   const { zoom } = useViewport();
   const ZOOM_THRESHOLD = 0.5;
-  const textColor = data.color && !isColorLight(data.color) ? 'hsl(var(--card-foreground) / 0.95)' : 'hsl(var(--foreground) / 0.95)';
 
   const isMovieNode = data.nodeType === 'movie' && data.movieData;
 
@@ -162,11 +161,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Type here..."
-              className="w-full h-full border-none bg-transparent p-3 text-xs outline-none nodrag"
-              style={{ resize: 'none', color: textColor }}
+              className="w-full h-full border-none bg-transparent p-3 text-xs outline-none nodrag text-foreground"
+              style={{ resize: 'none' }}
             />
           ) : (
-            <div className={cn("prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 w-full text-xs break-words p-3", zoom < ZOOM_THRESHOLD && 'prose-obfuscated')} style={{ color: textColor }}>
+            <div className={cn("prose-sm prose-p:my-1 prose-ul:my-1 prose-headings:my-1 w-full text-xs break-words p-3 text-foreground", zoom < ZOOM_THRESHOLD && 'prose-obfuscated')}>
               {label ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
               ) : (
