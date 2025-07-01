@@ -22,8 +22,19 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { Suspense } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { MovieService } from "@/lib/movie-service";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -33,6 +44,10 @@ function DashboardContent() {
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const [isSelectionMode, setIsSelectionMode] = React.useState(false);
+  const [selectedMovieIds, setSelectedMovieIds] = React.useState<Set<string>>(new Set());
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
+
   const isMobile = useIsMobile();
 
   const sensors = useSensors(
@@ -97,18 +112,71 @@ function DashboardContent() {
     }
   };
 
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(prev => !prev);
+    setSelectedMovieIds(new Set());
+  };
+
+  const handleSelectMovie = (movieId: string) => {
+    setSelectedMovieIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(movieId)) {
+        newSet.delete(movieId);
+      } else {
+        newSet.add(movieId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedMovieIds(new Set());
+    setIsSelectionMode(false);
+  };
+  
+  const handleDeleteSelected = async () => {
+    await MovieService.deleteMovies(Array.from(selectedMovieIds));
+    toast({
+      title: `${selectedMovieIds.size} Items Deleted`,
+      description: "The selected titles have been removed from your collection.",
+      variant: 'destructive'
+    });
+    loadMovies();
+    handleClearSelection();
+  };
+  
+  const handleAddToCollection = () => {
+     toast({
+      title: "Coming Soon!",
+      description: "Adding selected items to a collection is not yet implemented.",
+    });
+  }
+
   return (
     <>
       <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
-          <DashboardHeader onAddMovieClick={handleOpenAddDialog} onSearchClick={handleOpenSearchDialog} />
+          <DashboardHeader 
+            onAddMovieClick={handleOpenAddDialog} 
+            onSearchClick={handleOpenSearchDialog}
+            isSelectionMode={isSelectionMode}
+            onToggleSelectionMode={handleToggleSelectionMode}
+            selectedCount={selectedMovieIds.size}
+            onClearSelection={handleClearSelection}
+            onDeleteSelected={() => setIsDeleteAlertOpen(true)}
+            onAddToCollection={handleAddToCollection}
+          />
           <div className="flex-grow p-4 md:p-8">
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
+                disabled={isSelectionMode}
               >
                 <MovieGrid
                   movies={filteredMovies}
+                  isSelectionMode={isSelectionMode}
+                  selectedMovieIds={selectedMovieIds}
+                  onSelectMovie={handleSelectMovie}
                 />
               </DndContext>
           </div>
@@ -126,6 +194,20 @@ function DashboardContent() {
         onSave={handleSaveMovie}
         existingMovies={movies}
       />
+       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedMovieIds.size} item(s) from your collection. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSelected}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

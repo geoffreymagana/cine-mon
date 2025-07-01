@@ -2,19 +2,40 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, MoreVertical, X, Share2, PlusCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MovieService } from "@/lib/movie-service";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
   onSearchClick: () => void;
+  isSelectionMode: boolean;
+  onToggleSelectionMode: () => void;
+  selectedCount: number;
+  onClearSelection: () => void;
+  onDeleteSelected: () => void;
+  onAddToCollection: () => void;
 };
 
-export const DashboardHeader = ({ onAddMovieClick, onSearchClick }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ 
+  onAddMovieClick, 
+  onSearchClick,
+  isSelectionMode,
+  onToggleSelectionMode,
+  selectedCount,
+  onClearSelection,
+  onDeleteSelected,
+  onAddToCollection
+}: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
 
@@ -37,6 +58,24 @@ export const DashboardHeader = ({ onAddMovieClick, onSearchClick }: DashboardHea
     return () => window.removeEventListener('profileUpdated', loadAvatar);
   }, [loadAvatar]);
   
+  if (isSelectionMode) {
+    return (
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-primary/10 px-4 md:px-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onClearSelection}>
+            <X className="h-5 w-5" />
+          </Button>
+          <span className="font-semibold text-lg">{selectedCount} Selected</span>
+        </div>
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon"><Share2 /></Button>
+            <Button variant="ghost" size="icon" onClick={onAddToCollection}><PlusCircle /></Button>
+            <Button variant="destructive" size="icon" onClick={onDeleteSelected}><Trash2 /></Button>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-8">
       <div className="flex items-center gap-4">
@@ -69,6 +108,16 @@ export const DashboardHeader = ({ onAddMovieClick, onSearchClick }: DashboardHea
           <Plus className="h-4 w-4" />
           <span className="hidden md:inline ml-2">Add Manually</span>
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onToggleSelectionMode}>Select Items</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

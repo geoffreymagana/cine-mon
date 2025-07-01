@@ -21,13 +21,22 @@ export class MovieService {
   }
 
   static async deleteMovie(id: string): Promise<void> {
-    await db.movies.delete(id);
-    const collections = await db.collections.where('movieIds').equals(id).toArray();
-    await Promise.all(collections.map(c => 
-      db.collections.update(c.id, {
-        movieIds: c.movieIds.filter(mid => mid !== id)
-      })
-    ));
+    await this.deleteMovies([id]);
+  }
+
+  static async deleteMovies(ids: string[]): Promise<void> {
+    await db.transaction('rw', db.movies, db.collections, async () => {
+        await db.movies.bulkDelete(ids);
+
+        const collectionsToUpdate = await db.collections.where('movieIds').anyOf(...ids).toArray();
+        
+        const updates = collectionsToUpdate.map(c => {
+            const newMoviedIds = c.movieIds.filter(mid => !ids.includes(mid));
+            return db.collections.update(c.id, { movieIds: newMoviedIds });
+        });
+
+        await Promise.all(updates);
+    });
   }
 
   static async saveAllMovies(movies: Movie[]): Promise<string[]> {

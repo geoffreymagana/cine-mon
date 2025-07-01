@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -7,7 +6,7 @@ import * as React from "react";
 import type { Movie } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, CircleCheck, PauseCircle, CircleOff, Bookmark, Trash2 } from "lucide-react";
+import { Clock, CircleCheck, PauseCircle, CircleOff, Bookmark, Trash2, Check } from "lucide-react";
 import { RatingCircle } from "./rating-circle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -17,13 +16,19 @@ type MovieCardProps = {
   movie: Movie;
   onRemoveFromCollection?: (movieId: string) => void;
   disableLink?: boolean;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
 };
 
-export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }: MovieCardProps) => {
+export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false, isSelectionMode = false, isSelected = false, onSelect }: MovieCardProps) => {
 
   const handleInteraction = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (isSelectionMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      onSelect?.();
+    }
   };
   
   const statusInfo = {
@@ -45,9 +50,14 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
   }, [movie.releaseDate]);
 
   const CardInnerComponent = (
-    <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
+    <Card 
+      className={cn(
+        "overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full",
+        isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+      )}
+    >
         <div className="relative">
-            {statusInfo && (
+            {statusInfo && !isSelectionMode && (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div className="absolute top-2 left-2 z-20 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center cursor-pointer" onClick={handleInteraction}>
@@ -59,7 +69,7 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
                     </TooltipContent>
                 </Tooltip>
             )}
-            {onRemoveFromCollection && (
+             {onRemoveFromCollection && !isSelectionMode && (
               <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Tooltip>
                   <TooltipTrigger asChild>
@@ -68,7 +78,8 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
                           size="icon"
                           className="h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm"
                           onClick={(e) => {
-                              handleInteraction(e);
+                              e.preventDefault();
+                              e.stopPropagation();
                               onRemoveFromCollection(movie.id);
                           }}
                       >
@@ -81,7 +92,17 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
                   </TooltipContent>
                   </Tooltip>
               </div>
-              )}
+            )}
+            {isSelectionMode && (
+              <div className="absolute top-2 right-2 z-20 h-6 w-6 rounded-full bg-background/80 flex items-center justify-center border-2 border-primary transition-all"
+                style={{
+                    transform: isSelected ? 'scale(1)' : 'scale(0.9)',
+                    opacity: isSelected ? 1 : 0.8,
+                }}
+              >
+                {isSelected && <Check className="h-4 w-4 text-primary font-bold" />}
+              </div>
+            )}
             <div className="aspect-[2/3] w-full rounded-t-lg overflow-hidden border border-border/10">
                 <Image
                     src={movie.posterUrl}
@@ -106,13 +127,20 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
     </Card>
   );
 
+  const cardWrapperProps = {
+    className: cn("block group outline-none h-full", isSelectionMode && "cursor-pointer"),
+    onClick: isSelectionMode ? onSelect : undefined
+  };
+
   if (disableLink) {
-    return <div className="block group outline-none h-full">{CardInnerComponent}</div>;
+    return <div {...cardWrapperProps}>{CardInnerComponent}</div>;
   }
 
   return (
-    <Link href={`/app/movie/${movie.id}`} className="block group outline-none" prefetch={false}>
-      {CardInnerComponent}
-    </Link>
+    <div {...cardWrapperProps}>
+      <Link href={isSelectionMode ? '#' : `/app/movie/${movie.id}`} onClick={(e) => {if(isSelectionMode) e.preventDefault()}} className="block h-full" prefetch={false}>
+        {CardInnerComponent}
+      </Link>
+    </div>
   );
 };
