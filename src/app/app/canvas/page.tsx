@@ -26,6 +26,14 @@ import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
 import { NodeCreator } from '@/components/canvas/node-creator';
 import { ColorPickerToolbar } from '@/components/canvas/color-picker-toolbar';
 import { EdgeToolbar } from '@/components/canvas/edge-toolbar';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
 
 import 'reactflow/dist/style.css';
 
@@ -52,6 +60,10 @@ function CanvasFlow() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [selectedNodes, setSelectedNodes] = React.useState<Node[]>([]);
   const [selectedEdges, setSelectedEdges] = React.useState<Edge[]>([]);
+
+  // New state for edge label editing
+  const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
+  const [currentLabel, setCurrentLabel] = useState('');
   
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
@@ -84,9 +96,10 @@ function CanvasFlow() {
            style: { stroke: 'hsl(var(--foreground))' },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
+           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
            labelBgPadding: [8, 4] as [number, number],
            labelBgBorderRadius: 4,
-           labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.9 },
+           labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
         };
        setEdges((eds) => addEdge(newEdge, eds));
     },
@@ -139,20 +152,25 @@ function CanvasFlow() {
   
   const onEdgeDoubleClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
-      const newLabel = prompt("Edge label:", edge.label as string || "");
-      if (newLabel !== null) {
-        setEdges((eds) =>
-          eds.map((e) => {
-            if (e.id === edge.id) {
-              return { ...e, label: newLabel };
-            }
-            return e;
-          })
-        );
-      }
+      setEditingEdge(edge);
+      setCurrentLabel(edge.label as string || '');
     },
-    [setEdges]
+    []
   );
+
+  const handleSaveEdgeLabel = () => {
+    if (!editingEdge) return;
+    setEdges((eds) =>
+      eds.map((e) => {
+        if (e.id === editingEdge.id) {
+          return { ...e, label: currentLabel };
+        }
+        return e;
+      })
+    );
+    setEditingEdge(null);
+    setCurrentLabel('');
+  };
 
   const onEdgeColorChange = useCallback((color: string) => {
     setEdges((eds) =>
@@ -192,7 +210,6 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
-                  stroke: 'hsl(var(--primary))',
               },
               zIndex: 10,
           };
@@ -289,6 +306,32 @@ function CanvasFlow() {
       <NodeCreator onAddNode={() => addNode('custom')} />
       
       <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
+      
+      {/* Dialog for Editing Edge Labels */}
+      <Dialog open={!!editingEdge} onOpenChange={(isOpen) => !isOpen && setEditingEdge(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Edge Label</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={currentLabel}
+              onChange={(e) => setCurrentLabel(e.target.value)}
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSaveEdgeLabel();
+                  }
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingEdge(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdgeLabel}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
