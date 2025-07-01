@@ -8,10 +8,12 @@ All notable changes to this project will be documented in this file.
 
 #### Interactive Canvas (Desktop Only)
 
--   **Free-form Canvas:** Introduced an infinite, zoomable canvas powered by React Flow for visual brainstorming and organization.
--   **Rich Node Support:** Add resizable text cards with markdown support, or import full movie/series cards directly from your collection.
--   **Intuitive Connections:** Connect nodes with customizable edges (curved, straight) and colors.
+-   **Free-form Canvas:** Introduced an infinite, zoomable canvas powered by React Flow for visual brainstorming and organisation.
+-   **Rich Node Support:** Add resizable text cards with markdown support, or import full movie or series cards directly from your collection.
+-   **Intuitive Connections:** Connect nodes with customizable edges (curved, straight) and colours.
 -   **Edge Intersection Splitting:** Drag and drop a node directly onto an edge to automatically split the connection and insert the node.
+
+![Canvas](https://res.cloudinary.com/dwqwwb2fh/image/upload/v1751341663/ocfgfigr3d8zghmfil2m.png)
 
 #### Command Palette & Keyboard-First UI
 
@@ -29,7 +31,7 @@ All notable changes to this project will be documented in this file.
 
 ### Docs
 
--   **Comprehensive README Update:** Overhauled the `README.md` to include a detailed section on the new Canvas feature, a "Technical Insights" section about development challenges, and full licensing/attribution for TMDB, React Flow, and Lucide.
+
 -   **In-App Guide Update:** Updated the "Getting Started" guide within the app to include instructions and use cases for the new Canvas feature.
 
 ---
