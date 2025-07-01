@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/geoffreymagana/cine-mon/compare/v1.2.0...v1.3.0) (2025-07-01)
+
+
+### Features
+
+* **ui:** Implement bulk "Add to Collection" and fix UI issues ([1faea42](https://github.com/geoffreymagana/cine-mon/commit/1faea421e60039946b1875b5e88b8a2daa43e24a))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
