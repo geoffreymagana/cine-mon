@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -171,7 +170,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto transition-colors hover:border-primary/70">
                   <Github className="mr-2" /> Open on GitHub
                 </Button>
               </a>
@@ -303,7 +302,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto transition-colors hover:border-primary/70">
                   <Github className="mr-2" /> Host Your Own Copy
                 </Button>
               </a>
