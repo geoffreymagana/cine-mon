@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MovieService } from "@/lib/movie-service";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
@@ -18,23 +18,24 @@ export const DashboardHeader = ({ onAddMovieClick, onSearchClick }: DashboardHea
   const isMobile = useIsMobile();
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
 
-  // This effect will run on the client to get the avatar from localStorage.
+  // This effect will run on the client to get the avatar from IndexedDB.
   // It also listens for profile updates to stay in sync.
-  React.useEffect(() => {
+  const loadAvatar = React.useCallback(async () => {
     try {
-        const storedAvatar = localStorage.getItem('profileAvatar');
-        if (storedAvatar) setAvatarUrl(storedAvatar);
+        const storedAvatar = await MovieService.getSetting('profileAvatar');
+        if (storedAvatar) {
+            setAvatarUrl(storedAvatar);
+        }
     } catch (error) {
-        console.error("Failed to access localStorage:", error);
+        console.error("Failed to access IndexedDB:", error);
     }
-
-    const handleProfileUpdate = () => {
-         const storedAvatar = localStorage.getItem('profileAvatar');
-         if (storedAvatar) setAvatarUrl(storedAvatar);
-    };
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
   }, []);
+  
+  React.useEffect(() => {
+    loadAvatar();
+    window.addEventListener('profileUpdated', loadAvatar);
+    return () => window.removeEventListener('profileUpdated', loadAvatar);
+  }, [loadAvatar]);
   
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-8">
