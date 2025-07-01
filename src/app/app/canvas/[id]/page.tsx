@@ -18,10 +18,11 @@ import ReactFlow, {
   type XYPosition,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 import CustomNode from '@/components/canvas/custom-node';
+import StickyNodeComponent from '@/components/canvas/sticky-note';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ColorPickerToolbar } from '@/components/canvas/color-picker-toolbar';
@@ -55,6 +56,7 @@ import 'reactflow/dist/style.css';
 
 const nodeTypes = {
   custom: CustomNode,
+  sticky: StickyNodeComponent,
 };
 
 function downloadImage(dataUrl: string, fileName: string) {
@@ -131,8 +133,19 @@ function CanvasFlow() {
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
       nds.map((node) => {
-        if (node.id === nodeId) {
+        if (node.id === nodeId && node.data.nodeType === 'standard') {
           node.data = { ...node.data, label };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
+
+  const onNodeTextChange = useCallback((nodeId: string, text: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId && node.data.nodeType === 'sticky') {
+          node.data = { ...node.data, text };
         }
         return node;
       })
@@ -177,6 +190,7 @@ function CanvasFlow() {
                         onLabelChange,
                         onTitleChange,
                         onColorChange,
+                        onChange: onNodeTextChange,
                     },
                 }));
                 setNodes(loadedNodes);
@@ -197,7 +211,7 @@ function CanvasFlow() {
     
     loadCanvasData();
 
-  }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange]);
+  }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange, onNodeTextChange]);
   
   const handleSave = useCallback(async () => {
     if (!canvasId) return;
@@ -247,7 +261,7 @@ function CanvasFlow() {
     [setEdges]
   );
   
-  const addNode = useCallback((type: 'custom' | 'movie', position?: XYPosition) => {
+  const addNode = useCallback((type: 'custom' | 'movie' | 'sticky', position?: XYPosition) => {
     if (type === 'movie') {
         setIsImportMovieOpen(true);
         return;
@@ -257,26 +271,43 @@ function CanvasFlow() {
         x: reactFlowWrapper.current!.clientWidth / 2,
         y: reactFlowWrapper.current!.clientHeight / 2,
     });
+    
+    let newNode: Node;
 
-    const newNode: Node = {
-      id: `node-${crypto.randomUUID()}`,
-      type: 'custom',
-      position: targetPosition,
-      data: { 
-        label: '',
-        title: 'New Card',
-        color: 'hsl(var(--card))',
-        onLabelChange,
-        onTitleChange,
-        onColorChange,
-        nodeType: 'standard',
-      },
-      width: 200,
-      height: 150,
-    };
+    if (type === 'sticky') {
+      newNode = {
+        id: `node-${crypto.randomUUID()}`,
+        type: 'sticky',
+        position: targetPosition,
+        data: { 
+          text: 'A sticky note...',
+          onChange: onNodeTextChange,
+          nodeType: 'sticky',
+        },
+        width: 200,
+        height: 200,
+      };
+    } else {
+      newNode = {
+        id: `node-${crypto.randomUUID()}`,
+        type: 'custom',
+        position: targetPosition,
+        data: { 
+          label: '',
+          title: 'New Card',
+          color: 'hsl(var(--card))',
+          onLabelChange,
+          onTitleChange,
+          onColorChange,
+          nodeType: 'standard',
+        },
+        width: 200,
+        height: 150,
+      };
+    }
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes]);
+  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes, onNodeTextChange]);
 
   const addMovieNode = useCallback((movie: Movie) => {
     const position = screenToFlowPosition({
@@ -580,14 +611,14 @@ function CanvasFlow() {
         onShowHelp={() => setIsHelpOpen(true)}
       />
 
-      <NodeCreator onAddNode={() => addNode('custom')} onAddMovieClick={() => addNode('movie')} />
+      <NodeCreator onAddNode={(type) => addNode(type)} onAddMovieClick={() => addNode('movie')} />
 
       {menu && (
         <CanvasContextMenu
           top={menu.y}
           left={menu.x}
           onClose={() => setMenu(null)}
-          onAddCard={() => addNode('custom', screenToFlowPosition({x: menu.x, y: menu.y}))}
+          onAddNode={(type) => addNode(type, screenToFlowPosition({x: menu.x, y: menu.y}))}
           isSnapToGrid={snapToGrid}
           setIsSnapToGrid={setSnapToGrid}
           isReadOnly={isReadOnly}
@@ -596,7 +627,7 @@ function CanvasFlow() {
         />
       )}
 
-      {selectedNodes.length > 0 && (
+      {selectedNodes.length > 0 && selectedNodes[0].type === 'custom' && (
         <ColorPickerToolbar
           node={selectedNodes[0]}
           onColorChange={(color) => {

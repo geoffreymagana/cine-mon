@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {
   FileText, BookText, Clapperboard, Link2, BoxSelect, Undo2,
-  ClipboardPaste, Grid, Lock, Check
+  ClipboardPaste, Grid, Lock, Check, StickyNote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -35,7 +35,7 @@ type CanvasContextMenuProps = {
     top: number;
     left: number;
     onClose: () => void;
-    onAddCard: () => void;
+    onAddNode: (type: 'custom' | 'sticky' | 'movie') => void;
     isSnapToGrid: boolean;
     setIsSnapToGrid: (value: boolean) => void;
     isReadOnly: boolean;
@@ -48,7 +48,7 @@ export function CanvasContextMenu({
     top,
     left,
     onClose,
-    onAddCard,
+    onAddNode,
     isSnapToGrid,
     setIsSnapToGrid,
     isReadOnly,
@@ -83,7 +83,8 @@ export function CanvasContextMenu({
             className="fixed z-50 w-56 p-1 shadow-lg bg-popover"
             onContextMenu={(e) => e.preventDefault()}
         >
-            <MenuItem icon={FileText} onClick={() => handleAction(onAddCard)}>Add card</MenuItem>
+            <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))}>Add card</MenuItem>
+            <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))}>Add sticky note</MenuItem>
             <MenuItem icon={BookText} disabled>Add note from vault</MenuItem>
             <MenuItem icon={Clapperboard} disabled>Add media from vault</MenuItem>
             <MenuItem icon={Link2} disabled>Add web page</MenuItem>

@@ -1,10 +1,10 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
@@ -23,6 +23,7 @@ type CustomNodeData = {
 
 
 const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -54,9 +55,12 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     }
   }, [isTitleEditing]);
   
-  const handleContentDoubleClick = () => {
-    if (isMovieNode) return;
-    setIsEditing(true);
+  const handleNodeDoubleClick = () => {
+    if (isMovieNode && data.movieData) {
+        router.push(`/app/movie/${data.movieData.id}`);
+    } else {
+        setIsEditing(true);
+    }
   };
 
   const handleBlur = () => {
@@ -93,13 +97,13 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     return color.replace(/(\/\s*)[\d.]+\)/, '$11)');
   };
   
-  const handleWrapperClick = (e: React.MouseEvent) => {
-    // Prevent the link inside MovieCard from being triggered when dragging the node
-    if (e.defaultPrevented) return;
+  const handlePreventNavigation = (e: React.MouseEvent) => {
+    // This stops the Link inside MovieCard from navigating on a single click
+    e.preventDefault();
   };
 
   return (
-    <div className="relative w-full h-full" onClick={handleWrapperClick}>
+    <div className="relative w-full h-full" onDoubleClick={handleNodeDoubleClick}>
       <div 
         className="absolute bottom-full left-0 mb-1 px-1 nodrag cursor-text"
         onClick={handleTitleClick}
@@ -146,10 +150,12 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
                 "w-full h-full overflow-hidden",
                 isMovieNode && "p-0 rounded-lg"
             )} 
-            onDoubleClick={handleContentDoubleClick}
         >
           {isMovieNode ? (
-            <div className="w-full h-full [&>a>div]:border-none [&>a>div]:shadow-none">
+            <div 
+              className="w-full h-full [&>a>div]:border-none [&>a>div]:shadow-none"
+              onClick={handlePreventNavigation}
+            >
                 <MovieCard movie={data.movieData!} />
             </div>
           ) : isEditing ? (
