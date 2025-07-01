@@ -1,8 +1,10 @@
+
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
   Background,
+  BackgroundVariant,
   MiniMap,
   type Connection,
   type Edge,
@@ -15,6 +17,7 @@ import ReactFlow, {
   MarkerType,
   type OnNodeDrag,
   type DefaultEdgeOptions,
+  type XYPosition,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, FileText } from 'lucide-react';
@@ -47,9 +50,7 @@ import type { CanvasBoard, Movie } from '@/lib/types';
 import { useParams, useRouter } from 'next/navigation';
 import { ImportMovieDialog } from '@/components/canvas/import-movie-dialog';
 
-
 import 'reactflow/dist/style.css';
-
 
 const nodeTypes = {
   custom: CustomNode,
@@ -68,6 +69,34 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
   interactionWidth: 100,
 };
 
+// Helper function to calculate if a point intersects with a line segment
+function distanceToLineSegment(
+  point: XYPosition,
+  lineStart: XYPosition,
+  lineEnd: XYPosition
+): number {
+  const A = point.x - lineStart.x;
+  const B = point.y - lineStart.y;
+  const C = lineEnd.x - lineStart.x;
+  const D = lineEnd.y - lineStart.y;
+
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  
+  if (lenSq === 0) return Math.sqrt(A * A + B * B);
+  
+  let param = dot / lenSq;
+  param = Math.max(0, Math.min(1, param));
+  
+  const xx = lineStart.x + param * C;
+  const yy = lineStart.y + param * D;
+  
+  const dx = point.x - xx;
+  const dy = point.y - yy;
+  
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 function CanvasFlow() {
   const params = useParams();
   const canvasId = params.id as string;
@@ -79,8 +108,11 @@ function CanvasFlow() {
   const [canvasName, setCanvasName] = useState('Untitled Canvas');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { screenToFlowPosition, getEdge, addEdges, updateEdge } = useReactFlow();
-  const overlappedEdgeRef = useRef<string | null>(null);
+  const { screenToFlowPosition, getNodes, getEdges, flowToScreenPosition } = useReactFlow();
+
+  // Edge intersection state
+  const [intersectedEdgeId, setIntersectedEdgeId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [contextMenu, setContextMenu] = useState<{
     top: number;
@@ -208,7 +240,7 @@ function CanvasFlow() {
            style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
-           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem', textTransform: 'capitalize' },
+           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem' },
            labelBgPadding: [8, 4] as [number, number],
            labelBgBorderRadius: 4,
            labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
@@ -270,7 +302,6 @@ function CanvasFlow() {
     };
     setNodes((nds) => nds.concat(newNode));
   }, [screenToFlowPosition, setNodes, onLabelChange, onTitleChange, onColorChange]);
-
 
   const handlePaneContextMenu = useCallback(
     (event: React.MouseEvent) => {
@@ -343,81 +374,131 @@ function CanvasFlow() {
   const [canUndo] = useState(false);
   const [canRedo] = useState(false);
 
-  const edgesWithHighlight = edges.map(edge => {
-      const isSelected = selectedEdges.some(se => se.id === edge.id);
-      if (isSelected) {
-          return {
-              ...edge,
-              style: {
-                  ...edge.style,
-                  strokeWidth: 2,
-                  stroke: edge.style?.stroke,
-              },
-              zIndex: 10,
-          };
+  // Function to find intersected edge based on node position
+  const findIntersectedEdge = useCallback((nodeId: string, nodePosition: XYPosition): string | null => {
+    const allNodes = getNodes();
+    const allEdges = getEdges();
+    
+    // Get the dragging node
+    const draggingNode = allNodes.find(n => n.id === nodeId);
+    if (!draggingNode) return null;
+    
+    const nodeCenter = {
+      x: nodePosition.x + (draggingNode.width || 200) / 2,
+      y: nodePosition.y + (draggingNode.height || 150) / 2
+    };
+    
+    // Check each edge for intersection
+    for (const edge of allEdges) {
+      if (edge.source === nodeId || edge.target === nodeId) continue; // Skip edges connected to this node
+      
+      const sourceNode = allNodes.find(n => n.id === edge.source);
+      const targetNode = allNodes.find(n => n.id === edge.target);
+      
+      if (!sourceNode || !targetNode) continue;
+      
+      const sourceCenter = {
+        x: sourceNode.position.x + (sourceNode.width || 200) / 2,
+        y: sourceNode.position.y + (sourceNode.height || 150) / 2
+      };
+      
+      const targetCenter = {
+        x: targetNode.position.x + (targetNode.width || 200) / 2,
+        y: targetNode.position.y + (targetNode.height || 150) / 2
+      };
+      
+      // Check if node center is close to the edge line
+      const distance = distanceToLineSegment(nodeCenter, sourceCenter, targetCenter);
+      
+      // If distance is small enough, consider it an intersection
+      if (distance < 30) { // 30px threshold
+        return edge.id;
       }
-      return { ...edge, style: { ...edge.style, strokeWidth: 0.5 } };
+    }
+    
+    return null;
+  }, [getNodes, getEdges]);
+
+  // Enhanced edges with intersection highlighting
+  const edgesWithHighlight = edges.map(edge => {
+    const isSelected = selectedEdges.some(se => se.id === edge.id);
+    const isIntersected = intersectedEdgeId === edge.id;
+    
+    let strokeWidth = 0.5;
+    let stroke = edge.style?.stroke || 'hsl(var(--foreground))';
+    let zIndex = 1;
+    
+    if (isIntersected) {
+      strokeWidth = 3;
+      stroke = 'hsl(var(--primary))';
+      zIndex = 10;
+    } else if (isSelected) {
+      strokeWidth = 2;
+      zIndex = 5;
+    }
+    
+    return {
+      ...edge,
+      style: {
+        ...edge.style,
+        strokeWidth,
+        stroke,
+      },
+      zIndex,
+    };
   });
 
   const onNodeDrag: OnNodeDrag = useCallback(
-    (e, node) => {
-      const nodeDiv = document.querySelector(`.react-flow__node[data-id="${node.id}"]`);
-      if (!nodeDiv) return;
-      
-      const rect = nodeDiv.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-
-      const edgeElement = document
-        .elementsFromPoint(centerX, centerY)
-        .find((el) => el.classList.contains('react-flow__edge-interaction'))
-        ?.closest('.react-flow__edge');
-      
-      const newOverlappedEdgeId = (edgeElement as HTMLElement)?.dataset.id || null;
-      const lastOverlappedEdgeId = overlappedEdgeRef.current;
-
-      if (lastOverlappedEdgeId && lastOverlappedEdgeId !== newOverlappedEdgeId) {
-        updateEdge(lastOverlappedEdgeId, { style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } });
+    (event, node) => {
+      if (!isDragging) {
+        setIsDragging(true);
       }
-
-      if (newOverlappedEdgeId && newOverlappedEdgeId !== lastOverlappedEdgeId) {
-        updateEdge(newOverlappedEdgeId, { style: { stroke: 'hsl(var(--primary))', strokeWidth: 2 } });
-      }
-
-      overlappedEdgeRef.current = newOverlappedEdgeId;
+      
+      const intersectedEdge = findIntersectedEdge(node.id, node.position);
+      setIntersectedEdgeId(intersectedEdge);
     },
-    [updateEdge]
+    [isDragging, findIntersectedEdge]
   );
 
   const onNodeDragStop: OnNodeDrag = useCallback(
     (event, node) => {
-      const edgeId = overlappedEdgeRef.current;
-      if (!edgeId) return;
+      setIsDragging(false);
       
-      const edge = getEdge(edgeId);
-      if (!edge) return;
- 
-      // First edge: original source -> dropped node
-      updateEdge(edgeId, { 
-          source: edge.source,
-          target: node.id, 
-          style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } 
-      });
- 
-      // Second edge: dropped node -> original target
-      const newEdge = { 
-           ...edge,
-           id: `${node.id}->${edge.target}`,
-           source: node.id,
-           target: edge.target,
-           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
-      };
-
-      addEdges(newEdge);
- 
-      overlappedEdgeRef.current = null;
+      if (intersectedEdgeId) {
+        const intersectedEdge = edges.find(e => e.id === intersectedEdgeId);
+        
+        if (intersectedEdge) {
+          // Create two new edges: source -> node and node -> target
+          const firstEdgeId = `${intersectedEdge.source}->${node.id}`;
+          const secondEdgeId = `${node.id}->${intersectedEdge.target}`;
+          
+          // Remove the original edge and add two new ones
+          setEdges((eds) => {
+            const newEdges = eds.filter(e => e.id !== intersectedEdgeId);
+            
+            const firstEdge: Edge = {
+              ...intersectedEdge,
+              id: firstEdgeId,
+              source: intersectedEdge.source,
+              target: node.id,
+            };
+            
+            const secondEdge: Edge = {
+              ...intersectedEdge,
+              id: secondEdgeId,
+              source: node.id,
+              target: intersectedEdge.target,
+            };
+            
+            return [...newEdges, firstEdge, secondEdge];
+          });
+        }
+      }
+      
+      // Clear intersection state
+      setIntersectedEdgeId(null);
     },
-    [getEdge, addEdges, updateEdge],
+    [intersectedEdgeId, edges, setEdges]
   );
 
   return (
@@ -561,7 +642,6 @@ function CanvasFlow() {
     </div>
   );
 }
-
 
 export default function CanvasEditorPage() {
   return (
