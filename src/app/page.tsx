@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -16,7 +17,8 @@ import {
   BookUser,
   Twitter,
   Github,
-  ArrowRight
+  ArrowRight,
+  LayoutDashboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,6 +81,7 @@ export default function LandingPage() {
     { icon: Film, title: 'Personal Watchlist & History', description: 'Catalog every movie and show you’ve ever seen.' },
     { icon: Shuffle, title: 'Spin the Wheel', description: 'Let fate pick your next watch from your collection.' },
     { icon: FileText, title: 'Script Upload & Archiving', description: 'Keep your favorite scripts just a click away.' },
+    { icon: LayoutDashboard, title: 'Interactive Canvas', description: 'Map out franchise timelines and character webs on a free-form canvas.' },
     { icon: ChartPie, title: 'Watch Analytics & Insights', description: 'Visualize your habits and discover your unique taste.' },
     { icon: Tags, title: 'Custom Posters & Tags', description: 'Personalize your library with custom art and smart tags.' },
     { icon: ShieldCheck, title: 'Offline-First, Fully Private', description: 'Your data stays on your device. No clouds, no accounts.' },
@@ -87,6 +90,7 @@ export default function LandingPage() {
   const specialFeatures = [
     { icon: Cpu, title: 'Smart UI', description: 'An intuitive interface designed for speed and clarity.' },
     { icon: WifiOff, title: 'Full Offline Access', description: 'Your entire collection is available, with or without internet.' },
+    { icon: LayoutDashboard, title: 'Free-Form Canvas', description: 'A visual space to connect ideas, map timelines, and organize your cinematic universe.' },
     { icon: FilePlus2, title: 'Custom Scripts', description: 'Add your own notes, analysis, or alternative endings.' },
     { icon: ListTree, title: 'Advanced Genre Sorting', description: 'Filter and sort with a powerful, flexible tagging system.' },
     { icon: BookUser, title: 'Script Collector Mode', description: 'A dedicated view for writers and film students to study scripts.' },
@@ -117,7 +121,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="bg-black text-gray-100 font-body antialiased overflow-x-hidden">
+    <div className="bg-black text-neutral-100 font-body antialiased overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -126,11 +130,11 @@ export default function LandingPage() {
             <span className="text-xl font-bold font-headline">Cine-Mon</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</a>
-            <a href="#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</a>
-            <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
-            <Link href="/changelog" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Changelog</Link>
-            <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+            <a href="#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</a>
+            <a href="#testimonials" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Testimonials</a>
+            <Link href="/about" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">About</Link>
+            <Link href="/changelog" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Changelog</Link>
+            <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">GitHub</a>
           </div>
           <div className="flex items-center gap-4">
              <Link href="/app/dashboard">
@@ -160,7 +164,7 @@ export default function LandingPage() {
             <h1 className="text-4xl md:text-7xl font-bold font-headline text-white text-glow leading-tight">
               Archive Your Cinematic Life
             </h1>
-            <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="mt-4 text-lg md:text-xl text-neutral-300 max-w-3xl mx-auto">
               Track what you’ve watched. Curate what you love. Rediscover what matters.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
@@ -170,7 +174,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-gray-700 text-gray-300 transition-colors hover:bg-gray-200 hover:text-black">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition-colors hover:bg-neutral-200 hover:text-black">
                   <Github className="mr-2" /> Open on GitHub
                 </Button>
               </a>
@@ -195,8 +199,8 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold font-headline">{feature.title}</h3>
-                    <p className="mt-1 text-gray-400">{feature.description}</p>
+                    <h3 className="text-lg font-bold font-headline text-white">{feature.title}</h3>
+                    <p className="mt-1 text-neutral-400">{feature.description}</p>
                   </div>
                 </div>
               ))}
@@ -210,7 +214,7 @@ export default function LandingPage() {
              <h2 className="text-3xl md:text-5xl font-bold font-headline text-white text-glow">
               Your Cinema, Your Way
             </h2>
-             <p className="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">
+             <p className="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
               A stunning interface on both desktop and mobile.
             </p>
             <div className="mt-12 relative flex items-center justify-center gap-4 lg:gap-8">
@@ -249,10 +253,10 @@ export default function LandingPage() {
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                       <feature.icon className="w-6 h-6 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
+                    <CardTitle className="font-headline text-xl text-white">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-400">{feature.description}</p>
+                    <p className="text-neutral-400">{feature.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -270,7 +274,7 @@ export default function LandingPage() {
                     {testimonials.map((testimonial) => (
                         <Card key={testimonial.handle} className="bg-gray-900/50 border-gray-800 flex flex-col justify-between">
                             <CardContent className="pt-6">
-                                <p className="text-gray-300">"{testimonial.quote}"</p>
+                                <p className="text-neutral-300">"{testimonial.quote}"</p>
                             </CardContent>
                             <CardHeader className="flex-row items-center gap-4">
                                 <Avatar>
@@ -278,8 +282,8 @@ export default function LandingPage() {
                                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-gray-500">{testimonial.handle}</p>
+                                    <p className="font-semibold text-white">{testimonial.name}</p>
+                                    <p className="text-sm text-neutral-500">{testimonial.handle}</p>
                                 </div>
                             </CardHeader>
                         </Card>
@@ -302,13 +306,13 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-gray-700 text-gray-300 transition-colors hover:bg-gray-200 hover:text-black">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition-colors hover:bg-neutral-200 hover:text-black">
                   <Github className="mr-2" /> Host Your Own Copy
                 </Button>
               </a>
             </div>
              <div className="mt-8">
-                <a href="https://twitter.com/intent/tweet?text=Just%20started%20using%20Cine-Mon%20to%20archive%20my%20cinematic%20life!%20%23cinephile%20%23movietracker" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors flex items-center justify-center gap-2">
+                <a href="https://twitter.com/intent/tweet?text=Just%20started%20using%20Cine-Mon%20to%20archive%20my%20cinematic%20life!%20%23cinephile%20%23movietracker" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-primary transition-colors flex items-center justify-center gap-2">
                     <Twitter className="w-5 h-5" />
                     <span>Share on X</span>
                 </a>
@@ -325,7 +329,7 @@ export default function LandingPage() {
                 <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
                 <span className="text-lg font-bold">Cine-Mon</span>
             </div>
-            <div className="flex gap-6 text-gray-400">
+            <div className="flex gap-6 text-neutral-400">
               <Link href="/about" className="hover:text-primary transition-colors">About</Link>
               <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
               <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
@@ -334,7 +338,7 @@ export default function LandingPage() {
               <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
             </div>
           </div>
-           <div className="text-center text-gray-500 text-sm mt-8">
+           <div className="text-center text-neutral-500 text-sm mt-8">
             &copy; {new Date().getFullYear()} Cine-Mon. All Rights Reserved.
           </div>
         </div>

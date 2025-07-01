@@ -31,7 +31,7 @@ import cineMonLogo from '@/app/assets/logo/cine-mon-logo.png';
 const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="mt-12">
         <h2 className="text-3xl font-bold font-headline text-white mb-6">{title}</h2>
-        <div className="space-y-4 text-gray-300 max-w-prose prose prose-lg prose-invert text-gray-300">
+        <div className="space-y-4 text-neutral-300 max-w-prose prose prose-lg prose-invert text-neutral-300">
             {children}
         </div>
     </div>
@@ -46,7 +46,7 @@ const FeatureItem = ({ icon: Icon, children }: { icon: React.ElementType, childr
 
 export default function AboutPage() {
     return (
-        <div className="bg-black text-gray-100 font-body antialiased">
+        <div className="bg-black text-neutral-100 font-body antialiased">
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -55,11 +55,11 @@ export default function AboutPage() {
                     <span className="text-xl font-bold font-headline">Cine-Mon</span>
                 </Link>
                 <div className="hidden md:flex items-center gap-6">
-                    <Link href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</Link>
-                    <Link href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</Link>
+                    <Link href="/#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</Link>
+                    <Link href="/#testimonials" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Testimonials</Link>
                     <Link href="/about" className="text-sm font-medium text-primary transition-colors">About</Link>
-                    <Link href="/changelog" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Changelog</Link>
-                    <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+                    <Link href="/changelog" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Changelog</Link>
+                    <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">GitHub</a>
                 </div>
                 <div className="flex items-center gap-4">
                     <Link href="/app/dashboard" target="_blank" rel="noopener noreferrer">
@@ -76,7 +76,7 @@ export default function AboutPage() {
                     <div className="max-w-4xl mx-auto">
                         <div className="text-center mb-16">
                             <h1 className="text-4xl md:text-6xl font-bold font-headline text-white text-glow">About Cine-Mon</h1>
-                            <p className="mt-4 text-lg md:text-xl text-gray-300">Your Cinematic Companion. Your Personal Vault.</p>
+                            <p className="mt-4 text-lg md:text-xl text-neutral-300">Your Cinematic Companion. Your Personal Vault.</p>
                         </div>
 
                         <div className="max-w-prose mx-auto">
@@ -182,7 +182,7 @@ export default function AboutPage() {
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
                         <span className="text-lg font-bold">Cine-Mon</span>
                     </div>
-                    <div className="flex items-center gap-6 text-gray-400">
+                    <div className="flex items-center gap-6 text-neutral-400">
                     <Link href="/about" className="hover:text-primary transition-colors">About</Link>
                     <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
@@ -194,7 +194,7 @@ export default function AboutPage() {
                     </Link>
                     </div>
                 </div>
-                <div className="text-center text-gray-500 text-sm mt-8">
+                <div className="text-center text-neutral-500 text-sm mt-8">
                     &copy; {new Date().getFullYear()} Cine-Mon. All Rights Reserved.
                 </div>
                 </div>
