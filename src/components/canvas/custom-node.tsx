@@ -123,10 +123,10 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
           lineClassName="border-primary"
         />
 
-        <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-1.5 !h-1.5" />
-        <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-1.5 !h-1.5" />
-        <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
-        <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
+        <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-1.5 !h-8 !rounded-sm" />
+        <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-8 !h-1.5 !rounded-sm" />
+        <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-8 !rounded-sm" />
+        <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-8 !h-1.5 !rounded-sm" />
 
         <div className="w-full h-full overflow-y-auto p-3 pr-4" onDoubleClick={handleContentDoubleClick}>
           {isEditing ? (
