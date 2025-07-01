@@ -217,10 +217,16 @@ function CanvasFlow() {
   const handleSave = useCallback(async () => {
     if (!canvasId) return;
 
+    // Dexie/IndexedDB can't store functions. We need to strip them before saving.
+    const nodesToSave = nodes.map(n => {
+      const { onLabelChange, onTitleChange, onColorChange, onChange, ...restData } = n.data;
+      return { ...n, data: restData };
+    });
+
     try {
         await MovieService.updateCanvas(canvasId, {
             name: canvasName,
-            nodes,
+            nodes: nodesToSave,
             edges,
             lastModified: new Date().toISOString(),
         });
@@ -451,6 +457,7 @@ function CanvasFlow() {
       ...edge,
       style: { ...edge.style, strokeWidth, stroke },
       animated,
+      zIndex: isIntersected || isSelected ? 0 : -1,
     };
   });
 
@@ -512,10 +519,10 @@ function CanvasFlow() {
   useEffect(() => {
     const isEditingInNode = () => {
         const activeElement = document.activeElement;
-        return (
-            activeElement?.tagName === 'INPUT' ||
-            activeElement?.tagName === 'TEXTAREA'
-        );
+        const isInput = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
+        // Also check if we are in a contenteditable div, which some UI libraries might use
+        const isContentEditable = (activeElement as HTMLElement)?.isContentEditable;
+        return isInput || isContentEditable;
     };
 
     const down = (e: KeyboardEvent) => {
@@ -699,3 +706,5 @@ export default function CanvasEditorPage() {
     </ReactFlowProvider>
   );
 }
+
+    
