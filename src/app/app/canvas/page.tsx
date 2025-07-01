@@ -107,7 +107,7 @@ function CanvasFlow() {
            style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
-           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem' },
+           labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem', textTransform: 'capitalize' },
            labelBgPadding: [8, 4] as [number, number],
            labelBgBorderRadius: 4,
            labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
@@ -223,6 +223,7 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
+                  stroke: edge.style?.stroke || 'hsl(var(--primary))',
               },
               zIndex: 10,
           };
@@ -246,7 +247,7 @@ function CanvasFlow() {
         <Input 
           value={canvasName}
           onChange={(e) => setCanvasName(e.target.value)}
-          className="text-lg font-bold w-96 bg-background/50"
+          className="text-lg font-bold w-96 bg-background/50 capitalize"
           placeholder="Untitled Canvas"
         />
       </div>
@@ -331,6 +332,7 @@ function CanvasFlow() {
                   }
               }}
               autoFocus
+              className="capitalize"
             />
           </div>
           <DialogFooter>

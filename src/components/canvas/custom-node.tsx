@@ -98,11 +98,11 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
             onKeyDown={(e) => { if (e.key === 'Enter') handleTitleBlur(); }}
-            className="w-full bg-transparent p-0 text-3xs text-foreground outline-none"
+            className="w-full bg-transparent p-0 text-3xs text-foreground outline-none capitalize"
             placeholder="Card title..."
           />
         ) : (
-          <h3 className="text-3xs text-muted-foreground hover:text-foreground break-words">
+          <h3 className="text-3xs text-muted-foreground hover:text-foreground break-words capitalize">
             {title || `Card Title...`}
           </h3>
         )}
