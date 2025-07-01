@@ -9,6 +9,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] (2025-07-02)
+
+### Features
+
+#### Multi-Select & Bulk Actions
+-   **Selection Mode**: Users can now enter a "selection mode" from the dashboard header to select multiple movie or show cards at once.
+-   **Contextual Header**: When one or more items are selected, a new contextual header appears, showing the number of selected items and providing new bulk action buttons.
+-   **Bulk Delete**: Users can now delete multiple items from their collection simultaneously, with a confirmation dialog to prevent accidental data loss.
+-   **Bulk Add to Collection**: Implemented a new dialog allowing users to add multiple selected items to any existing Vault or Spotlight, or to create a new collection on the fly.
+
+### Fixes
+
+#### UI Responsiveness & Layout
+-   **Search Dialog Refactor**: Completely rebuilt the layout of the TMDB search dialog to be fully responsive. The "Import" button is no longer hidden on smaller screens with long titles.
+-   **Changelog Alignment**: Corrected a minor vertical alignment issue in the changelog's timeline view, ensuring the version dot and badge are perfectly lined up.
+
+#### Visual Polish & Theming
+-   **Contextual Header Opacity**: The contextual header for multi-select actions now has a solid background, fixing a transparency bug where underlying content would show through.
+-   **Theme Contrast Fix**: Resolved a major bug where the app's light/dark mode theme was incorrectly affecting the text color on public pages (Landing, Changelog, Legal), making text unreadable. These pages now maintain a consistent, high-contrast look.
+
+---
+
+### Chores
+
+- **feat(ui): Implement bulk "Add to Collection" and fix UI issues**
+
 ## [1.3.0] (2025-07-01)
 
 ### Features
