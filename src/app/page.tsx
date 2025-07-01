@@ -170,7 +170,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto border border-gray-800 text-gray-400 transition-colors hover:bg-primary/10 hover:border-primary/50 hover:text-white">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-gray-700 text-gray-300 transition-colors hover:bg-gray-200 hover:text-black">
                   <Github className="mr-2" /> Open on GitHub
                 </Button>
               </a>
@@ -302,7 +302,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto border border-gray-800 text-gray-400 transition-colors hover:bg-primary/10 hover:border-primary/50 hover:text-white">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-gray-700 text-gray-300 transition-colors hover:bg-gray-200 hover:text-black">
                   <Github className="mr-2" /> Host Your Own Copy
                 </Button>
               </a>
