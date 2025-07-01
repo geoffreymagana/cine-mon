@@ -20,7 +20,7 @@ export default async function PublicChangelogPage() {
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
-            <span className="text-xl font-bold font-headline">Cine-Mon</span>
+            <span className="text-xl font-bold font-headline text-white">Cine-Mon</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <a href="/#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</a>
@@ -41,7 +41,7 @@ export default async function PublicChangelogPage() {
 
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-6 py-12">
-            <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
+            <div className="max-w-4xl mx-auto prose prose-lg prose-invert max-w-none">
                 <ChangelogDisplay versions={versions} />
             </div>
         </div>
@@ -53,7 +53,7 @@ export default async function PublicChangelogPage() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
                 <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
-                <span className="text-lg font-bold">Cine-Mon</span>
+                <span className="text-lg font-bold text-white">Cine-Mon</span>
             </div>
             <div className="flex gap-6 text-neutral-400">
               <Link href="/about" className="hover:text-primary transition-colors">About</Link>

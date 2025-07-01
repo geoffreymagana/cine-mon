@@ -21,7 +21,7 @@ function LegalPageContent() {
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <Link href="/" className="flex items-center gap-2">
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
-                        <span className="text-xl font-bold font-headline">Cine-Mon</span>
+                        <span className="text-xl font-bold font-headline text-white">Cine-Mon</span>
                     </Link>
                     <div className="hidden md:flex items-center gap-6">
                         <Link href="/#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</Link>
@@ -53,7 +53,7 @@ function LegalPageContent() {
                                 <TabsTrigger value="terms">Terms of Service</TabsTrigger>
                                 <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="terms" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-neutral-400 space-y-4">
+                            <TabsContent value="terms" className="mt-8 prose prose-lg prose-invert max-w-none text-neutral-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -109,7 +109,7 @@ function LegalPageContent() {
                                     <p>For feedback, feature requests, or legal questions: geoffreymagana21@gmail.com</p>
                                 </div>
                             </TabsContent>
-                            <TabsContent value="privacy" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-neutral-400 space-y-4">
+                            <TabsContent value="privacy" className="mt-8 prose prose-lg prose-invert max-w-none text-neutral-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -177,7 +177,7 @@ function LegalPageContent() {
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <div className="flex items-center gap-2 mb-4 md:mb-0">
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
-                        <span className="text-lg font-bold">Cine-Mon</span>
+                        <span className="text-lg font-bold text-white">Cine-Mon</span>
                     </div>
                     <div className="flex gap-6 text-neutral-400">
                     <Link href="/about" className="hover:text-primary transition-colors">About</Link>

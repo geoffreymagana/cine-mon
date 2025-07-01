@@ -18,7 +18,7 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
     return (
         <>
             <div className="text-center mb-16">
-                <h1 className="text-5xl font-bold font-headline">Changelog</h1>
+                <h1 className="text-5xl font-bold font-headline text-white">Changelog</h1>
                 <p className="text-muted-foreground mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
             </div>
             
@@ -46,12 +46,12 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                                                 {badgeInfo && (
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <Badge variant="outline" className={cn("font-semibold", badgeInfo.className)}>{badgeInfo.text}</Badge>
-                                                        <h3 className="text-xl font-semibold !m-0">{section.type}</h3>
+                                                        <h3 className="text-xl font-semibold !m-0 text-white">{section.type}</h3>
                                                     </div>
                                                 )}
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
-                                                    className="prose prose-lg dark:prose-invert max-w-none"
+                                                    className="prose prose-lg prose-invert max-w-none"
                                                     components={{
                                                         a: ({node, ...props}) => <span {...props} />, // Disable links
                                                         h3: () => null, // Already rendered manually
