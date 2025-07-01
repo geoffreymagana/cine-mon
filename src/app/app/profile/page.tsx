@@ -16,7 +16,7 @@ import {
     DownloadCloud,
     FileText,
     Mail,
-    BarChart3,
+    ChartPie,
     Sparkles,
     MessageSquare,
     ShieldCheck
@@ -165,46 +165,39 @@ export default function ProfilePage() {
                 let updatedCount = 0;
                 let skippedCount = 0;
 
+                const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
+                    const sanitized = { ...existing, ...movie };
+                    
+                    // Ensure essential fields have valid types, falling back to defaults.
+                    sanitized.id = sanitized.id && typeof sanitized.id === 'string' ? sanitized.id : existing?.id || crypto.randomUUID();
+                    sanitized.title = typeof sanitized.title === 'string' && sanitized.title ? sanitized.title : 'Untitled';
+                    sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags.filter(t => typeof t === 'string') : [];
+                    sanitized.posterUrl = typeof sanitized.posterUrl === 'string' ? sanitized.posterUrl : 'https://placehold.co/500x750.png';
+                    sanitized.type = ['Movie', 'TV Show', 'Anime'].includes(sanitized.type) ? sanitized.type : 'Movie';
+                    sanitized.status = ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitized.status) ? sanitized.status : 'Plan to Watch';
+                    sanitized.watchedEpisodes = typeof sanitized.watchedEpisodes === 'number' ? sanitized.watchedEpisodes : 0;
+                    sanitized.totalEpisodes = typeof sanitized.totalEpisodes === 'number' && sanitized.totalEpisodes > 0 ? sanitized.totalEpisodes : 1;
+                    sanitized.rating = typeof sanitized.rating === 'number' ? sanitized.rating : 0;
+                    sanitized.sortOrder = typeof sanitized.sortOrder === 'number' ? sanitized.sortOrder : Date.now();
+                    
+                    return sanitized as Movie;
+                };
+
+
                 importedMovies.forEach(importedMovie => {
                     if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
                         skippedCount++;
                         return;
                     }
 
-                    // Sanitize every imported movie object to ensure data integrity
-                    const sanitizedImportedMovie: Partial<Movie> = { ...importedMovie };
-                    if (!Array.isArray(sanitizedImportedMovie.tags)) {
-                        sanitizedImportedMovie.tags = [];
-                    }
-                    if (sanitizedImportedMovie.id && typeof sanitizedImportedMovie.id !== 'string') {
-                        sanitizedImportedMovie.id = String(sanitizedImportedMovie.id);
-                    }
-
-                    const existingMovie = sanitizedImportedMovie.id ? movieMap.get(sanitizedImportedMovie.id) : undefined;
+                    const existingMovie = importedMovie.id ? movieMap.get(importedMovie.id) : undefined;
+                    const sanitizedMovie = sanitizeMovie(importedMovie, existingMovie);
+                    
+                    movieMap.set(sanitizedMovie.id, sanitizedMovie);
 
                     if (existingMovie) {
-                        // Update existing movie, ensuring no indexed fields are overwritten with invalid types
-                        const updatedMovie = { ...existingMovie, ...sanitizedImportedMovie };
-                        if (!Array.isArray(updatedMovie.tags)) updatedMovie.tags = existingMovie.tags;
-                        movieMap.set(updatedMovie.id, updatedMovie);
                         updatedCount++;
                     } else {
-                        // Create new movie with defaults
-                        const newMovie: Movie = {
-                            id: sanitizedImportedMovie.id || crypto.randomUUID(),
-                            title: sanitizedImportedMovie.title || 'Untitled',
-                            description: sanitizedImportedMovie.description || '',
-                            posterUrl: sanitizedImportedMovie.posterUrl || 'https://placehold.co/500x750.png',
-                            type: ['Movie', 'TV Show', 'Anime'].includes(sanitizedImportedMovie.type as any) ? sanitizedImportedMovie.type as any : 'Movie',
-                            status: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitizedImportedMovie.status as any) ? sanitizedImportedMovie.status as any : 'Plan to Watch',
-                            watchedEpisodes: typeof sanitizedImportedMovie.watchedEpisodes === 'number' ? sanitizedImportedMovie.watchedEpisodes : 0,
-                            totalEpisodes: typeof sanitizedImportedMovie.totalEpisodes === 'number' && sanitizedImportedMovie.totalEpisodes > 0 ? sanitizedImportedMovie.totalEpisodes : 1,
-                            rating: typeof sanitizedImportedMovie.rating === 'number' ? sanitizedImportedMovie.rating : 0,
-                            tags: Array.isArray(sanitizedImportedMovie.tags) ? sanitizedImportedMovie.tags : [],
-                            releaseDate: typeof sanitizedImportedMovie.releaseDate === 'string' ? sanitizedImportedMovie.releaseDate : '',
-                            ...sanitizedImportedMovie,
-                        };
-                        movieMap.set(newMovie.id, newMovie);
                         newCount++;
                     }
                 });
@@ -432,7 +425,7 @@ export default function ProfilePage() {
                                         </Link>
                                         <Link href="/app/analytics" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
-                                                <BarChart3 className="mr-3 text-primary"/>
+                                                <ChartPie className="mr-3 text-primary"/>
                                                 <div className="flex flex-col">
                                                    <span>Stats for nerds</span>
                                                    <span className="text-xs text-muted-foreground">Go to your analytics.</span>
