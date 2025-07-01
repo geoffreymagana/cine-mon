@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Check, Plus, Search, Lightbulb, ChevronRight } from "lucide-react";
 import type { Movie } from "@/lib/types";
@@ -131,7 +130,7 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
     
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="sm:max-w-3xl h-[80vh] flex flex-col">
+            <DialogContent className="sm:max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
                 <DialogHeader>
                     <DialogTitle className="font-headline">{isOnline ? 'Search & Import' : 'Local Search (Offline)'}</DialogTitle>
                     <DialogDescription>
@@ -150,100 +149,97 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                         autoFocus
                     />
                 </div>
-                <div className="flex-grow overflow-hidden relative pt-2">
-                    <ScrollArea className="h-full pr-4">
-                        <div className="space-y-4">
-                            {isLoading && query.length > 1 && (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <div key={i} className="flex gap-4 p-2">
-                                        <Skeleton className="w-[80px] h-[120px] rounded-md" />
-                                        <div className="space-y-2 flex-grow">
-                                            <Skeleton className="h-5 w-3/4" />
-                                            <Skeleton className="h-4 w-1/4" />
-                                            <Skeleton className="h-12 w-full" />
-                                        </div>
+                <div className="flex-grow overflow-y-auto -mx-6 px-6">
+                    <div className="space-y-4 pt-2">
+                        {isLoading && query.length > 1 && (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="flex gap-4 p-2">
+                                    <Skeleton className="w-[80px] h-[120px] rounded-md flex-shrink-0" />
+                                    <div className="space-y-2 flex-grow">
+                                        <Skeleton className="h-5 w-3/4" />
+                                        <Skeleton className="h-4 w-1/4" />
+                                        <Skeleton className="h-12 w-full" />
                                     </div>
-                                ))
-                            )}
-                            {!isLoading && displayResults.length > 0 && displayResults.map((result) => {
-                                const isImported = result.tmdbId ? existingTmdbIds.has(result.tmdbId) : false;
-                                const isImporting = importingIds.has(result.id as number);
+                                </div>
+                            ))
+                        )}
+                        {!isLoading && displayResults.length > 0 && displayResults.map((result) => {
+                            const isImported = result.tmdbId ? existingTmdbIds.has(result.tmdbId) : false;
+                            const isImporting = importingIds.has(result.id as number);
 
-                                const content = (
-                                     <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
-                                        <Image
-                                            src={result.posterUrl}
-                                            alt={result.title}
-                                            width={80}
-                                            height={120}
-                                            className="w-[80px] h-[120px] object-cover rounded-md flex-shrink-0"
-                                            data-ai-hint="movie poster"
-                                        />
-                                        
-                                        <div className="flex-grow min-w-0">
-                                            <div className="flex justify-between items-start gap-2">
-                                                <div className="flex-grow min-w-0">
-                                                    <h3 className="font-bold text-lg truncate" title={result.title}>{result.title}</h3>
-                                                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                                        <span>{result.year}</span>
-                                                        <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
-                                                    </div>
-                                                </div>
-                                                <div className="shrink-0">
-                                                    {result.isLocal ? (
-                                                        <Button asChild size="sm" variant="ghost">
-                                                            <Link href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
-                                                                View <ChevronRight className="ml-1 h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImport(result); }}
-                                                            disabled={isImported || isImporting}
-                                                        >
-                                                            {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
-                                                            {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
-                                                        </Button>
-                                                    )}
+                            const content = (
+                                <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
+                                    <Image
+                                        src={result.posterUrl}
+                                        alt={result.title}
+                                        width={80}
+                                        height={120}
+                                        className="w-[80px] h-[120px] object-cover rounded-md flex-shrink-0"
+                                        data-ai-hint="movie poster"
+                                    />
+                                    <div className="flex-grow min-w-0">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="flex-grow min-w-0">
+                                                <h3 className="font-bold text-lg truncate" title={result.title}>{result.title}</h3>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    <span>{result.year}</span>
+                                                    <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{result.overview}</p>
+                                            <div className="shrink-0">
+                                                {result.isLocal ? (
+                                                    <Button asChild size="sm" variant="ghost">
+                                                        <Link href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
+                                                            View <ChevronRight className="ml-1 h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImport(result); }}
+                                                        disabled={isImported || isImporting}
+                                                    >
+                                                        {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
+                                                        {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
+                                        <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{result.overview}</p>
                                     </div>
-                                );
-                                
-                                return result.isLocal ? (
-                                    <Link key={result.id} href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
-                                        {content}
-                                    </Link>
-                                ) : (
-                                    <div key={result.id} className="cursor-pointer" onClick={() => !isImported && !isImporting && handleImport(result)}>
-                                        {content}
-                                    </div>
-                                );
-                            })}
-                            {!isLoading && displayResults.length === 0 && (
-                                <div className="text-center py-10 flex flex-col items-center justify-center h-full space-y-4">
-                                    {query.length > 1 ? (
-                                        <div className="text-center">
-                                            <p className="font-semibold">No results found for "{query}".</p>
-                                            <p className="text-muted-foreground text-sm">Try checking for typos or searching for another title.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="text-xs text-muted-foreground flex items-start gap-2 p-3 rounded-lg border max-w-md text-left">
-                                            <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
-                                            {isOnline ? (
-                                                <span>Tip: You can use 'y:' to filter by year. Example: 'star wars y:1977'.</span>
-                                            ) : (
-                                                <span>You are offline. Search is limited to your local collection.</span>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
-                            )}
-                        </div>
-                    </ScrollArea>
+                            );
+                            
+                            return result.isLocal ? (
+                                <Link key={result.id} href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
+                                    {content}
+                                </Link>
+                            ) : (
+                                <div key={result.id} className="cursor-pointer" onClick={() => !isImported && !isImporting && handleImport(result)}>
+                                    {content}
+                                </div>
+                            );
+                        })}
+                        {!isLoading && displayResults.length === 0 && (
+                            <div className="text-center py-10 flex flex-col items-center justify-center h-full space-y-4">
+                                {query.length > 1 ? (
+                                    <div className="text-center">
+                                        <p className="font-semibold">No results found for "{query}".</p>
+                                        <p className="text-muted-foreground text-sm">Try checking for typos or searching for another title.</p>
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-muted-foreground flex items-start gap-2 p-3 rounded-lg border max-w-md text-left">
+                                        <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
+                                        {isOnline ? (
+                                            <span>Tip: You can use 'y:' to filter by year. Example: 'star wars y:1977'.</span>
+                                        ) : (
+                                            <span>You are offline. Search is limited to your local collection.</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
