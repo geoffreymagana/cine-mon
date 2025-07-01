@@ -34,6 +34,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import type { Movie } from '@/lib/types';
 import { MovieService } from '@/lib/movie-service';
+import { ImportConfirmationDialog } from '@/components/import-confirmation-dialog';
 
 const themes = [
     { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
@@ -42,6 +43,25 @@ const themes = [
     { name: 'orange', displayColor: 'hsl(38, 92%, 50%)' },
     { name: 'blue', displayColor: 'hsl(217, 91%, 60%)' },
 ];
+
+const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
+    const sanitized = { ...existing, ...movie };
+    
+    // Ensure essential fields have valid types, falling back to defaults.
+    sanitized.id = sanitized.id && typeof sanitized.id === 'string' ? sanitized.id : existing?.id || crypto.randomUUID();
+    sanitized.title = typeof sanitized.title === 'string' && sanitized.title ? sanitized.title : 'Untitled';
+    sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags.filter((t: any) => typeof t === 'string') : [];
+    sanitized.posterUrl = typeof sanitized.posterUrl === 'string' ? sanitized.posterUrl : 'https://placehold.co/500x750.png';
+    sanitized.type = ['Movie', 'TV Show', 'Anime'].includes(sanitized.type) ? sanitized.type : 'Movie';
+    sanitized.status = ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitized.status) ? sanitized.status : 'Plan to Watch';
+    sanitized.watchedEpisodes = typeof sanitized.watchedEpisodes === 'number' ? sanitized.watchedEpisodes : 0;
+    sanitized.totalEpisodes = typeof sanitized.totalEpisodes === 'number' && sanitized.totalEpisodes > 0 ? sanitized.totalEpisodes : 1;
+    sanitized.rating = typeof sanitized.rating === 'number' ? sanitized.rating : 0;
+    sanitized.sortOrder = typeof sanitized.sortOrder === 'number' ? sanitized.sortOrder : Date.now();
+    
+    return sanitized as Movie;
+};
+
 
 export default function ProfilePage() {
     const [name, setName] = React.useState('Cine-Mon User');
@@ -55,6 +75,10 @@ export default function ProfilePage() {
     const mainContentRef = React.useRef<HTMLDivElement>(null);
     const [activeTheme, setActiveTheme] = React.useState(themes[0].name);
 
+    const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
+    const [isImportConfirmOpen, setIsImportConfirmOpen] = React.useState(false);
+    const [importData, setImportData] = React.useState<{ newMovies: Movie[], conflictingMovies: Movie[] } | null>(null);
+
     const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
         acc[sec] = React.createRef<HTMLDivElement>();
@@ -63,13 +87,16 @@ export default function ProfilePage() {
 
     React.useEffect(() => {
         const loadSettings = async () => {
-            const [storedTheme, storedDarkMode, storedName, storedUsername, storedBio] = await Promise.all([
+            const [storedTheme, storedDarkMode, storedName, storedUsername, storedBio, moviesFromDb] = await Promise.all([
                 MovieService.getSetting('cinemon-theme'),
                 MovieService.getSetting('cinemon-dark-mode'),
                 MovieService.getSetting('profileName'),
                 MovieService.getSetting('profileUsername'),
                 MovieService.getSetting('profileBio'),
+                MovieService.getMovies()
             ]);
+            
+            setAllMovies(moviesFromDb);
 
             const currentTheme = storedTheme || themes[0].name;
             const currentDarkMode = storedDarkMode !== 'false';
@@ -158,65 +185,42 @@ export default function ProfilePage() {
                 } else {
                     throw new Error("Invalid JSON structure: The file should contain an array of movies, optionally within a 'movies' key.");
                 }
-
-                const existingMovies = await MovieService.getMovies();
-                const movieMap = new Map(existingMovies.map(m => [m.id, m]));
-                let newCount = 0;
-                let updatedCount = 0;
+                
+                const existingMovieMap = new Map(allMovies.map(m => [m.id, m]));
+                const newMovies: Movie[] = [];
+                const conflictingMovies: Movie[] = [];
                 let skippedCount = 0;
 
-                const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
-                    const sanitized = { ...existing, ...movie };
-                    
-                    // Ensure essential fields have valid types, falling back to defaults.
-                    sanitized.id = sanitized.id && typeof sanitized.id === 'string' ? sanitized.id : existing?.id || crypto.randomUUID();
-                    sanitized.title = typeof sanitized.title === 'string' && sanitized.title ? sanitized.title : 'Untitled';
-                    sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags.filter(t => typeof t === 'string') : [];
-                    sanitized.posterUrl = typeof sanitized.posterUrl === 'string' ? sanitized.posterUrl : 'https://placehold.co/500x750.png';
-                    sanitized.type = ['Movie', 'TV Show', 'Anime'].includes(sanitized.type) ? sanitized.type : 'Movie';
-                    sanitized.status = ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitized.status) ? sanitized.status : 'Plan to Watch';
-                    sanitized.watchedEpisodes = typeof sanitized.watchedEpisodes === 'number' ? sanitized.watchedEpisodes : 0;
-                    sanitized.totalEpisodes = typeof sanitized.totalEpisodes === 'number' && sanitized.totalEpisodes > 0 ? sanitized.totalEpisodes : 1;
-                    sanitized.rating = typeof sanitized.rating === 'number' ? sanitized.rating : 0;
-                    sanitized.sortOrder = typeof sanitized.sortOrder === 'number' ? sanitized.sortOrder : Date.now();
-                    
-                    return sanitized as Movie;
-                };
-
-
                 importedMovies.forEach(importedMovie => {
-                    if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
+                    if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.id) {
                         skippedCount++;
                         return;
                     }
 
-                    const existingMovie = importedMovie.id ? movieMap.get(importedMovie.id) : undefined;
-                    const sanitizedMovie = sanitizeMovie(importedMovie, existingMovie);
-                    
-                    movieMap.set(sanitizedMovie.id, sanitizedMovie);
-
-                    if (existingMovie) {
-                        updatedCount++;
+                    if (existingMovieMap.has(importedMovie.id)) {
+                        conflictingMovies.push(importedMovie);
                     } else {
-                        newCount++;
+                        newMovies.push(importedMovie);
                     }
                 });
 
-                const updatedMovies = Array.from(movieMap.values());
-                await MovieService.saveAllMovies(updatedMovies);
-
-                let toastDescription = `${newCount} new titles added and ${updatedCount} updated.`;
-                if (skippedCount > 0) {
-                    toastDescription += ` ${skippedCount} entries were skipped due to invalid format.`;
+                if (conflictingMovies.length > 0) {
+                    setImportData({ newMovies, conflictingMovies });
+                    setIsImportConfirmOpen(true);
+                } else if (newMovies.length > 0) {
+                    const moviesToSave = newMovies.map(m => sanitizeMovie(m));
+                    await MovieService.saveAllMovies(moviesToSave);
+                    toast({
+                        title: "Import Successful!",
+                        description: `${moviesToSave.length} new titles added. ${skippedCount > 0 ? `${skippedCount} invalid entries skipped.`: ''} The page will now reload.`,
+                    });
+                    setTimeout(() => window.location.reload(), 3000);
+                } else {
+                    toast({
+                        title: "Nothing to Import",
+                        description: `No new titles were found. ${skippedCount > 0 ? `${skippedCount} invalid entries were skipped.`: ''}`,
+                    });
                 }
-                toastDescription += " The page will now reload.";
-
-                toast({
-                    title: "Import Successful!",
-                    description: toastDescription,
-                });
-                
-                setTimeout(() => window.location.reload(), 3000);
 
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : "The selected file could not be imported. Please check the file format.";
@@ -231,6 +235,58 @@ export default function ProfilePage() {
             }
         };
         reader.readAsText(file);
+    };
+    
+    const handleImportConfirm = async (resolution: 'skip' | 'overwrite' | 'cancel') => {
+        if (!importData) return;
+    
+        setIsImportConfirmOpen(false);
+    
+        if (resolution === 'cancel') {
+            setImportData(null);
+            toast({ title: "Import Canceled" });
+            return;
+        }
+    
+        let moviesToSave: Movie[] = [];
+        let toastDescription = "";
+    
+        if (resolution === 'skip') {
+            moviesToSave = importData.newMovies.map(m => sanitizeMovie(m));
+            toastDescription = `${moviesToSave.length} new titles have been imported. ${importData.conflictingMovies.length} duplicates were skipped.`;
+        } else if (resolution === 'overwrite') {
+            const moviesToProcess = [...importData.newMovies, ...importData.conflictingMovies];
+            moviesToSave = moviesToProcess.map(m => {
+                const existing = allMovies.find(em => em.id === m.id);
+                return sanitizeMovie(m, existing);
+            });
+            toastDescription = `${importData.newMovies.length} new titles added and ${importData.conflictingMovies.length} existing titles updated.`;
+        }
+    
+        if (moviesToSave.length > 0) {
+            try {
+                await MovieService.saveAllMovies(moviesToSave);
+                toast({
+                    title: "Import Complete!",
+                    description: `${toastDescription} The page will now reload.`,
+                });
+                setTimeout(() => window.location.reload(), 3000);
+            } catch (error) {
+                console.error("Failed to save movies after confirmation:", error);
+                toast({
+                    title: "Import Failed",
+                    description: "An error occurred while saving the movies.",
+                    variant: "destructive",
+                });
+            }
+        } else if (resolution === 'skip' && importData.newMovies.length === 0) {
+            toast({
+                title: "No New Titles",
+                description: "No new titles to import. The duplicates were skipped.",
+            });
+        }
+        
+        setImportData(null);
     };
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -284,6 +340,7 @@ export default function ProfilePage() {
     };
 
     return (
+        <>
         <div className="flex h-screen flex-col bg-background">
             <header className="mx-auto w-full max-w-screen-xl px-4 pt-8 sm:px-6 lg:px-8">
                  <Link href="/app/dashboard" className="inline-flex items-center gap-2 font-semibold text-lg hover:text-primary transition-colors">
@@ -512,5 +569,12 @@ export default function ProfilePage() {
                 </main>
             </div>
         </div>
+        <ImportConfirmationDialog
+            isOpen={isImportConfirmOpen}
+            onConfirm={handleImportConfirm}
+            conflictsCount={importData?.conflictingMovies.length || 0}
+            newCount={importData?.newMovies.length || 0}
+        />
+        </>
     );
 }
