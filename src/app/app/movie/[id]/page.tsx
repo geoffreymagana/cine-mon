@@ -68,13 +68,14 @@ import { useToast } from '@/hooks/use-toast';
 import { AmbientPlayer } from '@/components/ambient-player';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CreateCollectionDialog } from '@/components/create-collection-dialog';
+import { MovieService } from '@/lib/movie-service';
 
 
 const statusOptions = [
     { value: 'Watching' as const, label: 'Watching', icon: Clock, className: 'text-chart-1' },
     { value: 'Completed' as const, label: 'Completed', icon: CircleCheck, className: 'text-chart-2' },
     { value: 'On-Hold' as const, label: 'On Hold', icon: PauseCircle, className: 'text-chart-3' },
-    { value: 'Dropped' as const, label: 'Dropped', icon: 'text-destructive' },
+    { value: 'Dropped' as const, label: 'Dropped', icon: CircleOff, className: 'text-destructive' },
     { value: 'Plan to Watch' as const, label: 'Plan to Watch', icon: Bookmark, className: 'text-muted-foreground' },
 ];
 
@@ -92,11 +93,31 @@ export default function MovieDetailPage() {
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
 
-    const updateMovieData = (updatedMovie: Movie) => {
+    const loadData = React.useCallback(async () => {
+        if (!movieId) return;
+        try {
+            const [foundMovie, movies, collections] = await Promise.all([
+                MovieService.getMovie(movieId),
+                MovieService.getMovies(),
+                MovieService.getCollections()
+            ]);
+            setMovie(foundMovie || null);
+            setAllMovies(movies);
+            setAllCollections(collections);
+        } catch (error) {
+            console.error("Failed to load data from DB:", error);
+            setMovie(null);
+        }
+    }, [movieId]);
+
+    React.useEffect(() => {
+        loadData();
+    }, [loadData]);
+    
+    const updateMovieData = async (updatedMovie: Movie) => {
         setMovie(updatedMovie);
-        const updatedMovies = allMovies.map(m => m.id === movieId ? updatedMovie : m);
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-        setAllMovies(updatedMovies);
+        await MovieService.updateMovie(movieId, updatedMovie);
+        setAllMovies(allMovies.map(m => m.id === movieId ? updatedMovie : m));
     };
 
     const handleEpisodeToggle = (seasonNumber: number, episodeNumber: number, watched: boolean) => {
@@ -158,31 +179,6 @@ export default function MovieDetailPage() {
         });
     };
 
-    React.useEffect(() => {
-        if (!movieId) return;
-
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) {
-                const movies: Movie[] = JSON.parse(storedMovies);
-                setAllMovies(movies);
-                const foundMovie = movies.find((m) => m.id === movieId);
-                setMovie(foundMovie || null);
-            } else {
-                setMovie(null);
-            }
-
-            const storedCollections = localStorage.getItem('collections');
-            if (storedCollections) {
-                setAllCollections(JSON.parse(storedCollections));
-            }
-
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-            setMovie(null);
-        }
-    }, [movieId]);
-
     const handleCollectionClick = (collectionName: string) => {
         const moviesInCollection = allMovies.filter(
             (m) => m.collection === collectionName && m.id !== movie?.id
@@ -201,20 +197,10 @@ export default function MovieDetailPage() {
         });
     };
     
-    const handleDeleteMovie = () => {
+    const handleDeleteMovie = async () => {
         if (!movie) return;
 
-        const updatedMovies = allMovies.filter(m => m.id !== movie.id);
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-
-        const storedCollections = localStorage.getItem('collections');
-        if (storedCollections) {
-            let collections: UserCollection[] = JSON.parse(storedCollections);
-            collections.forEach(c => {
-                c.movieIds = c.movieIds.filter(id => id !== movie.id);
-            });
-            localStorage.setItem('collections', JSON.stringify(collections));
-        }
+        await MovieService.deleteMovie(movie.id);
 
         toast({
             title: "Movie Deleted",
@@ -225,13 +211,10 @@ export default function MovieDetailPage() {
         router.push('/app/dashboard');
     };
 
-    const handleAddToCollection = (collectionId: string) => {
+    const handleAddToCollection = async (collectionId: string) => {
         if (!movie) return;
 
-        const storedCollections = localStorage.getItem('collections');
-        let collections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
-        
-        const targetCollection = collections.find(c => c.id === collectionId);
+        const targetCollection = allCollections.find(c => c.id === collectionId);
         if (!targetCollection) return;
         
         if (targetCollection.movieIds.includes(movie.id)) {
@@ -240,8 +223,8 @@ export default function MovieDetailPage() {
         }
 
         targetCollection.movieIds.push(movie.id);
-        localStorage.setItem('collections', JSON.stringify(collections));
-        setAllCollections(collections);
+        await MovieService.updateCollection(collectionId, { movieIds: targetCollection.movieIds });
+        setAllCollections([...allCollections]);
         toast({ title: "Success!", description: `Added to "${targetCollection.name}".` });
     };
 

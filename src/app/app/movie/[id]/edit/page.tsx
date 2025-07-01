@@ -23,6 +23,7 @@ import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { MovieService } from '@/lib/movie-service';
 
 
 const castMemberSchema = z.object({
@@ -109,27 +110,27 @@ export default function MovieEditPage() {
   React.useEffect(() => {
     if (!movieId) return;
     
-    try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const movies: Movie[] = JSON.parse(storedMovies);
-        const movieToEdit = movies.find((m) => m.id === movieId);
-        if (movieToEdit) {
-          form.reset(movieToEdit);
-          if (movieToEdit.scriptUrl?.startsWith('data:')) {
-            setScriptFileName("Uploaded file");
-          }
-        } else {
-          toast({ title: 'Error', description: 'Movie not found.', variant: 'destructive' });
-          router.push('/app/dashboard');
+    const loadMovie = async () => {
+        try {
+            const movieToEdit = await MovieService.getMovie(movieId);
+            if (movieToEdit) {
+                form.reset(movieToEdit);
+                if (movieToEdit.scriptUrl?.startsWith('data:')) {
+                    setScriptFileName("Uploaded file");
+                }
+            } else {
+                toast({ title: 'Error', description: 'Movie not found.', variant: 'destructive' });
+                router.push('/app/dashboard');
+            }
+        } catch (error) {
+            console.error('Failed to load movie from DB:', error);
+            toast({ title: 'Error', description: 'Could not load movie data.', variant: 'destructive' });
+        } finally {
+            setIsLoading(false);
         }
-      }
-    } catch (error) {
-      console.error('Failed to load movie from localStorage:', error);
-      toast({ title: 'Error', description: 'Could not load movie data.', variant: 'destructive' });
-    } finally {
-        setIsLoading(false);
-    }
+    };
+    
+    loadMovie();
   }, [movieId, form, router, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'posterUrl' | 'backdropUrl') => {
@@ -211,34 +212,25 @@ export default function MovieEditPage() {
   };
 
 
-  const onSubmit = (data: MovieEditFormValues) => {
+  const onSubmit = async (data: MovieEditFormValues) => {
     if (!movieId) return;
 
     try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const movies: Movie[] = JSON.parse(storedMovies);
-        const originalMovie = movies.find(m => m.id === movieId);
-        if (!originalMovie) {
-          throw new Error("Original movie not found");
-        }
-        
-        // Keep derived fields from original movie
-        const updatedMovieData = { 
-            ...originalMovie,
-            ...data,
-            watchedEpisodes: originalMovie.watchedEpisodes,
-            totalEpisodes: originalMovie.totalEpisodes,
-            seasons: originalMovie.seasons,
-        };
-
-        const updatedMovies = movies.map((m) => (m.id === movieId ? updatedMovieData : m));
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-        toast({ title: 'Success!', description: `${data.title} has been updated.` });
-        router.push(`/app/movie/${movieId}`);
+      const originalMovie = await MovieService.getMovie(movieId);
+      if (!originalMovie) {
+        throw new Error("Original movie not found");
       }
+      
+      const updatedMovieData = { 
+          ...originalMovie,
+          ...data,
+      };
+
+      await MovieService.updateMovie(movieId, updatedMovieData);
+      toast({ title: 'Success!', description: `${data.title} has been updated.` });
+      router.push(`/app/movie/${movieId}`);
     } catch (error) {
-      console.error('Failed to save movie to localStorage:', error);
+      console.error('Failed to save movie:', error);
       toast({ title: 'Error', description: 'Could not save changes.', variant: 'destructive' });
     }
   };

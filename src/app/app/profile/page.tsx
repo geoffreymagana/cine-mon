@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import type { Movie } from '@/lib/types';
+import { MovieService } from '@/lib/movie-service';
 
 const themes = [
     { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
@@ -61,35 +62,35 @@ export default function ProfilePage() {
     }, {} as Record<string, React.RefObject<HTMLDivElement>>), []);
 
     React.useEffect(() => {
-        const storedTheme = localStorage.getItem('cinemon-theme') || themes[0].name;
-        const storedDarkMode = localStorage.getItem('cinemon-dark-mode') !== 'false';
-        
-        setIsDarkMode(storedDarkMode);
-        setActiveTheme(storedTheme);
+        const loadSettings = async () => {
+            const [storedTheme, storedDarkMode, storedName, storedUsername, storedBio] = await Promise.all([
+                MovieService.getSetting('cinemon-theme'),
+                MovieService.getSetting('cinemon-dark-mode'),
+                MovieService.getSetting('profileName'),
+                MovieService.getSetting('profileUsername'),
+                MovieService.getSetting('profileBio'),
+            ]);
 
-        document.documentElement.classList.toggle('dark', storedDarkMode);
-        
-        document.documentElement.classList.forEach(cls => {
-            if (cls.startsWith('theme-')) document.documentElement.classList.remove(cls);
-        });
+            const currentTheme = storedTheme || themes[0].name;
+            const currentDarkMode = storedDarkMode !== 'false';
+            
+            setIsDarkMode(currentDarkMode);
+            setActiveTheme(currentTheme);
 
-        if (storedTheme !== 'purple') {
-            document.documentElement.classList.add(`theme-${storedTheme}`);
-        }
+            document.documentElement.classList.toggle('dark', currentDarkMode);
+            document.documentElement.classList.forEach(cls => {
+                if (cls.startsWith('theme-')) document.documentElement.classList.remove(cls);
+            });
+            if (currentTheme !== 'purple') {
+                document.documentElement.classList.add(`theme-${currentTheme}`);
+            }
 
-        try {
-            const storedName = localStorage.getItem('profileName');
             if (storedName) setName(storedName);
-
-            const storedUsername = localStorage.getItem('profileUsername');
             if (storedUsername) setUsername(storedUsername);
-
-            const storedBio = localStorage.getItem('profileBio');
             if (storedBio) setBio(storedBio);
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
-
+        };
+        
+        loadSettings();
     }, []);
 
     React.useEffect(() => {
@@ -144,7 +145,7 @@ export default function ProfilePage() {
         }
 
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
             try {
                 const json = event.target?.result as string;
                 const parsedData = JSON.parse(json);
@@ -158,9 +159,7 @@ export default function ProfilePage() {
                     throw new Error("Invalid JSON structure: The file should contain an array of movies, optionally within a 'movies' key.");
                 }
 
-                const storedMoviesRaw = localStorage.getItem('movies');
-                const existingMovies: Movie[] = storedMoviesRaw ? JSON.parse(storedMoviesRaw) : [];
-
+                const existingMovies = await MovieService.getMovies();
                 const movieMap = new Map(existingMovies.map(m => [m.id, m]));
                 let newCount = 0;
                 let updatedCount = 0;
@@ -203,7 +202,7 @@ export default function ProfilePage() {
                 });
 
                 const updatedMovies = Array.from(movieMap.values());
-                localStorage.setItem('movies', JSON.stringify(updatedMovies));
+                await MovieService.saveAllMovies(updatedMovies);
 
                 let toastDescription = `${newCount} new titles added and ${updatedCount} updated.`;
                 if (skippedCount > 0) {
@@ -251,28 +250,30 @@ export default function ProfilePage() {
             document.documentElement.classList.add(`theme-${themeName}`);
         }
         
-        localStorage.setItem('cinemon-theme', themeName);
+        MovieService.setSetting('cinemon-theme', themeName);
         setActiveTheme(themeName);
     };
 
     const handleDarkModeToggle = (isDark: boolean) => {
         setIsDarkMode(isDark);
-        localStorage.setItem('cinemon-dark-mode', String(isDark));
+        MovieService.setSetting('cinemon-dark-mode', String(isDark));
         document.documentElement.classList.toggle("dark", isDark);
     };
 
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         try {
-            localStorage.setItem('profileName', name);
-            localStorage.setItem('profileUsername', username);
-            localStorage.setItem('profileBio', bio);
+            await Promise.all([
+                MovieService.setSetting('profileName', name),
+                MovieService.setSetting('profileUsername', username),
+                MovieService.setSetting('profileBio', bio),
+            ]);
             window.dispatchEvent(new Event('profileUpdated'));
             toast({
                 title: "Profile Updated",
                 description: "Your changes have been saved successfully.",
             });
         } catch (error) {
-            console.error("Failed to save to localStorage:", error);
+            console.error("Failed to save to DB:", error);
             toast({
                 title: "Error",
                 description: "Could not save your changes.",

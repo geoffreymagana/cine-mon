@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ReactFlow, Background } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { MovieService } from '@/lib/movie-service';
 
 
 const CanvasPreview = ({ nodes }: { nodes: Node[] }) => (
@@ -39,12 +40,10 @@ export default function CanvasesPage() {
     const { toast } = useToast();
     const [canvases, setCanvases] = React.useState<CanvasBoard[]>([]);
 
-    const loadCanvases = React.useCallback(() => {
+    const loadCanvases = React.useCallback(async () => {
         try {
-            const storedCanvases = localStorage.getItem('canvases');
-            const parsedCanvases: CanvasBoard[] = storedCanvases ? JSON.parse(storedCanvases) : [];
-            parsedCanvases.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
-            setCanvases(parsedCanvases);
+            const canvasesFromDb = await MovieService.getCanvases();
+            setCanvases(canvasesFromDb);
         } catch (error) {
             console.error("Failed to load canvases:", error);
             toast({ title: "Error", description: "Could not load your canvases.", variant: "destructive" });
@@ -55,7 +54,7 @@ export default function CanvasesPage() {
         loadCanvases();
     }, [loadCanvases]);
 
-    const handleNewCanvas = () => {
+    const handleNewCanvas = async () => {
         const newCanvas: CanvasBoard = {
             id: crypto.randomUUID(),
             name: 'Untitled Canvas',
@@ -63,15 +62,13 @@ export default function CanvasesPage() {
             edges: [],
             lastModified: new Date().toISOString(),
         };
-        const updatedCanvases = [...canvases, newCanvas];
-        localStorage.setItem('canvases', JSON.stringify(updatedCanvases));
+        await MovieService.addCanvas(newCanvas);
         router.push(`/app/canvas/${newCanvas.id}`);
     };
 
-    const handleDeleteCanvas = (id: string, name: string) => {
-        const updatedCanvases = canvases.filter(c => c.id !== id);
-        setCanvases(updatedCanvases);
-        localStorage.setItem('canvases', JSON.stringify(updatedCanvases));
+    const handleDeleteCanvas = async (id: string, name: string) => {
+        await MovieService.deleteCanvas(id);
+        setCanvases(canvases.filter(c => c.id !== id));
         toast({ title: "Canvas Deleted", description: `"${name}" has been deleted.` });
     };
 

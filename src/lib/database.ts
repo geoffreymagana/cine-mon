@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Movie, UserCollection, Soundtrack, Poster, Setting } from './types';
+import type { Movie, UserCollection, Soundtrack, Poster, Setting, CanvasBoard } from './types';
 
 export class MovieDatabase extends Dexie {
   movies!: Table<Movie, string>;
@@ -7,6 +7,7 @@ export class MovieDatabase extends Dexie {
   soundtracks!: Table<Soundtrack, number>;
   posters!: Table<Poster, number>;
   settings!: Table<Setting, string>;
+  canvases!: Table<CanvasBoard, string>;
 
   constructor() {
     super('MovieCollectionDB');
@@ -16,6 +17,12 @@ export class MovieDatabase extends Dexie {
       soundtracks: '++id, movieId',
       posters: '++id, movieId',
       settings: 'key'
+    });
+    
+    this.version(2).stores({
+        canvases: 'id, name, lastModified'
+    }).upgrade(tx => {
+        // Migration logic for future versions can go here
     });
   }
 }

@@ -1,5 +1,5 @@
 import { db } from './database';
-import type { Movie, UserCollection, Soundtrack, Setting } from './types';
+import type { Movie, UserCollection, Soundtrack, Setting, CanvasBoard } from './types';
 
 export class MovieService {
   // Movie Methods
@@ -53,6 +53,27 @@ export class MovieService {
   
   static async deleteCollection(id: string): Promise<void> {
     return await db.collections.delete(id);
+  }
+  
+  // Canvas Methods
+  static async getCanvases(): Promise<CanvasBoard[]> {
+    return await db.canvases.orderBy('lastModified').reverse().toArray();
+  }
+  
+  static async getCanvas(id: string): Promise<CanvasBoard | undefined> {
+    return await db.canvases.get(id);
+  }
+  
+  static async addCanvas(canvas: CanvasBoard): Promise<string> {
+    return await db.canvases.add(canvas);
+  }
+  
+  static async updateCanvas(id: string, changes: Partial<CanvasBoard>): Promise<number> {
+    return await db.canvases.update(id, changes);
+  }
+  
+  static async deleteCanvas(id: string): Promise<void> {
+    return await db.canvases.delete(id);
   }
 
   // Soundtrack Methods

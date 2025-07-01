@@ -3,13 +3,14 @@ import { db } from './database';
 
 export async function migrateFromLocalStorage() {
   try {
-    const migrated = await db.settings.get('migrated_from_localstorage');
+    const migrated = await db.settings.get('migrated_from_localstorage_v2');
     if (migrated) return;
 
     console.log('Starting migration from localStorage to IndexedDB...');
 
     const movies = JSON.parse(localStorage.getItem('movies') || '[]');
     const collections = JSON.parse(localStorage.getItem('collections') || '[]');
+    const canvases = JSON.parse(localStorage.getItem('canvases') || '[]');
     
     if (movies.length > 0) {
       await db.movies.bulkPut(movies);
@@ -19,6 +20,11 @@ export async function migrateFromLocalStorage() {
     if (collections.length > 0) {
       await db.collections.bulkPut(collections);
       console.log(`Migrated ${collections.length} collections.`);
+    }
+
+    if (canvases.length > 0) {
+        await db.canvases.bulkPut(canvases);
+        console.log(`Migrated ${canvases.length} canvases.`);
     }
     
     const profileSettings = [
@@ -36,10 +42,12 @@ export async function migrateFromLocalStorage() {
       console.log(`Migrated ${profileSettings.length} profile settings.`);
     }
     
-    await db.settings.put({ key: 'migrated_from_localstorage', value: true });
+    await db.settings.put({ key: 'migrated_from_localstorage_v2', value: true });
     
+    // Clean up old keys
     localStorage.removeItem('movies');
     localStorage.removeItem('collections');
+    localStorage.removeItem('canvases');
     profileSettings.forEach(setting => {
         if (setting.key) localStorage.removeItem(setting.key);
     });
