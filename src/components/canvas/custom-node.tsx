@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 
 type CustomNodeData = {
   label: string;
+  title: string;
   color?: string;
   onLabelChange: (id: string, label: string) => void;
+  onTitleChange: (id: string, title: string) => void;
   onColorChange: (id: string, color: string) => void;
 };
 
@@ -19,19 +21,33 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [label, setLabel] = useState(data.label);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [isTitleEditing, setIsTitleEditing] = useState(false);
+  const [title, setTitle] = useState(data.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     setLabel(data.label);
   }, [data.label]);
   
   useEffect(() => {
+    setTitle(data.title);
+  }, [data.title]);
+  
+  useEffect(() => {
     if (isEditing && textareaRef.current) {
       const textarea = textareaRef.current;
       textarea.focus();
-      
-      const length = textarea.value.length;
-      textarea.setSelectionRange(length, length);
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [isEditing]);
+  
+  useEffect(() => {
+    if (isTitleEditing && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isTitleEditing]);
   
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -44,6 +60,21 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLabel(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
+  const handleTitleDoubleClick = () => {
+    setIsTitleEditing(true);
+  };
+
+  const handleTitleBlur = () => {
+    setIsTitleEditing(false);
+    data.onTitleChange(id, title);
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
   };
   
   const getBorderColor = () => {
@@ -55,8 +86,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       return 'hsl(var(--border))';
     }
     // Make the border color a more solid version of the background
-    const newColor = color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
-    return newColor;
+    return color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
   };
 
   return (
@@ -64,32 +94,52 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       className="nopan nowheel rounded-lg shadow-md border-[3px] h-full flex flex-col"
       style={{ 
         borderColor: getBorderColor(),
-        backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.7)') : 'hsl(var(--card))'
+        backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.8)') : 'hsl(var(--card))'
       }}
-      onDoubleClick={handleDoubleClick}
     >
       <NodeResizer 
         isVisible={selected} 
         minWidth={150} 
-        minHeight={40} 
+        minHeight={80} 
         handleClassName="bg-primary rounded-sm w-2 h-2 hover:bg-primary/80"
         lineClassName="border-primary"
       />
+
+      <div
+        className="px-3 py-1.5 border-b-[3px]"
+        style={{ borderColor: getBorderColor() }}
+        onDoubleClick={handleTitleDoubleClick}
+      >
+        {isTitleEditing ? (
+          <input
+            ref={titleInputRef}
+            value={title}
+            onChange={handleTitleChange}
+            onBlur={handleTitleBlur}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleTitleBlur(); }}
+            className="w-full bg-transparent p-0 text-xs font-semibold text-card-foreground outline-none nodrag"
+          />
+        ) : (
+          <h3 className="text-xs font-semibold break-words nodrag">
+            {title || 'Untitled Card'}
+          </h3>
+        )}
+      </div>
 
       <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-1.5 !h-1.5" />
       <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-1.5 !h-1.5" />
       <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
       <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
 
-      <div className="w-full h-full overflow-y-auto p-3 pr-4">
+      <div className="w-full h-full overflow-y-auto p-3 pr-4" onDoubleClick={handleDoubleClick}>
         {isEditing ? (
           <textarea
             ref={textareaRef}
             value={label}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="New Card"
-            className="w-full h-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
+            placeholder="Type here..."
+            className="w-full min-h-[5em] border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
             style={{ resize: 'none' }}
           />
         ) : (
@@ -97,7 +147,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
              {label ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
              ) : (
-                <span className="text-muted-foreground opacity-50">New Card</span>
+                <span className="text-muted-foreground opacity-50">Type here...</span>
              )}
           </div>
         )}

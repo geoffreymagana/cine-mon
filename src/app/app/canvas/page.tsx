@@ -16,7 +16,7 @@ import ReactFlow, {
   MarkerType,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft, Spline } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import CustomNode from '@/components/canvas/custom-node';
 import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
@@ -76,6 +76,17 @@ function CanvasFlow() {
     );
   }, [setNodes]);
 
+  const onTitleChange = useCallback((nodeId: string, title: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          node.data = { ...node.data, title };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
+
   const onColorChange = useCallback((nodeId: string, color: string) => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -93,7 +104,7 @@ function CanvasFlow() {
        const newEdge = { 
            ...params, 
            type: 'smoothstep',
-           style: { stroke: 'hsl(var(--foreground))' },
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
            markerEnd: { type: MarkerType.ArrowClosed },
            label: '',
            labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
@@ -111,23 +122,26 @@ function CanvasFlow() {
         x: reactFlowWrapper.current!.clientWidth / 2,
         y: reactFlowWrapper.current!.clientHeight / 2,
     });
+    const nodeCount = nodes.length + 1;
 
     const newNode: Node = {
       id: `node-${crypto.randomUUID()}`,
       type: 'custom',
       position: targetPosition,
       data: { 
-        label: '', 
+        label: '',
+        title: `Card ${nodeCount} - Placeholder Text`,
         color: 'hsl(var(--card))',
         onLabelChange,
+        onTitleChange,
         onColorChange,
       },
       width: 200,
-      height: 110,
+      height: 150,
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onColorChange, project, setNodes]);
+  }, [onLabelChange, onTitleChange, onColorChange, project, setNodes, nodes.length]);
 
 
   const handlePaneContextMenu = useCallback(
@@ -176,7 +190,7 @@ function CanvasFlow() {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
-          return { ...edge, style: { ...edge.style, stroke: color } };
+          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 2 } };
         }
         return edge;
       })
