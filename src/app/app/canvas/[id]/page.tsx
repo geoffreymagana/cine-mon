@@ -220,6 +220,7 @@ function CanvasFlow() {
         onLabelChange,
         onTitleChange,
         onColorChange,
+        nodeType: 'standard',
       },
       width: 200,
       height: 150,
@@ -240,14 +241,22 @@ function CanvasFlow() {
       position,
       data: { 
         title: movie.title,
-        label: `*Released: ${movie.releaseDate}*\n\n*Status: ${movie.status}*`,
+        label: '',
         color: 'hsl(var(--card))',
         onLabelChange,
         onTitleChange,
         onColorChange,
+        nodeType: 'movie',
+        movieData: {
+            id: movie.id,
+            posterUrl: movie.posterUrl,
+            rating: movie.rating,
+            status: movie.status,
+            releaseDate: movie.releaseDate,
+        }
       },
-      width: 250,
-      height: 150,
+      width: 180,
+      height: 270,
     };
     setNodes((nds) => nds.concat(newNode));
   }, [project, setNodes, onLabelChange, onTitleChange, onColorChange]);

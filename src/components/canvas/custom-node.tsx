@@ -2,11 +2,24 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { cn } from '@/lib/utils';
+import { Clock, CircleCheck, PauseCircle, CircleOff, Bookmark } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
+import type { Movie } from '@/lib/types';
+import { RatingCircle } from '../rating-circle';
+
+type MovieNodeData = {
+    id: string;
+    posterUrl: string;
+    rating: number;
+    status: Movie['status'];
+    releaseDate: string;
+}
 
 type CustomNodeData = {
   label: string;
@@ -15,7 +28,18 @@ type CustomNodeData = {
   onLabelChange: (id: string, label: string) => void;
   onTitleChange: (id: string, title: string) => void;
   onColorChange: (id: string, color: string) => void;
+  nodeType?: 'movie' | 'standard';
+  movieData?: MovieNodeData;
 };
+
+const statusMap: Record<Movie['status'], { icon: React.ElementType, className: string, label: string }> = {
+    'Watching': { icon: Clock, className: 'text-chart-1', label: 'Watching' },
+    'Completed': { icon: CircleCheck, className: 'text-chart-2', label: 'Completed' },
+    'On-Hold': { icon: PauseCircle, className: 'text-chart-3', label: 'On Hold' },
+    'Dropped': { icon: CircleOff, className: 'text-destructive', label: 'Dropped' },
+    'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
+};
+
 
 const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -25,6 +49,9 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [title, setTitle] = useState(data.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const isMovieNode = data.nodeType === 'movie' && data.movieData;
+  const statusInfo = isMovieNode ? statusMap[data.movieData.status] : null;
 
   useEffect(() => {
     setLabel(data.label);
@@ -48,6 +75,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   }, [isTitleEditing]);
   
   const handleContentDoubleClick = () => {
+    if (isMovieNode) return;
     setIsEditing(true);
   };
 
@@ -118,8 +146,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         <NodeResizer 
           isVisible={selected} 
           minWidth={150} 
-          minHeight={150}
-          handleClassName="bg-primary rounded-sm w-2 h-2 hover:bg-primary/80"
+          minHeight={isMovieNode ? 270 : 150}
+          handleClassName="bg-primary rounded-sm w-3 h-3 hover:bg-primary/80"
           lineClassName="border-primary"
         />
 
@@ -128,19 +156,44 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-8 !rounded-sm" />
         <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-8 !h-1.5 !rounded-sm" />
 
-        <div className="w-full h-full overflow-y-auto p-3 pr-4" onDoubleClick={handleContentDoubleClick}>
-          {isEditing ? (
+        <div className="w-full h-full overflow-hidden" onDoubleClick={handleContentDoubleClick}>
+          {isMovieNode ? (
+             <Link href={`/app/movie/${data.movieData.id}`} className="block relative w-full h-full group/moviecard" target="_blank">
+                <Image 
+                    src={data.movieData.posterUrl} 
+                    alt={`Poster for ${data.title}`} 
+                    layout="fill" 
+                    objectFit="cover" 
+                    className="transition-transform duration-300 group-hover/moviecard:scale-105"
+                    data-ai-hint="movie poster"
+                />
+
+                {statusInfo && (
+                    <div className="absolute top-2 left-2 z-10 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center">
+                        <statusInfo.icon className={cn("h-4 w-4", statusInfo.className)} />
+                    </div>
+                )}
+                
+                <div className="absolute -bottom-5 right-2 z-10">
+                  <RatingCircle percentage={data.movieData.rating} />
+                </div>
+                
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                  <p className="text-white text-sm font-bold truncate">{data.movieData.releaseDate?.substring(0,4)}</p>
+                </div>
+             </Link>
+          ) : isEditing ? (
             <textarea
               ref={textareaRef}
               value={label}
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="Type here..."
-              className="w-full h-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
+              className="w-full h-full border-none bg-transparent p-3 text-xs text-card-foreground outline-none nodrag"
               style={{ resize: 'none' }}
             />
           ) : (
-            <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words")}>
+            <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words p-3")}>
               {label ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
               ) : (
