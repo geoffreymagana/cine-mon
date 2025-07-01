@@ -30,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Upload } from "lucide-react";
+import { MovieService } from "@/lib/movie-service";
 
 // Schema for the details tab
 const collectionDetailsSchema = z.object({
@@ -70,20 +71,20 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
   }, [allMovies, searchQuery]);
 
   React.useEffect(() => {
+    const loadMovies = async () => {
+        const moviesFromDb = await MovieService.getMovies();
+        setAllMovies(moviesFromDb);
+    };
+
     if (isOpen) {
-      try {
-        const storedMovies = localStorage.getItem('movies');
-        setAllMovies(storedMovies ? JSON.parse(storedMovies) : []);
-        if (collection) {
-          setSelectedMovieIds(new Set(collection.movieIds));
-          form.reset({
-              name: collection.name,
-              description: collection.description,
-              coverImageUrl: collection.coverImageUrl
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load movies from localStorage:", error);
+      loadMovies();
+      if (collection) {
+        setSelectedMovieIds(new Set(collection.movieIds));
+        form.reset({
+            name: collection.name,
+            description: collection.description,
+            coverImageUrl: collection.coverImageUrl
+        });
       }
     } else {
         setSearchQuery('');
@@ -113,12 +114,11 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
     }
   };
 
-  const handleSave = () => {
-    form.handleSubmit((data) => {
+  const handleSave = async () => {
+    await form.handleSubmit(async (data) => {
         if (!collection) return;
 
-        const updatedCollection: UserCollection = {
-            ...collection,
+        const updatedCollectionData: Partial<UserCollection> = {
             name: data.name,
             description: data.description,
             coverImageUrl: data.coverImageUrl,
@@ -126,10 +126,7 @@ export const EditCollectionDialog = ({ isOpen, setIsOpen, collection, onCollecti
         };
 
         try {
-            const storedCollections = localStorage.getItem('collections');
-            let allCollections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
-            allCollections = allCollections.map(c => c.id === collection.id ? updatedCollection : c);
-            localStorage.setItem('collections', JSON.stringify(allCollections));
+            await MovieService.updateCollection(collection.id, updatedCollectionData);
 
             onCollectionUpdated();
             setIsOpen(false);
