@@ -79,9 +79,9 @@ export default function LandingPage() {
     
   const features = [
     { icon: Film, title: 'Personal Watchlist & History', description: 'Catalog every movie and show you’ve ever seen.' },
+    { icon: LayoutDashboard, title: 'Interactive Canvas', description: 'Map out franchise timelines and character webs on a free-form canvas.' },
     { icon: Shuffle, title: 'Spin the Wheel', description: 'Let fate pick your next watch from your collection.' },
     { icon: FileText, title: 'Script Upload & Archiving', description: 'Keep your favorite scripts just a click away.' },
-    { icon: LayoutDashboard, title: 'Interactive Canvas', description: 'Map out franchise timelines and character webs on a free-form canvas.' },
     { icon: ChartPie, title: 'Watch Analytics & Insights', description: 'Visualize your habits and discover your unique taste.' },
     { icon: Tags, title: 'Custom Posters & Tags', description: 'Personalize your library with custom art and smart tags.' },
     { icon: ShieldCheck, title: 'Offline-First, Fully Private', description: 'Your data stays on your device. No clouds, no accounts.' },
@@ -121,7 +121,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="bg-black text-neutral-100 font-body antialiased overflow-x-hidden">
+    <div className="bg-black text-white font-body antialiased overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -174,8 +174,8 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition-colors hover:bg-neutral-200 hover:text-black">
-                  <Github className="mr-2" /> Open on GitHub
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition duration-300 hover:bg-neutral-200 hover:text-black">
+                  <Github className="mr-2" /> Fork on GitHub
                 </Button>
               </a>
             </div>
@@ -306,8 +306,8 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition-colors hover:bg-neutral-200 hover:text-black">
-                  <Github className="mr-2" /> Host Your Own Copy
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition duration-300 hover:bg-neutral-200 hover:text-black">
+                  <Github className="mr-2" /> Fork on GitHub
                 </Button>
               </a>
             </div>
