@@ -34,6 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { AddToCollectionDialog } from "@/components/add-to-collection-dialog";
 
 
 function DashboardContent() {
@@ -47,6 +48,7 @@ function DashboardContent() {
   const [isSelectionMode, setIsSelectionMode] = React.useState(false);
   const [selectedMovieIds, setSelectedMovieIds] = React.useState<Set<string>>(new Set());
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
+  const [isAddToCollectionOpen, setIsAddToCollectionOpen] = React.useState(false);
 
   const isMobile = useIsMobile();
 
@@ -145,12 +147,9 @@ function DashboardContent() {
     handleClearSelection();
   };
   
-  const handleAddToCollection = () => {
-     toast({
-      title: "Coming Soon!",
-      description: "Adding selected items to a collection is not yet implemented.",
-    });
-  }
+  const handleActionComplete = () => {
+    handleClearSelection();
+  };
 
   return (
     <>
@@ -163,7 +162,7 @@ function DashboardContent() {
             selectedCount={selectedMovieIds.size}
             onClearSelection={handleClearSelection}
             onDeleteSelected={() => setIsDeleteAlertOpen(true)}
-            onAddToCollection={handleAddToCollection}
+            onAddToCollection={() => setIsAddToCollectionOpen(true)}
           />
           <div className="flex-grow p-4 md:p-8">
               <DndContext
@@ -194,6 +193,14 @@ function DashboardContent() {
         onSave={handleSaveMovie}
         existingMovies={movies}
       />
+
+      <AddToCollectionDialog
+        isOpen={isAddToCollectionOpen}
+        setIsOpen={setIsAddToCollectionOpen}
+        movieIds={Array.from(selectedMovieIds)}
+        onActionComplete={handleActionComplete}
+      />
+
        <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

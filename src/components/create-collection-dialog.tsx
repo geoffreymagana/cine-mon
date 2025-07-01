@@ -41,10 +41,10 @@ type CreateCollectionDialogProps = {
   setIsOpen: (open: boolean) => void;
   type: 'Vault' | 'Spotlight';
   onCollectionCreated: (newCollection: UserCollection) => void;
-  movieIdToAdd?: string;
+  movieIdsToAdd?: string[];
 };
 
-export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCreated, movieIdToAdd }: CreateCollectionDialogProps) => {
+export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCreated, movieIdsToAdd }: CreateCollectionDialogProps) => {
   const coverImageInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<CollectionFormValues>({
@@ -80,7 +80,7 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
         description: data.description,
         coverImageUrl: data.coverImageUrl,
         type: type,
-        movieIds: movieIdToAdd ? [movieIdToAdd] : []
+        movieIds: movieIdsToAdd || []
     };
     
     await MovieService.addCollection(newCollection);

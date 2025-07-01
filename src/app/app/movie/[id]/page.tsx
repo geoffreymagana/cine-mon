@@ -655,7 +655,7 @@ export default function MovieDetailPage() {
                 setIsOpen={setIsCreateCollectionDialogOpen}
                 type={createCollectionType}
                 onCollectionCreated={handleCollectionCreated}
-                movieIdToAdd={movie.id}
+                movieIdsToAdd={[movie.id]}
             />
             <Dialog open={isCollectionDialogOpen} onOpenChange={setIsCollectionDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
