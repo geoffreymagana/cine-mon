@@ -170,60 +170,103 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                 const isImporting = importingIds.has(result.id as number);
 
                                 const content = (
-                                    <div className="flex flex-col sm:flex-row items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
-                                        <div className="relative w-full sm:w-auto flex-shrink-0">
-                                            <Image
-                                                src={result.posterUrl}
-                                                alt={result.title}
-                                                width={80}
-                                                height={120}
-                                                className="w-full sm:w-[80px] sm:h-[120px] aspect-[2/3] object-cover rounded-md"
-                                                data-ai-hint="movie poster"
-                                            />
-                                            {!result.isLocal && (
-                                                <div className="sm:hidden absolute top-2 left-2 z-10">
+                                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
+                                        <Image
+                                            src={result.posterUrl}
+                                            alt={result.title}
+                                            width={80}
+                                            height={120}
+                                            className="w-[80px] h-[120px] object-cover rounded-md flex-shrink-0"
+                                            data-ai-hint="movie poster"
+                                        />
+                                        
+                                        <div className="flex-grow min-w-0 relative pt-1">
+                                            <div className="absolute top-0 right-0 z-10">
+                                                {result.isLocal ? (
+                                                    <Button asChild size="sm" variant="ghost">
+                                                        <Link href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
+                                                            View <ChevronRight className="ml-1 h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                ) : (
                                                     <Button
-                                                        size="icon"
-                                                        className="h-8 w-8 rounded-full shadow-lg"
+                                                        size="sm"
                                                         onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImport(result); }}
                                                         disabled={isImported || isImporting}
                                                     >
-                                                        {isImported ? <Check className="h-4 w-4" /> : (isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />)}
-                                                        <span className="sr-only">Import</span>
+                                                        {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
+                                                        {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
                                                     </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        
-                                        <div className="flex-grow min-w-0 w-full">
-                                            <div className="flex justify-between items-start gap-2">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-bold text-lg truncate">{result.title}</h3>
-                                                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                                                        <span>{result.year}</span>
-                                                        <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
-                                                    </div>
-                                                </div>
-                                                <div className="hidden sm:flex flex-shrink-0">
-                                                    {result.isLocal ? (
-                                                        <Button asChild size="sm" variant="ghost">
-                                                            <Link href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
-                                                                View <ChevronRight className="ml-2" />
-                                                            </Link>
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImport(result); }}
-                                                            disabled={isImported || isImporting}
-                                                        >
-                                                            {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
-                                                            {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
-                                                        </Button>
-                                                    )}
+                                                )}
+                                            </div>
+                                
+                                            <div className="pr-24">
+                                                <h3 className="font-bold text-lg truncate" title={result.title}>{result.title}</h3>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    <span>{result.year}</span>
+                                                    <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
                                                 </div>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3 sm:line-clamp-2">{result.overview}</p>
+                                
+                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{result.overview}</p>
+                                        </div>
+                                    </div>
+                                );
+                                
+                                return result.isLocal ? (
+                                    <Link key={result.id} href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
+                                        {content}
+                                    </Link>
+                                ) : (
+                                    <div key={result.id} className="cursor-pointer" onClick={() => !isImported && !isImporting && handleImport(result)}>
+                                        {content}
+                                    </div>
+                                );
+                            })}
+                            {!isLoading && displayResults.length > 0 && displayResults.map((result) => {
+                                const isImported = result.tmdbId ? existingTmdbIds.has(result.tmdbId) : false;
+                                const isImporting = importingIds.has(result.id as number);
+
+                                const content = (
+                                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
+                                        <Image
+                                            src={result.posterUrl}
+                                            alt={result.title}
+                                            width={80}
+                                            height={120}
+                                            className="w-[80px] h-[120px] object-cover rounded-md flex-shrink-0"
+                                            data-ai-hint="movie poster"
+                                        />
+                                        
+                                        <div className="flex-grow min-w-0 relative pt-1">
+                                            <div className="absolute top-0 right-0 z-10">
+                                                {result.isLocal ? (
+                                                    <Button asChild size="sm" variant="ghost">
+                                                        <Link href={`/app/movie/${result.id}`} onClick={() => setIsOpen(false)}>
+                                                            View <ChevronRight className="ml-1 h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleImport(result); }}
+                                                        disabled={isImported || isImporting}
+                                                    >
+                                                        {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
+                                                        {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                
+                                            <div className="pr-24">
+                                                <h3 className="font-bold text-lg truncate" title={result.title}>{result.title}</h3>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    <span>{result.year}</span>
+                                                    <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
+                                                </div>
+                                            </div>
+                                
+                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{result.overview}</p>
                                         </div>
                                     </div>
                                 );
