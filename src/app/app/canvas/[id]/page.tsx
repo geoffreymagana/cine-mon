@@ -80,7 +80,7 @@ function CanvasFlow() {
   const [canvasName, setCanvasName] = useState('Untitled Canvas');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { project, getEdge, addEdges, updateEdge } = useReactFlow();
+  const { screenToFlowPosition, getEdge, addEdges, updateEdge } = useReactFlow();
   const overlappedEdgeRef = useRef<string | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{
@@ -220,9 +220,9 @@ function CanvasFlow() {
   );
   
   const addNode = useCallback((type: string, position?: {x: number, y: number}) => {
-    const targetPosition = position ?? project({
-        x: reactFlowWrapper.current!.clientWidth / 2,
-        y: reactFlowWrapper.current!.clientHeight / 2,
+    const targetPosition = position ?? screenToFlowPosition({
+        x: reactFlowWrapper.current!.getBoundingClientRect().left + reactFlowWrapper.current!.clientWidth / 2,
+        y: reactFlowWrapper.current!.getBoundingClientRect().top + reactFlowWrapper.current!.clientHeight / 2,
     });
 
     const newNode: Node = {
@@ -243,12 +243,13 @@ function CanvasFlow() {
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onTitleChange, onColorChange, project, setNodes]);
+  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes]);
 
   const addMovieNode = useCallback((movie: Movie) => {
-    const position = project({
-        x: reactFlowWrapper.current!.clientWidth / 2,
-        y: reactFlowWrapper.current!.clientHeight / 2,
+    const reactFlowBounds = reactFlowWrapper.current!.getBoundingClientRect();
+    const position = screenToFlowPosition({
+        x: reactFlowBounds.left + reactFlowWrapper.current!.clientWidth / 2,
+        y: reactFlowBounds.top + reactFlowWrapper.current!.clientHeight / 2,
     });
 
     const newNode: Node = {
@@ -269,7 +270,7 @@ function CanvasFlow() {
       height: 320,
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [project, setNodes, onLabelChange, onTitleChange, onColorChange]);
+  }, [screenToFlowPosition, setNodes, onLabelChange, onTitleChange, onColorChange]);
 
 
   const handlePaneContextMenu = useCallback(
@@ -277,10 +278,9 @@ function CanvasFlow() {
       event.preventDefault();
       if (!reactFlowWrapper.current) return;
       
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const panePosition = project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+      const panePosition = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       setContextMenu({
@@ -289,7 +289,7 @@ function CanvasFlow() {
         panePosition,
       });
     },
-    [project]
+    [screenToFlowPosition]
   );
   
   const onEdgeDoubleClick = useCallback(
@@ -325,7 +325,7 @@ function CanvasFlow() {
     );
   }, [selectedEdges, setEdges]);
 
-  const onEdgeTypeChange = useCallback((type: 'smoothstep' | 'straight' | 'bezier') => {
+  const onEdgeTypeChange = useCallback((type: 'default' | 'smoothstep' | 'straight') => {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
@@ -369,11 +369,10 @@ function CanvasFlow() {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      const interactionElement = document
+      const edgeElement = document
         .elementsFromPoint(centerX, centerY)
-        .find((el) => el.classList.contains('react-flow__edge-interaction'));
-      
-      const edgeElement = interactionElement?.closest('.react-flow__edge');
+        .find((el) => el.classList.contains('react-flow__edge-interaction'))
+        ?.closest('.react-flow__edge');
       
       const newOverlappedEdgeId = (edgeElement as HTMLElement)?.dataset.id || null;
       const lastOverlappedEdgeId = overlappedEdgeRef.current;

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -12,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 type EdgeToolbarProps = {
   selectedEdges: Edge[];
   onEdgeColorChange: (color: string) => void;
-  onEdgeTypeChange: (type: 'smoothstep' | 'straight' | 'bezier') => void;
+  onEdgeTypeChange: (type: 'default' | 'smoothstep' | 'straight') => void;
 };
 
 const edgeColors = [
@@ -37,7 +38,7 @@ export function EdgeToolbar({ selectedEdges, onEdgeColorChange, onEdgeTypeChange
     <Card className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 p-1 flex items-center gap-1 shadow-lg bg-background/80 backdrop-blur-sm">
       <Tooltip>
         <TooltipTrigger asChild>
-            <Button variant={currentType === 'bezier' ? 'secondary' : 'ghost'} size="icon" onClick={() => onEdgeTypeChange('bezier')}>
+            <Button variant={currentType === 'default' ? 'secondary' : 'ghost'} size="icon" onClick={() => onEdgeTypeChange('default')}>
                 <Spline className="w-5 h-5" />
             </Button>
         </TooltipTrigger>
