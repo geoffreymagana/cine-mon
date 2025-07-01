@@ -1,10 +1,8 @@
-
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
   Background,
-  Controls,
   MiniMap,
   type Connection,
   type Edge,
@@ -20,7 +18,7 @@ import ReactFlow, {
   type XYPosition,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, FileText, Command } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 import CustomNode from '@/components/canvas/custom-node';
@@ -47,6 +45,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { ImportMovieDialog } from '@/components/canvas/import-movie-dialog';
 import { CommandPalette } from '@/components/canvas/command-palette';
 import { MovieService } from '@/lib/movie-service';
+import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
+import { NodeCreator } from '@/components/canvas/node-creator';
+import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
+import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
 
 
 import 'reactflow/dist/style.css';
@@ -120,6 +122,11 @@ function CanvasFlow() {
   
   const [isImportMovieOpen, setIsImportMovieOpen] = React.useState(false);
   const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
+
+  const [menu, setMenu] = useState<{ x: number, y: number, id: string} | null>(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [snapToGrid, setSnapToGrid] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
@@ -240,13 +247,13 @@ function CanvasFlow() {
     [setEdges]
   );
   
-  const addNode = useCallback((type: 'standard' | 'movie') => {
+  const addNode = useCallback((type: 'custom' | 'movie', position?: XYPosition) => {
     if (type === 'movie') {
         setIsImportMovieOpen(true);
         return;
     }
 
-    const targetPosition = screenToFlowPosition({
+    const targetPosition = position || screenToFlowPosition({
         x: reactFlowWrapper.current!.clientWidth / 2,
         y: reactFlowWrapper.current!.clientHeight / 2,
     });
@@ -452,6 +459,24 @@ function CanvasFlow() {
     },
     [intersectedEdgeId, edges, setEdges]
   );
+  
+  const onContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+        event.preventDefault();
+
+        const pane = reactFlowWrapper.current?.getBoundingClientRect();
+        if(!pane) return;
+        
+        setMenu({
+            id: `context-menu-${Math.random()}`,
+            x: event.clientX - pane.left,
+            y: event.clientY - pane.top,
+        });
+    },
+    [setMenu]
+  );
+
+  const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -507,11 +532,23 @@ function CanvasFlow() {
       </div>
 
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <Button onClick={() => setIsCommandPaletteOpen(true)} variant="outline">
-            <Command className="mr-2 h-4 w-4"/>
-            <span>Commands...</span>
-        </Button>
         <Button onClick={handleSave}><Save className="mr-2 h-4 w-4"/>Save</Button>
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">More options</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsCommandPaletteOpen(true)}>
+                    <Command className="mr-2 h-4 w-4"/> Command Palette
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSaveAsImage}>
+                    <ImageIcon className="mr-2 h-4 w-4"/> Export as Image
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <ReactFlow
@@ -527,11 +564,37 @@ function CanvasFlow() {
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
         defaultEdgeOptions={defaultEdgeOptions}
+        onPaneClick={onPaneClick}
+        onContextMenu={onContextMenu}
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap />
-        <Controls />
       </ReactFlow>
+
+      <CanvasToolbar 
+        onUndo={() => {}} 
+        onRedo={() => {}} 
+        canUndo={false} 
+        canRedo={false} 
+        onShowHelp={() => setIsHelpOpen(true)}
+      />
+
+      <NodeCreator onAddNode={() => addNode('custom')} onAddMovieClick={() => addNode('movie')} />
+
+      {menu && (
+        <CanvasContextMenu
+          top={menu.y}
+          left={menu.x}
+          onClose={() => setMenu(null)}
+          onAddCard={() => addNode('custom', screenToFlowPosition({x: menu.x, y: menu.y}))}
+          isSnapToGrid={snapToGrid}
+          setIsSnapToGrid={setSnapToGrid}
+          isReadOnly={isReadOnly}
+          setIsReadOnly={setIsReadOnly}
+          canUndo={false}
+        />
+      )}
 
       {selectedNodes.length > 0 && (
         <ColorPickerToolbar
@@ -553,7 +616,7 @@ function CanvasFlow() {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         setIsOpen={setIsCommandPaletteOpen}
-        onAddNode={() => addNode('standard')}
+        onAddNode={() => addNode('custom')}
         onAddMovieNode={() => addNode('movie')}
         onSave={handleSave}
         onZoomToFit={() => reactFlowInstance.fitView({ duration: 300 })}
@@ -565,6 +628,8 @@ function CanvasFlow() {
         movies={allMovies}
         onImport={addMovieNode}
       />
+      
+      <CanvasHelpDialog isOpen={isHelpOpen} setIsOpen={setIsHelpOpen} />
 
       <Dialog open={!!editingEdge} onOpenChange={(isOpen) => !isOpen && setEditingEdge(null)}>
         <DialogContent>
