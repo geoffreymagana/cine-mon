@@ -1,18 +1,39 @@
+
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Plus, Lock, Projector, Folder } from 'lucide-react';
+import { ArrowLeft, Plus, Lock, Projector, Folder, Share2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import type { UserCollection } from '@/lib/types';
 import { CreateCollectionDialog } from '@/components/create-collection-dialog';
 import { MovieService } from '@/lib/movie-service';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const CollectionCard = ({ collection }: { collection: UserCollection }) => (
-    <Link href={`/app/collections/${collection.id}`} className="block group break-inside-avoid">
+    <Link href={`/app/collections/${collection.id}`} className="block group">
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted shadow-md transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-primary/20">
+            {collection.type === 'Spotlight' && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 z-20 text-white bg-black/30 backdrop-blur-sm hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Future share logic here
+                        console.log(`Sharing ${collection.name}`);
+                    }}
+                    aria-label={`Share ${collection.name}`}
+                >
+                    <Share2 className="h-4 w-4" />
+                </Button>
+            )}
             <Image
                 src={collection.coverImageUrl || 'https://placehold.co/600x400.png'}
                 alt={`Cover for ${collection.name}`}
@@ -29,15 +50,67 @@ const CollectionCard = ({ collection }: { collection: UserCollection }) => (
     </Link>
 );
 
+const SortableCollectionCard = ({ collection }: { collection: UserCollection }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: collection.id });
+
+    const style: React.CSSProperties = {
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        transition,
+        zIndex: isDragging ? 100 : 'auto',
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+            <CollectionCard collection={collection} />
+        </div>
+    );
+};
+
 
 export default function CollectionsPage() {
-    const [collections, setCollections] = React.useState<UserCollection[]>([]);
+    const [vaults, setVaults] = React.useState<UserCollection[]>([]);
+    const [spotlights, setSpotlights] = React.useState<UserCollection[]>([]);
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [dialogType, setDialogType] = React.useState<'Vault' | 'Spotlight'>('Vault');
+    const isMobile = useIsMobile();
+    
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: isMobile ? 250 : 0,
+                tolerance: isMobile ? 5 : 2,
+            },
+        }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
 
     const loadCollections = React.useCallback(async () => {
-        const collectionsFromDb = await MovieService.getCollections();
-        setCollections(collectionsFromDb);
+        const [collectionsFromDb, vaultsOrder, spotlightsOrder] = await Promise.all([
+            MovieService.getCollections(),
+            MovieService.getSetting('vaultsOrder'),
+            MovieService.getSetting('spotlightsOrder')
+        ]);
+
+        const allVaults = collectionsFromDb.filter(c => c.type === 'Vault');
+        const allSpotlights = collectionsFromDb.filter(c => c.type === 'Spotlight');
+
+        const sortItems = (items: UserCollection[], order: string[] | undefined) => {
+            if (!order || !Array.isArray(order)) return items;
+            const itemMap = new Map(items.map(item => [item.id, item]));
+            const sorted = order.map(id => itemMap.get(id)).filter(Boolean) as UserCollection[];
+            const unsorted = items.filter(item => !order.includes(item.id));
+            return [...sorted, ...unsorted];
+        }
+
+        setVaults(sortItems(allVaults, vaultsOrder));
+        setSpotlights(sortItems(allSpotlights, spotlightsOrder));
     }, []);
 
     React.useEffect(() => {
@@ -48,11 +121,35 @@ export default function CollectionsPage() {
         setDialogType(type);
         setIsDialogOpen(true);
     }
+    
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
 
-    const vaults = collections.filter(c => c.type === 'Vault');
-    const spotlights = collections.filter(c => c.type === 'Spotlight');
+        if (over && active.id !== over.id) {
+            const isVaultDrag = vaults.some(v => v.id === active.id);
+            const isSpotlightDrag = spotlights.some(s => s.id === active.id);
 
-    const CollectionList = ({ items, type }: { items: UserCollection[], type: 'Vault' | 'Spotlight'}) => {
+            if (isVaultDrag && vaults.some(v => v.id === over.id)) {
+                setVaults((items) => {
+                    const oldIndex = items.findIndex((item) => item.id === active.id);
+                    const newIndex = items.findIndex((item) => item.id === over.id);
+                    const newOrder = arrayMove(items, oldIndex, newIndex);
+                    MovieService.setSetting('vaultsOrder', newOrder.map(i => i.id));
+                    return newOrder;
+                });
+            } else if (isSpotlightDrag && spotlights.some(s => s.id === over.id)) {
+                setSpotlights((items) => {
+                    const oldIndex = items.findIndex((item) => item.id === active.id);
+                    const newIndex = items.findIndex((item) => item.id === over.id);
+                    const newOrder = arrayMove(items, oldIndex, newIndex);
+                    MovieService.setSetting('spotlightsOrder', newOrder.map(i => i.id));
+                    return newOrder;
+                });
+            }
+        }
+    };
+
+    const CollectionGrid = ({ items, type }: { items: UserCollection[], type: 'Vault' | 'Spotlight'}) => {
         const typeName = type === 'Vault' ? 'Vaults' : 'Spotlights';
         const typeIcon = type === 'Vault' ? <Lock className="mr-2"/> : <Projector className="mr-2"/>;
         return (
@@ -64,11 +161,13 @@ export default function CollectionsPage() {
                     </Button>
                 </div>
                 {items.length > 0 ? (
-                     <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
-                        {items.map(collection => (
-                           <CollectionCard key={collection.id} collection={collection} />
-                        ))}
-                    </div>
+                     <SortableContext items={items.map(i => i.id)} strategy={rectSwappingStrategy}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {items.map(collection => (
+                               <SortableCollectionCard key={collection.id} collection={collection} />
+                            ))}
+                        </div>
+                     </SortableContext>
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
                         <Folder className="w-16 h-16 text-muted-foreground mb-4" />
@@ -94,18 +193,20 @@ export default function CollectionsPage() {
                         <p className="text-muted-foreground mt-2">Curate personal collections of your favorite and must-watch titles.</p>
                     </div>
                     
-                    <Tabs defaultValue="vaults" className="w-full">
-                        <TabsList className="mb-8 grid w-full grid-cols-2">
-                            <TabsTrigger value="vaults"><Lock className="mr-2"/> Vaults</TabsTrigger>
-                            <TabsTrigger value="spotlights"><Projector className="mr-2"/> Spotlights</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="vaults">
-                            <CollectionList items={vaults} type="Vault" />
-                        </TabsContent>
-                        <TabsContent value="spotlights">
-                            <CollectionList items={spotlights} type="Spotlight" />
-                        </TabsContent>
-                    </Tabs>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <Tabs defaultValue="vaults" className="w-full">
+                            <TabsList className="mb-8 grid w-full grid-cols-2">
+                                <TabsTrigger value="vaults"><Lock className="mr-2"/> Vaults</TabsTrigger>
+                                <TabsTrigger value="spotlights"><Projector className="mr-2"/> Spotlights</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="vaults">
+                                <CollectionGrid items={vaults} type="Vault" />
+                            </TabsContent>
+                            <TabsContent value="spotlights">
+                                <CollectionGrid items={spotlights} type="Spotlight" />
+                            </TabsContent>
+                        </Tabs>
+                    </DndContext>
                 </div>
             </div>
             <CreateCollectionDialog
