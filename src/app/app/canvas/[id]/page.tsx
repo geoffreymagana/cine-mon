@@ -95,7 +95,7 @@ function distanceToLineSegment(
   const yy = lineStart.y + param * D;
   
   const dx = point.x - xx;
-  const dy = point.y - dy;
+  const dy = point.y - yy;
   
   return Math.sqrt(dx * dx + dy * dy);
 }
@@ -460,6 +460,7 @@ function CanvasFlow() {
   const onNodeDrag: OnNodeDrag = useCallback(
     (event, node) => {
       if (!isDragging) setIsDragging(true);
+      if (!node) return;
       const intersectedEdge = findIntersectedEdge(node.id, node.position);
       setIntersectedEdgeId(intersectedEdge);
     },
