@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, Share2, PlusCircle, Trash2 } from "lucide-react";
+import { Search, Plus, MoreVertical, X, Share2, PlusCircle, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -124,6 +125,13 @@ export const DashboardHeader = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={onToggleSelectionMode}>Select Items</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/app/collections">
+                <Sparkles className="mr-2 h-4 w-4" />
+                <span>View Collections</span>
+              </Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
