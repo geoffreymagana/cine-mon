@@ -1,30 +1,47 @@
 'use client';
 
 import * as React from 'react';
+import { MovieService } from '@/lib/movie-service';
 
-// This script will run on the client and apply the theme from localStorage.
+// This script will run on the client and apply the theme from IndexedDB.
 // It's placed in a component to ensure it runs on every page load.
 export function ThemeInitializer() {
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem('cinemon-theme') || 'purple';
-    const storedDarkMode = localStorage.getItem('cinemon-dark-mode') !== 'false';
+    const applyTheme = async () => {
+      try {
+        const [storedTheme, storedDarkMode] = await Promise.all([
+          MovieService.getSetting('cinemon-theme'),
+          MovieService.getSetting('cinemon-dark-mode'),
+        ]);
 
-    const docEl = document.documentElement;
+        const currentTheme = storedTheme || 'purple';
+        // Defaults to dark mode if setting is not present (null/undefined) or not 'false'
+        const currentDarkMode = storedDarkMode !== 'false';
 
-    // Apply dark mode
-    docEl.classList.toggle('dark', storedDarkMode);
+        const docEl = document.documentElement;
 
-    // Remove any existing theme classes
-    docEl.classList.forEach(cls => {
-      if (cls.startsWith('theme-')) {
-        docEl.classList.remove(cls);
+        // Apply dark mode
+        docEl.classList.toggle('dark', currentDarkMode);
+
+        // Remove any existing theme classes
+        docEl.classList.forEach(cls => {
+          if (cls.startsWith('theme-')) {
+            docEl.classList.remove(cls);
+          }
+        });
+
+        // Add the current theme class
+        if (currentTheme !== 'purple') {
+          docEl.classList.add(`theme-${currentTheme}`);
+        }
+      } catch (error) {
+        console.error("Failed to initialize theme from IndexedDB:", error);
+        // Fallback to default dark theme if DB access fails
+        document.documentElement.classList.add('dark');
       }
-    });
-
-    // Add the current theme class
-    if (storedTheme !== 'purple') {
-      docEl.classList.add(`theme-${storedTheme}`);
-    }
+    };
+    
+    applyTheme();
   }, []);
 
   return null;
