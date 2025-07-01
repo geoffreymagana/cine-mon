@@ -259,6 +259,7 @@ function CanvasFlow() {
         backgroundColor: 'hsl(var(--background))',
         width: imageWidth,
         height: imageHeight,
+        cacheBust: true,
         style: {
             width: `${imageWidth}px`,
             height: `${imageHeight}px`,
