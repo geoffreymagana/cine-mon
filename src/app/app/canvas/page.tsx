@@ -98,19 +98,14 @@ export default function CanvasesPage() {
                                 <Link href={`/app/canvas/${canvas.id}`} className="block h-48 overflow-hidden rounded-t-lg">
                                     <CanvasPreview nodes={canvas.nodes} />
                                 </Link>
-                                <CardHeader>
-                                    <Link href={`/app/canvas/${canvas.id}`}>
-                                        <CardTitle className="truncate group-hover:text-primary transition-colors">{canvas.name}</CardTitle>
+                                <CardHeader className="flex-row items-center justify-between">
+                                    <Link href={`/app/canvas/${canvas.id}`} className="flex-grow min-w-0">
+                                        <CardTitle className="truncate group-hover:text-primary transition-colors capitalize">{canvas.name}</CardTitle>
                                     </Link>
-                                    <CardDescription>
-                                        Last modified {formatDistanceToNow(new Date(canvas.lastModified), { addSuffix: true })}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardFooter className="mt-auto">
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                                                <Trash2 className="mr-2 h-4 w-4"/> Delete
+                                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive flex-shrink-0 -mr-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                                <Trash2 className="h-4 w-4"/>
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
@@ -128,6 +123,11 @@ export default function CanvasesPage() {
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
+                                </CardHeader>
+                                <CardFooter className="mt-auto pt-0">
+                                    <CardDescription>
+                                        Last modified {formatDistanceToNow(new Date(canvas.lastModified), { addSuffix: true })}
+                                    </CardDescription>
                                 </CardFooter>
                             </Card>
                         ))}
