@@ -93,65 +93,6 @@ function CanvasFlow() {
   const [isImportMovieOpen, setIsImportMovieOpen] = React.useState(false);
   const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
 
-  useEffect(() => {
-    if (!canvasId) return;
-    try {
-        const storedCanvases = localStorage.getItem('canvases');
-        const canvases: CanvasBoard[] = storedCanvases ? JSON.parse(storedCanvases) : [];
-        const currentCanvas = canvases.find(c => c.id === canvasId);
-
-        if (currentCanvas) {
-            setCanvasName(currentCanvas.name);
-            setNodes(currentCanvas.nodes || []);
-            setEdges(currentCanvas.edges || []);
-        } else {
-            toast({ title: "Canvas not found", variant: "destructive" });
-            router.push('/app/canvas');
-        }
-        
-        const storedMovies = localStorage.getItem('movies');
-        if (storedMovies) {
-            setAllMovies(JSON.parse(storedMovies));
-        }
-    } catch (error) {
-        console.error("Failed to load canvas:", error);
-        toast({ title: "Error loading canvas", variant: "destructive" });
-        router.push('/app/canvas');
-    }
-  }, [canvasId, router, setNodes, setEdges, toast]);
-  
-  const handleSave = useCallback(() => {
-    if (!canvasId) return;
-
-    try {
-        const storedCanvases = localStorage.getItem('canvases');
-        const canvases: CanvasBoard[] = storedCanvases ? JSON.parse(storedCanvases) : [];
-        const updatedCanvases = canvases.map(c => 
-            c.id === canvasId 
-            ? { ...c, name: canvasName, nodes, edges, lastModified: new Date().toISOString() } 
-            : c
-        );
-        localStorage.setItem('canvases', JSON.stringify(updatedCanvases));
-        toast({ title: "Canvas Saved!", description: `"${canvasName}" has been saved.` });
-    } catch (error) {
-        console.error("Failed to save canvas:", error);
-        toast({ title: "Error saving canvas", variant: "destructive" });
-    }
-  }, [canvasId, canvasName, nodes, edges, toast]);
-
-  const handleSaveAsImage = useCallback(() => {
-    if (reactFlowWrapper.current) {
-        toPng(reactFlowWrapper.current, { cacheBust: true, pixelRatio: 2 })
-            .then((dataUrl) => {
-                downloadImage(dataUrl, `${canvasName.replace(/\s+/g, '-').toLowerCase()}.png`);
-            })
-            .catch((err) => {
-                console.error(err);
-                toast({ title: "Error exporting image", description: "Could not save canvas as an image.", variant: "destructive" });
-            });
-    }
-  }, [canvasName, toast]);
-
   const onLabelChange = useCallback((nodeId: string, label: string) => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -184,6 +125,74 @@ function CanvasFlow() {
       })
     );
   }, [setNodes]);
+
+  useEffect(() => {
+    if (!canvasId) return;
+    try {
+        const storedCanvases = localStorage.getItem('canvases');
+        const canvases: CanvasBoard[] = storedCanvases ? JSON.parse(storedCanvases) : [];
+        const currentCanvas = canvases.find(c => c.id === canvasId);
+
+        if (currentCanvas) {
+            setCanvasName(currentCanvas.name);
+            const loadedNodes = (currentCanvas.nodes || []).map(node => ({
+                ...node,
+                data: {
+                    ...node.data,
+                    onLabelChange,
+                    onTitleChange,
+                    onColorChange,
+                },
+            }));
+            setNodes(loadedNodes);
+            setEdges(currentCanvas.edges || []);
+        } else {
+            toast({ title: "Canvas not found", variant: "destructive" });
+            router.push('/app/canvas');
+        }
+        
+        const storedMovies = localStorage.getItem('movies');
+        if (storedMovies) {
+            setAllMovies(JSON.parse(storedMovies));
+        }
+    } catch (error) {
+        console.error("Failed to load canvas:", error);
+        toast({ title: "Error loading canvas", variant: "destructive" });
+        router.push('/app/canvas');
+    }
+  }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange]);
+  
+  const handleSave = useCallback(() => {
+    if (!canvasId) return;
+
+    try {
+        const storedCanvases = localStorage.getItem('canvases');
+        const canvases: CanvasBoard[] = storedCanvases ? JSON.parse(storedCanvases) : [];
+        const updatedCanvases = canvases.map(c => 
+            c.id === canvasId 
+            ? { ...c, name: canvasName, nodes, edges, lastModified: new Date().toISOString() } 
+            : c
+        );
+        localStorage.setItem('canvases', JSON.stringify(updatedCanvases));
+        toast({ title: "Canvas Saved!", description: `"${canvasName}" has been saved.` });
+    } catch (error) {
+        console.error("Failed to save canvas:", error);
+        toast({ title: "Error saving canvas", variant: "destructive" });
+    }
+  }, [canvasId, canvasName, nodes, edges, toast]);
+
+  const handleSaveAsImage = useCallback(() => {
+    if (reactFlowWrapper.current) {
+        toPng(reactFlowWrapper.current, { cacheBust: true, pixelRatio: 2 })
+            .then((dataUrl) => {
+                downloadImage(dataUrl, `${canvasName.replace(/\s+/g, '-').toLowerCase()}.png`);
+            })
+            .catch((err) => {
+                console.error(err);
+                toast({ title: "Error exporting image", description: "Could not save canvas as an image.", variant: "destructive" });
+            });
+    }
+  }, [canvasName, toast]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
@@ -342,6 +351,7 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
+                  stroke: edge.style?.stroke,
               },
               zIndex: 10,
           };
