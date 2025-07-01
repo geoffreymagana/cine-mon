@@ -19,7 +19,23 @@ All notable changes to this project will be documented in this file.
 -   **Bulk Delete**: Users can now delete multiple items from their collection simultaneously, with a confirmation dialog to prevent accidental data loss.
 -   **Bulk Add to Collection**: Implemented a new dialog allowing users to add multiple selected items to any existing Vault or Spotlight, or to create a new collection on the fly.
 
+#### Collection Management
+-   **Drag-and-Drop Reordering**: Vaults and Spotlights can now be reordered via drag-and-drop on the collections page, with the order saved across sessions.
+-   **Share Placeholder**: Added a share button to Spotlight cards, preparing for future sharing functionality.
+
 ### Fixes
+
+#### Data Integrity & Core Functionality
+-   **Robust Data Import**: Fixed a critical `DatabaseClosedError` that could occur when importing malformed JSON data by implementing a more robust data sanitization process.
+-   **Correct Item Sorting**: Newly imported titles now correctly appear at the top of the main collection view.
+
+#### Component Functionality
+-   **Dialog Data Loading**: Fixed bugs where the "Add to Collection" and "Edit Collection" dialogs would appear empty due to incorrect data loading.
+-   **Profile Avatar**: Corrected an issue preventing the user's avatar from displaying in the dashboard header.
+
+#### Canvas
+-   **Node Sizing**: Imported movie cards now appear at a more manageable default size on the canvas.
+-   **Auto-Layout Edges**: Fixed a bug where using auto-layout would incorrectly reset custom edge types.
 
 #### UI Responsiveness & Layout
 -   **Search Dialog Refactor**: Completely rebuilt the layout of the TMDB search dialog to be fully responsive. The "Import" button is no longer hidden on smaller screens with long titles.
