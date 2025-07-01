@@ -19,6 +19,7 @@ import ReactFlow, {
   type XYPosition,
   getRectOfNodes,
   getTransformForBounds,
+  Position,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote } from 'lucide-react';
@@ -53,9 +54,11 @@ import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { NodeCreator } from '@/components/canvas/node-creator';
 import { CanvasContextMenu } from '@/components/canvas/canvas-context-menu';
 import { CanvasHelpDialog } from '@/components/canvas/canvas-help-dialog';
+import { getLayoutedElements } from '@/lib/canvas-layout';
 
 
 import 'reactflow/dist/style.css';
+import { cn } from '@/lib/utils';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -114,7 +117,7 @@ function CanvasFlow() {
   const [canvasName, setCanvasName] = useState('Untitled Canvas');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { screenToFlowPosition, getNodes, getEdges, setViewport } = useReactFlow();
+  const { screenToFlowPosition, getNodes, getEdges, setViewport, fitView } = useReactFlow();
 
   const [intersectedEdgeId, setIntersectedEdgeId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -165,12 +168,22 @@ function CanvasFlow() {
       })
     );
   }, [setNodes]);
+  
+  const getContrastColor = (hexcolor: string) => {
+    if (!hexcolor) return 'hsl(var(--foreground))';
+    const r = parseInt(hexcolor.substring(1, 3), 16);
+    const g = parseInt(hexcolor.substring(3, 5), 16);
+    const b = parseInt(hexcolor.substring(5, 7), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return (yiq >= 128) ? 'hsl(var(--foreground))' : 'hsl(var(--primary-foreground))';
+  }
 
   const onColorChange = useCallback((nodeId: string, color: string) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
-          node.data = { ...node.data, color };
+          const textColor = getContrastColor(color);
+          node.data = { ...node.data, color, textColor };
         }
         return node;
       })
@@ -219,8 +232,7 @@ function CanvasFlow() {
   const handleSave = useCallback(async () => {
     if (!canvasId) return;
 
-    // Dexie/IndexedDB can't store functions. We need to strip them before saving.
-    const nodesToSave = nodes.map(n => {
+    const nodesToSave = getNodes().map(n => {
       const { onLabelChange, onTitleChange, onColorChange, onChange, ...restData } = n.data;
       return { ...n, data: restData };
     });
@@ -229,7 +241,7 @@ function CanvasFlow() {
         await MovieService.updateCanvas(canvasId, {
             name: canvasName,
             nodes: nodesToSave,
-            edges,
+            edges: getEdges(),
             lastModified: new Date().toISOString(),
         });
         toast({ title: "Canvas Saved!", description: `"${canvasName}" has been saved.` });
@@ -237,7 +249,7 @@ function CanvasFlow() {
         console.error("Failed to save canvas:", error);
         toast({ title: "Error saving canvas", variant: "destructive" });
     }
-  }, [canvasId, canvasName, nodes, edges, toast]);
+  }, [canvasId, canvasName, getNodes, getEdges, toast]);
 
   const handleSaveAsImage = useCallback(() => {
     if (!reactFlowWrapper.current) return;
@@ -328,6 +340,7 @@ function CanvasFlow() {
           label: '',
           title: 'New Card',
           color: 'hsl(var(--card))',
+          textColor: 'hsl(var(--card-foreground))',
           onLabelChange,
           onTitleChange,
           onColorChange,
@@ -355,6 +368,7 @@ function CanvasFlow() {
         title: movie.title,
         label: '',
         color: 'hsl(var(--card))',
+        textColor: 'hsl(var(--card-foreground))',
         onLabelChange,
         onTitleChange,
         onColorChange,
@@ -480,7 +494,6 @@ function CanvasFlow() {
       ...edge,
       style: { ...edge.style, strokeWidth, stroke },
       animated,
-      zIndex: -1,
     };
   });
 
@@ -543,22 +556,21 @@ function CanvasFlow() {
     const isEditingInNode = () => {
         const activeElement = document.activeElement;
         const isInput = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
-        // Also check if we are in a contenteditable div, which some UI libraries might use
         const isContentEditable = (activeElement as HTMLElement)?.isContentEditable;
-        return isInput || isContentEditable;
+        const isInCommandPalette = activeElement?.closest('[role="dialog"]');
+
+        return isInput || isContentEditable || isInCommandPalette;
     };
 
     const down = (e: KeyboardEvent) => {
-      // Prevent default for Cmd+K to stop browser find, etc.
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setIsCommandPaletteOpen(open => !open);
-        return; // Early return
+        return;
       }
       
-      // Handle node/edge deletion with Backspace, only when not editing text
       if (e.key === 'Backspace' && !isEditingInNode()) {
-        e.preventDefault(); // Prevent browser back navigation
+        e.preventDefault();
         const nodeIdsToDelete = selectedNodes.map(n => n.id);
         const edgeIdsToDelete = selectedEdges.map(e => e.id);
         
@@ -577,6 +589,21 @@ function CanvasFlow() {
     setIsCommandPaletteOpen(false);
     command();
   }, []);
+
+  const onLayout = useCallback((direction: 'TB' | 'LR') => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      getNodes(),
+      getEdges(),
+      direction
+    );
+
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
+
+    window.requestAnimationFrame(() => {
+        fitView({ duration: 300 });
+    });
+  }, [getNodes, getEdges, setNodes, setEdges, fitView]);
 
   return (
     <div 
@@ -634,6 +661,7 @@ function CanvasFlow() {
         onPaneClick={onPaneClick}
         onContextMenu={onContextMenu}
         proOptions={{ hideAttribution: true }}
+        selectNodesOnDrag={false}
       >
         <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap />
@@ -645,6 +673,7 @@ function CanvasFlow() {
         canUndo={false} 
         canRedo={false} 
         onShowHelp={() => setIsHelpOpen(true)}
+        onLayout={onLayout}
       />
 
       <NodeCreator onAddNode={(type) => addNode(type)} onAddMovieClick={() => addNode('movie')} />
@@ -687,6 +716,8 @@ function CanvasFlow() {
         onAddMovieNode={() => runCommand(() => addNode('movie'))}
         onSave={() => runCommand(handleSave)}
         onZoomToFit={() => runCommand(() => reactFlowInstance.fitView({ duration: 300 }))}
+        onAutoLayoutTB={() => runCommand(() => onLayout('TB'))}
+        onAutoLayoutLR={() => runCommand(() => onLayout('LR'))}
       />
       
       <ImportMovieDialog

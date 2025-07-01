@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,7 +9,10 @@ import {
     Minimize,
     Undo2,
     Redo2,
-    HelpCircle
+    HelpCircle,
+    Layout,
+    ArrowDownUp,
+    ArrowRightLeft
 } from 'lucide-react';
 import { useReactFlow } from 'reactflow';
 import { Button } from '@/components/ui/button';
@@ -25,9 +29,10 @@ type CanvasToolbarProps = {
     canUndo: boolean;
     canRedo: boolean;
     onShowHelp: () => void;
+    onLayout: (direction: 'TB' | 'LR') => void;
 };
 
-export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp }: CanvasToolbarProps) {
+export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, onLayout }: CanvasToolbarProps) {
     const { zoomIn, zoomOut, fitView } = useReactFlow();
 
     return (
@@ -97,6 +102,29 @@ export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp }: 
             </Tooltip>
 
             <Separator className="my-1" />
+            
+            <Popover>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" aria-label="Auto Layout">
+                                <Layout className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="left"><p>Auto-Arrange</p></TooltipContent>
+                </Tooltip>
+                <PopoverContent className="w-auto p-1" side="left">
+                    <div className="flex flex-col gap-1">
+                        <Button variant="ghost" className="justify-start" onClick={() => onLayout('TB')}>
+                            <ArrowDownUp className="mr-2 h-4 w-4" /> Top to Bottom
+                        </Button>
+                        <Button variant="ghost" className="justify-start" onClick={() => onLayout('LR')}>
+                            <ArrowRightLeft className="mr-2 h-4 w-4" /> Left to Right
+                        </Button>
+                    </div>
+                </PopoverContent>
+            </Popover>
 
              <Tooltip>
                 <TooltipTrigger asChild>

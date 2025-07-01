@@ -7,6 +7,8 @@ import {
   Clapperboard,
   Save,
   Minimize,
+  ArrowDownUp,
+  ArrowRightLeft
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -25,6 +27,8 @@ type CommandPaletteProps = {
   onAddMovieNode: () => void;
   onSave: () => void;
   onZoomToFit: () => void;
+  onAutoLayoutTB: () => void;
+  onAutoLayoutLR: () => void;
 };
 
 export function CommandPalette({
@@ -34,6 +38,8 @@ export function CommandPalette({
   onAddMovieNode,
   onSave,
   onZoomToFit,
+  onAutoLayoutTB,
+  onAutoLayoutLR,
 }: CommandPaletteProps) {
   const runCommand = React.useCallback((command: () => unknown) => {
     setIsOpen(false);
@@ -57,6 +63,17 @@ export function CommandPalette({
           <CommandItem onSelect={() => runCommand(onSave)}>
             <Save className="mr-2 h-4 w-4" />
             <span>Save Canvas</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Layout">
+          <CommandItem onSelect={() => runCommand(onAutoLayoutTB)}>
+            <ArrowDownUp className="mr-2 h-4 w-4" />
+            <span>Auto-Arrange (Top to Bottom)</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(onAutoLayoutLR)}>
+            <ArrowRightLeft className="mr-2 h-4 w-4" />
+            <span>Auto-Arrange (Left to Right)</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
