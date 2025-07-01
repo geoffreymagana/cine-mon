@@ -97,7 +97,7 @@ export const DashboardHeader = ({
             </Avatar>
           </Link>
         ) : null}
-        <h1 className="text-xl md:text-2xl font-headline font-semibold">{userName === "My" ? "My Collection" : `${userName}'s Collection`}</h1>
+        <h1 className="text-base md:text-lg font-headline font-semibold">{userName === "My" ? "My Collection" : `${userName}'s Collection`}</h1>
       </div>
       <div className="flex items-center gap-2">
         <div className="relative hidden sm:block">
