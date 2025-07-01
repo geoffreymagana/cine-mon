@@ -375,8 +375,8 @@ function CanvasFlow() {
         nodeType: 'movie',
         movieData: movie
       },
-      width: 180,
-      height: 320,
+      width: 150,
+      height: 267,
     };
     setNodes((nds) => nds.concat(newNode));
   }, [screenToFlowPosition, setNodes, onLabelChange, onTitleChange, onColorChange]);

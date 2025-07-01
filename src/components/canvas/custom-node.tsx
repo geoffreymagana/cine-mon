@@ -133,8 +133,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       >
         <NodeResizer 
           isVisible={selected} 
-          minWidth={isMovieNode ? 180 : 150} 
-          minHeight={isMovieNode ? 320 : 150}
+          minWidth={isMovieNode ? 120 : 150} 
+          minHeight={isMovieNode ? 213 : 150}
           handleClassName="bg-primary rounded-sm w-3 h-3 hover:bg-primary/80"
           lineClassName="border-primary"
         />
