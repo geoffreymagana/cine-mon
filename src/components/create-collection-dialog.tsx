@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -27,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
+import { MovieService } from "@/lib/movie-service";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Collection name is required."),
@@ -73,28 +73,19 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
     }
   };
 
-  const onSubmit = (data: CollectionFormValues) => {
-    try {
-        const storedCollections = localStorage.getItem('collections');
-        const collections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
-
-        const newCollection: UserCollection = {
-            id: crypto.randomUUID(),
-            name: data.name,
-            description: data.description,
-            coverImageUrl: data.coverImageUrl,
-            type: type,
-            movieIds: movieIdToAdd ? [movieIdToAdd] : []
-        };
-        
-        collections.push(newCollection);
-        localStorage.setItem('collections', JSON.stringify(collections));
-        
-        onCollectionCreated(newCollection);
-        setIsOpen(false);
-    } catch (error) {
-        console.error("Failed to save collection:", error);
-    }
+  const onSubmit = async (data: CollectionFormValues) => {
+    const newCollection: UserCollection = {
+        id: crypto.randomUUID(),
+        name: data.name,
+        description: data.description,
+        coverImageUrl: data.coverImageUrl,
+        type: type,
+        movieIds: movieIdToAdd ? [movieIdToAdd] : []
+    };
+    
+    await MovieService.addCollection(newCollection);
+    onCollectionCreated(newCollection);
+    setIsOpen(false);
   };
   
   const coverImageValue = form.watch('coverImageUrl');

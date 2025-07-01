@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -16,6 +15,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
 import type { Movie } from "@/lib/types";
 import { Suspense } from "react";
+import { migrateFromLocalStorage } from "@/lib/migrate-storage";
+import { MovieService } from "@/lib/movie-service";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -35,36 +36,33 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     // This will check if the current page is a movie detail or edit page
     const isImmersivePage = pathname.startsWith('/app/movie') || pathname.startsWith('/app/canvas');
     
-    React.useEffect(() => {
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) setAllMovies(JSON.parse(storedMovies));
+    const loadData = React.useCallback(async () => {
+        const movies = await MovieService.getMovies();
+        setAllMovies(movies);
 
-            const storedAvatar = localStorage.getItem('profileAvatar');
-            if (storedAvatar) setAvatarUrl(storedAvatar);
-
-            const storedName = localStorage.getItem('profileName');
-            if (storedName) setName(storedName);
-
-            const storedUsername = localStorage.getItem('profileUsername');
-            if (storedUsername) setUsername(storedUsername);
-
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
+        const [profileName, profileUsername, profileAvatar] = await Promise.all([
+            MovieService.getSetting('profileName'),
+            MovieService.getSetting('profileUsername'),
+            MovieService.getSetting('profileAvatar')
+        ]);
         
-        const handleProfileUpdate = () => {
-             const storedName = localStorage.getItem('profileName');
-             if (storedName) setName(storedName);
-             const storedUsername = localStorage.getItem('profileUsername');
-             if (storedUsername) setUsername(storedUsername);
-             const storedAvatar = localStorage.getItem('profileAvatar');
-             if (storedAvatar) setAvatarUrl(storedAvatar);
-        }
+        if (profileName) setName(profileName);
+        if (profileUsername) setUsername(profileUsername);
+        if (profileAvatar) setAvatarUrl(profileAvatar);
+    }, []);
+
+    React.useEffect(() => {
+        const runMigration = async () => {
+            await migrateFromLocalStorage();
+            loadData(); // Load data after migration
+        };
+        runMigration();
+
+        // Listen for custom event to reload profile data
+        const handleProfileUpdate = () => loadData();
         window.addEventListener('profileUpdated', handleProfileUpdate);
         return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-
-    }, []);
+    }, [loadData]);
 
     const setFilter = (newFilter: string) => {
         router.push(`/app/dashboard?filter=${newFilter}`);

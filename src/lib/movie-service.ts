@@ -1,0 +1,109 @@
+import { db } from './database';
+import type { Movie, UserCollection, Soundtrack, Setting } from './types';
+
+export class MovieService {
+  // Movie Methods
+  static async addMovie(movie: Omit<Movie, 'id'> & { id?: string }): Promise<string> {
+    const movieWithId = { ...movie, id: movie.id || crypto.randomUUID() };
+    return await db.movies.add(movieWithId);
+  }
+
+  static async getMovies(): Promise<Movie[]> {
+    return await db.movies.toArray();
+  }
+  
+  static async getMovie(id: string): Promise<Movie | undefined> {
+    return await db.movies.get(id);
+  }
+  
+  static async updateMovie(id: string, changes: Partial<Movie>): Promise<number> {
+    return await db.movies.update(id, changes);
+  }
+
+  static async deleteMovie(id: string): Promise<void> {
+    await db.movies.delete(id);
+    const collections = await db.collections.where('movieIds').equals(id).toArray();
+    await Promise.all(collections.map(c => 
+      db.collections.update(c.id, {
+        movieIds: c.movieIds.filter(mid => mid !== id)
+      })
+    ));
+  }
+
+  static async saveAllMovies(movies: Movie[]): Promise<string[]> {
+      return await db.movies.bulkPut(movies);
+  }
+
+  // Collection Methods
+  static async addCollection(collection: UserCollection): Promise<string> {
+    return await db.collections.add(collection);
+  }
+  
+  static async getCollections(): Promise<UserCollection[]> {
+    return await db.collections.toArray();
+  }
+
+  static async getCollection(id: string): Promise<UserCollection | undefined> {
+      return await db.collections.get(id);
+  }
+  
+  static async updateCollection(id: string, changes: Partial<UserCollection>): Promise<number> {
+    return await db.collections.update(id, changes);
+  }
+  
+  static async deleteCollection(id: string): Promise<void> {
+    return await db.collections.delete(id);
+  }
+
+  // Soundtrack Methods
+  static async addSoundtrack(movieId: string, soundtrackData: Omit<Soundtrack, 'id' | 'movieId' | 'addedAt'>): Promise<number> {
+    return await db.soundtracks.add({
+      movieId,
+      ...soundtrackData,
+      addedAt: new Date()
+    });
+  }
+
+  static async getSoundtrack(movieId: string): Promise<Soundtrack | undefined> {
+    return await db.soundtracks.where({ movieId }).first();
+  }
+
+  // Poster Caching
+  static async cachePoster(movieId: string, imageUrl: string): Promise<string> {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      await db.posters.put({
+        movieId,
+        imageBlob: blob,
+        url: imageUrl,
+        cachedAt: new Date()
+      });
+      
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Failed to cache poster:', error);
+      return imageUrl; // Fallback to original URL
+    }
+  }
+
+  static async getCachedPosterUrl(movieId: string): Promise<string | null> {
+    const cached = await db.posters.where({ movieId }).first();
+    return cached ? URL.createObjectURL(cached.imageBlob) : null;
+  }
+  
+  // Settings Methods
+  static async getSetting(key: string): Promise<any> {
+    const setting = await db.settings.get(key);
+    return setting?.value;
+  }
+  
+  static async setSetting(key: string, value: any): Promise<string> {
+    return await db.settings.put({ key, value });
+  }
+
+  static async getAllSettings(): Promise<Setting[]> {
+      return await db.settings.toArray();
+  }
+}

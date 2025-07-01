@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import type { UserCollection } from '@/lib/types';
 import { CreateCollectionDialog } from '@/components/create-collection-dialog';
+import { MovieService } from '@/lib/movie-service';
 
 const CollectionCard = ({ collection }: { collection: UserCollection }) => (
     <Link href={`/app/collections/${collection.id}`} className="block group break-inside-avoid">
@@ -35,15 +35,9 @@ export default function CollectionsPage() {
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [dialogType, setDialogType] = React.useState<'Vault' | 'Spotlight'>('Vault');
 
-    const loadCollections = React.useCallback(() => {
-        try {
-            const storedCollections = localStorage.getItem('collections');
-            if (storedCollections) {
-                setCollections(JSON.parse(storedCollections));
-            }
-        } catch (error) {
-            console.error("Failed to load collections from localStorage:", error);
-        }
+    const loadCollections = React.useCallback(async () => {
+        const collectionsFromDb = await MovieService.getCollections();
+        setCollections(collectionsFromDb);
     }, []);
 
     React.useEffect(() => {

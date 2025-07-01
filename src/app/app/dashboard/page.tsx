@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -24,6 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Suspense } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MovieService } from "@/lib/movie-service";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -47,36 +47,16 @@ function DashboardContent() {
     })
   );
 
-  React.useEffect(() => {
-    try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        setMovies(JSON.parse(storedMovies));
-      } else {
-        const emptyMovies: Movie[] = [];
-        localStorage.setItem('movies', JSON.stringify(emptyMovies));
-        setMovies(emptyMovies);
-      }
-    } catch (error) {
-      console.error("Failed to access localStorage:", error);
-      setMovies([]);
-    }
+  const loadMovies = React.useCallback(async () => {
+    const moviesFromDb = await MovieService.getMovies();
+    setMovies(moviesFromDb);
   }, []);
 
-  const updateMoviesInStorage = (updatedMovies: Movie[]) => {
-    try {
-      localStorage.setItem('movies', JSON.stringify(updatedMovies));
-    } catch (error) {
-      console.error("Failed to save movies to localStorage:", error);
-      toast({
-        title: "Error Saving Data",
-        description: "Your changes could not be saved to local storage.",
-        variant: "destructive"
-      });
-    }
-  };
+  React.useEffect(() => {
+    loadMovies();
+  }, [loadMovies]);
 
-  const handleSaveMovie = (movieData: Omit<Movie, "id">) => {
+  const handleSaveMovie = async (movieData: Omit<Movie, "id">) => {
     if (movieData.tmdbId && movies.some(m => m.tmdbId === movieData.tmdbId)) {
         toast({
             title: "Already in Collection",
@@ -84,14 +64,12 @@ function DashboardContent() {
         });
         return;
     }
-    const movieWithId = { ...movieData, id: crypto.randomUUID() };
-    const updatedMovies = [movieWithId, ...movies];
-    setMovies(updatedMovies);
-    updateMoviesInStorage(updatedMovies);
+    await MovieService.addMovie(movieData);
     toast({
       title: "Success!",
       description: `${movieData.title} has been added to your collection.`,
     });
+    loadMovies(); // Refresh list
   };
   
   const handleOpenAddDialog = () => setIsAddMovieOpen(true);
@@ -113,7 +91,7 @@ function DashboardContent() {
         if (oldIndex === -1 || newIndex === -1) return items;
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        updateMoviesInStorage(newItems);
+        MovieService.saveAllMovies(newItems);
         return newItems;
       });
     }

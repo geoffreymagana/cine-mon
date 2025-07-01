@@ -1,4 +1,3 @@
-
 import type { Node, Edge } from 'reactflow';
 
 export type Episode = {
@@ -81,4 +80,32 @@ export type CanvasBoard = {
   nodes: Node[];
   edges: Edge[];
   lastModified: string; // ISO string
+};
+
+export type Soundtrack = {
+  id?: number;
+  movieId: string;
+  composer: string;
+  albumTitle: string;
+  tracks: {
+    title: string;
+    duration: string;
+    trackNumber: number;
+    previewUrl?: string;
+  }[];
+  previewBlobs?: { [trackId: string]: Blob };
+  addedAt: Date;
+};
+
+export type Poster = {
+  id?: number;
+  movieId: string;
+  imageBlob: Blob;
+  url: string;
+  cachedAt: Date;
+};
+
+export type Setting = {
+  key: string;
+  value: any;
 };
