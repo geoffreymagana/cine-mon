@@ -24,6 +24,14 @@ export class MovieDatabase extends Dexie {
     }).upgrade(tx => {
         // Migration logic for future versions can go here
     });
+
+    this.version(3).stores({
+      // Re-define collections with the new multi-entry index on movieIds
+      collections: 'id, name, type, *movieIds'
+    }).upgrade(tx => {
+      // Dexie handles adding the new index to existing data automatically.
+      // No manual data migration is needed for this upgrade.
+    });
   }
 }
 
