@@ -170,40 +170,42 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                 const isImporting = importingIds.has(result.id as number);
 
                                 const content = (
-                                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
+                                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
                                         <Image
                                             src={result.posterUrl}
                                             alt={result.title}
                                             width={80}
                                             height={120}
-                                            className="w-[80px] h-[120px] object-cover rounded-md"
+                                            className="w-[80px] h-[120px] object-cover rounded-md flex-shrink-0"
                                             data-ai-hint="movie poster"
                                         />
-                                        <div className="flex-grow min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
+                                        <div className="flex-grow min-w-0 w-full">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <div className="flex-1 min-w-0">
                                                     <h3 className="font-bold text-lg truncate">{result.title}</h3>
                                                     <div className="text-sm text-muted-foreground flex items-center gap-2">
                                                         <span>{result.year}</span>
                                                         <Badge variant="outline" className="capitalize">{result.mediaType === 'tv' ? 'TV' : 'Movie'}</Badge>
                                                     </div>
                                                 </div>
-                                                {result.isLocal ? (
-                                                    <Button size="sm" variant="ghost" className="pointer-events-none">
-                                                        View <ChevronRight className="ml-2" />
-                                                    </Button>
-                                                ) : (
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={(e) => { e.preventDefault(); handleImport(result); }}
-                                                        disabled={isImported || isImporting}
-                                                    >
-                                                        {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
-                                                        {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
-                                                    </Button>
-                                                )}
+                                                <div className="flex-shrink-0">
+                                                    {result.isLocal ? (
+                                                        <Button size="sm" variant="ghost" className="pointer-events-none">
+                                                            View <ChevronRight className="ml-2" />
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={(e) => { e.preventDefault(); handleImport(result); }}
+                                                            disabled={isImported || isImporting}
+                                                        >
+                                                            {isImported ? <Check className="mr-2" /> : (isImporting ? <Loader2 className="mr-2 animate-spin" /> : <Plus className="mr-2" />)}
+                                                            {isImported ? 'Imported' : (isImporting ? 'Importing...' : 'Import')}
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{result.overview}</p>
+                                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3 sm:line-clamp-2">{result.overview}</p>
                                         </div>
                                     </div>
                                 );
