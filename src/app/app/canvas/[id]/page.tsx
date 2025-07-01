@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
@@ -69,7 +70,7 @@ function downloadImage(dataUrl: string, fileName: string) {
 }
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
-  interactionWidth: 20,
+  interactionWidth: 2,
   style: { strokeWidth: 2 }
 };
 
@@ -436,23 +437,19 @@ function CanvasFlow() {
     
     let strokeWidth = edge.style?.strokeWidth || 2;
     let stroke = edge.style?.stroke || 'hsl(var(--foreground))';
-    let zIndex = 1;
     let animated = false;
     
     if (isIntersected) {
       strokeWidth = 4;
       stroke = 'hsl(var(--primary))';
-      zIndex = 10;
       animated = true;
     } else if (isSelected) {
       strokeWidth = 3;
-      zIndex = 5;
     }
     
     return {
       ...edge,
       style: { ...edge.style, strokeWidth, stroke },
-      zIndex,
       animated,
     };
   });
@@ -513,24 +510,6 @@ function CanvasFlow() {
   const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === 'Backspace') {
-        e.preventDefault();
-      }
-
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        setIsCommandPaletteOpen(open => !open);
-      }
-      
-      if (e.key === 'Backspace' && !isEditingInNode()) {
-        const nodeIdsToDelete = selectedNodes.map(n => n.id);
-        const edgeIdsToDelete = selectedEdges.map(e => e.id);
-        
-        setNodes(nds => nds.filter(n => !nodeIdsToDelete.includes(n.id)));
-        setEdges(eds => eds.filter(e => !edgeIdsToDelete.includes(e.id)));
-      }
-    };
-    
     const isEditingInNode = () => {
         const activeElement = document.activeElement;
         return (
@@ -539,6 +518,25 @@ function CanvasFlow() {
         );
     };
 
+    const down = (e: KeyboardEvent) => {
+      // Prevent default for Cmd+K to stop browser find, etc.
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsCommandPaletteOpen(open => !open);
+        return; // Early return
+      }
+      
+      // Handle node/edge deletion with Backspace, only when not editing text
+      if (e.key === 'Backspace' && !isEditingInNode()) {
+        e.preventDefault(); // Prevent browser back navigation
+        const nodeIdsToDelete = selectedNodes.map(n => n.id);
+        const edgeIdsToDelete = selectedEdges.map(e => e.id);
+        
+        setNodes(nds => nds.filter(n => !nodeIdsToDelete.includes(n.id)));
+        setEdges(eds => eds.filter(e => !edgeIdsToDelete.includes(e.id)));
+      }
+    };
+    
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
   }, [selectedNodes, selectedEdges, setNodes, setEdges]);
