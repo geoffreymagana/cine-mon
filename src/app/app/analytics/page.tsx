@@ -48,6 +48,8 @@ import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
@@ -144,11 +146,26 @@ const SortableCardWrapper = ({ id, children }: { id: string, children: React.Rea
     );
 };
 
-
 const defaultCardOrder = {
     basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'averageRating', 'watchGoal', 'totalRewatches', 'lastSuggestion'],
     geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
 };
+
+const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map(id => (
+            <Card key={id}>
+                <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-24 w-full" />
+                </CardContent>
+            </Card>
+        ))}
+    </div>
+);
 
 
 export default function AnalyticsPage() {
@@ -156,6 +173,7 @@ export default function AnalyticsPage() {
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
+    const [hasMounted, setHasMounted] = React.useState(false);
 
     const [basicCardOrder, setBasicCardOrder] = React.useState<string[]>(defaultCardOrder.basic);
     const [geekCardOrder, setGeekCardOrder] = React.useState<string[]>(defaultCardOrder.geek);
@@ -201,6 +219,10 @@ export default function AnalyticsPage() {
         };
         loadData();
     }, [toast]);
+    
+    React.useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     const handleDragEnd = (event: DragEndEvent, tab: 'basic' | 'geek') => {
         const { active, over } = event;
@@ -458,29 +480,37 @@ export default function AnalyticsPage() {
                     </TabsList>
                     
                     <TabsContent value="basic">
-                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
-                            <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {basicCardOrder.map(cardId => {
-                                        const card = allBasicCards[cardId];
-                                        return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
-                                    })}
-                                </div>
-                            </SortableContext>
-                        </DndContext>
+                        {hasMounted ? (
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
+                                <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {basicCardOrder.map(cardId => {
+                                            const card = allBasicCards[cardId];
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                        })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
+                        ) : (
+                            <AnalyticsGridSkeleton items={basicCardOrder} />
+                        )}
                     </TabsContent>
 
                     <TabsContent value="geek">
-                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
-                            <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                     {geekCardOrder.map(cardId => {
-                                        const card = allGeekCards[cardId];
-                                        return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
-                                    })}
-                                </div>
-                            </SortableContext>
-                        </DndContext>
+                         {hasMounted ? (
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
+                                <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {geekCardOrder.map(cardId => {
+                                            const card = allGeekCards[cardId];
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                        })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
+                         ) : (
+                            <AnalyticsGridSkeleton items={geekCardOrder} />
+                         )}
                     </TabsContent>
                 </Tabs>
             </div>
