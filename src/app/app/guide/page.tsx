@@ -13,6 +13,7 @@ import {
     Film, 
     HardDriveDownload, 
     Keyboard, 
+    LayoutDashboard,
     Lightbulb, 
     Lock, 
     Palette, 
@@ -136,9 +137,33 @@ export default function GuidePage() {
                         </Step>
                     </GuideSection>
 
+                    <GuideSection
+                        icon={LayoutDashboard}
+                        title="3. Unleash Your Creativity with the Canvas (Desktop Only)"
+                        description="Go beyond lists and map your cinematic universe visually."
+                    >
+                        <Step number={1} title="Accessing the Canvas">
+                           <p>Find the <strong className="text-primary">Canvas</strong> link in the sidebar on the desktop version of the app. This is your infinite space for creative brainstorming.</p>
+                        </Step>
+                        <Step number={2} title="The Command Palette is Your Best Friend">
+                             <p>Press <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded-sm">⌘</kbd> + <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded-sm">K</kbd> to open the command palette. From here, you can do everything: add a new text card, import a movie from your collection, save the canvas, and more.</p>
+                        </Step>
+                        <Step number={3} title="Connect Your Ideas">
+                            <p>Drag from the handles on the side of any card to create connections. To insert a node between two others, simply drag it over the edge line until it highlights, then release.</p>
+                        </Step>
+                        <Step number={4} title="Get Creative: Inventive Use Cases">
+                             <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li>**Franchise Timelines:** Map out the MCU or Star Wars in chronological order.</li>
+                                <li>**Character Webs:** Connect characters to the films they appear in and draw lines to show their relationships.</li>
+                                <li>**Thematic Moodboards:** Group films by aesthetic, director's style, or common themes.</li>
+                                <li>**Writer's Room:** Use cards for scenes, characters, and plot points to outline your next screenplay.</li>
+                             </ul>
+                        </Step>
+                    </GuideSection>
+
                      <GuideSection
                         icon={Lightbulb}
-                        title="3. Discover & Personalize"
+                        title="4. Discover & Personalize"
                         description="Make Cine-Mon truly yours and find your next favorite watch."
                     >
                         <Step number={1} title="Break Decision Paralysis">
