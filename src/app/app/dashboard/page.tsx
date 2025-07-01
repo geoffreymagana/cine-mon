@@ -22,7 +22,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { Suspense } from "react";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { MovieService } from "@/lib/movie-service";
 import {
   AlertDialog,

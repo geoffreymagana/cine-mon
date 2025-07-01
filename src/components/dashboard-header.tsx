@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search, Plus, MoreVertical, X, Share2, PlusCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MovieService } from "@/lib/movie-service";
 import {
