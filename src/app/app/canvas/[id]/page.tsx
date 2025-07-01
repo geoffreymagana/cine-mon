@@ -289,7 +289,7 @@ function CanvasFlow() {
     (params: Edge | Connection) => {
        const newEdge = { 
            ...params, 
-           type: 'smoothstep',
+           type: 'default',
            style: { stroke: 'hsl(var(--foreground))', strokeWidth: 2 },
            markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 },
            label: '',
