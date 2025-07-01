@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -38,14 +39,23 @@ export const DashboardHeader = ({
 }: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
+  const [userName, setUserName] = React.useState("My");
 
-  // This effect will run on the client to get the avatar from IndexedDB.
+  // This effect will run on the client to get data from IndexedDB.
   // It also listens for profile updates to stay in sync.
-  const loadAvatar = React.useCallback(async () => {
+  const loadProfileData = React.useCallback(async () => {
     try {
-        const storedAvatar = await MovieService.getSetting('profileAvatar');
+        const [storedAvatar, storedName] = await Promise.all([
+          MovieService.getSetting('profileAvatar'),
+          MovieService.getSetting('profileName')
+        ]);
         if (storedAvatar) {
             setAvatarUrl(storedAvatar);
+        }
+        if (storedName) {
+            setUserName(storedName);
+        } else {
+            setUserName("My");
         }
     } catch (error) {
         console.error("Failed to access IndexedDB:", error);
@@ -53,14 +63,14 @@ export const DashboardHeader = ({
   }, []);
   
   React.useEffect(() => {
-    loadAvatar();
-    window.addEventListener('profileUpdated', loadAvatar);
-    return () => window.removeEventListener('profileUpdated', loadAvatar);
-  }, [loadAvatar]);
+    loadProfileData();
+    window.addEventListener('profileUpdated', loadProfileData);
+    return () => window.removeEventListener('profileUpdated', loadProfileData);
+  }, [loadProfileData]);
   
   if (isSelectionMode) {
     return (
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-primary/10 px-4 md:px-8">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-secondary px-4 md:px-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onClearSelection}>
             <X className="h-5 w-5" />
@@ -87,7 +97,7 @@ export const DashboardHeader = ({
             </Avatar>
           </Link>
         ) : null}
-        <h1 className="text-xl md:text-2xl font-headline font-semibold">My Collection</h1>
+        <h1 className="text-xl md:text-2xl font-headline font-semibold">{userName === "My" ? "My Collection" : `${userName}'s Collection`}</h1>
       </div>
       <div className="flex items-center gap-2">
         <div className="relative hidden sm:block">
