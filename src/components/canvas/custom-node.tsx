@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -35,10 +36,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   
   useEffect(() => {
     if (isEditing && textareaRef.current) {
-      const textarea = textareaRef.current;
-      textarea.focus();
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
+      textareaRef.current.focus();
     }
   }, [isEditing]);
   
@@ -49,7 +47,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     }
   }, [isTitleEditing]);
   
-  const handleDoubleClick = () => {
+  const handleContentDoubleClick = () => {
     setIsEditing(true);
   };
 
@@ -60,11 +58,10 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setLabel(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
-  const handleTitleDoubleClick = () => {
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsTitleEditing(true);
   };
 
@@ -85,30 +82,14 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     if (!color || color === 'hsl(var(--card))' || color === 'hsl(var(--muted))') {
       return 'hsl(var(--border))';
     }
-    // Make the border color a more solid version of the background
-    return color.replace(/(\/\s*)[\d.]+\)/, '$10.8)');
+    return color.replace(/(\/\s*)[\d.]+\)/, '$11)');
   };
 
   return (
-    <div
-      className="nopan nowheel rounded-lg shadow-md border-[3px] h-full flex flex-col"
-      style={{ 
-        borderColor: getBorderColor(),
-        backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.8)') : 'hsl(var(--card))'
-      }}
-    >
-      <NodeResizer 
-        isVisible={selected} 
-        minWidth={150} 
-        minHeight={80} 
-        handleClassName="bg-primary rounded-sm w-2 h-2 hover:bg-primary/80"
-        lineClassName="border-primary"
-      />
-
-      <div
-        className="px-3 py-1.5 border-b-[3px]"
-        style={{ borderColor: getBorderColor() }}
-        onDoubleClick={handleTitleDoubleClick}
+    <div className="relative w-full h-full">
+      <div 
+        className="absolute bottom-full left-0 mb-1 px-1 nodrag"
+        onClick={handleTitleClick}
       >
         {isTitleEditing ? (
           <input
@@ -117,43 +98,60 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
             onKeyDown={(e) => { if (e.key === 'Enter') handleTitleBlur(); }}
-            className="w-full bg-transparent p-0 text-xs font-semibold text-card-foreground outline-none nodrag"
+            className="w-full bg-transparent p-0 text-xs text-foreground outline-none"
+            placeholder="Card title..."
           />
         ) : (
-          <h3 className="text-xs font-semibold break-words nodrag">
-            {title || 'Untitled Card'}
+          <h3 className="text-xs text-muted-foreground cursor-text hover:text-foreground break-words">
+            {title || `Card Title`}
           </h3>
         )}
       </div>
 
-      <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-1.5 !h-1.5" />
-      <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-1.5 !h-1.5" />
-      <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
-      <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
+      <div
+        className="nopan nowheel rounded-lg shadow-md border-[3px] h-full flex flex-col"
+        style={{ 
+          borderColor: getBorderColor(),
+          backgroundColor: data.color ? data.color.replace(/(\/\s*)[\d.]+\)/, '$10.8)') : 'hsl(var(--card))'
+        }}
+      >
+        <NodeResizer 
+          isVisible={selected} 
+          minWidth={150} 
+          minHeight={150}
+          handleClassName="bg-primary rounded-sm w-2 h-2 hover:bg-primary/80"
+          lineClassName="border-primary"
+        />
 
-      <div className="w-full h-full overflow-y-auto p-3 pr-4" onDoubleClick={handleDoubleClick}>
-        {isEditing ? (
-          <textarea
-            ref={textareaRef}
-            value={label}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Type here..."
-            className="w-full min-h-[5em] border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
-            style={{ resize: 'none' }}
-          />
-        ) : (
-          <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words")}>
-             {label ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
-             ) : (
-                <span className="text-muted-foreground opacity-50">Type here...</span>
-             )}
-          </div>
-        )}
+        <Handle type="target" position={Position.Left} id="target-left" className="!bg-blue-500 !w-1.5 !h-1.5" />
+        <Handle type="target" position={Position.Top} id="target-top" className="!bg-blue-500 !w-1.5 !h-1.5" />
+        <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-1.5" />
+        <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-1.5 !h-1.5" />
+
+        <div className="w-full h-full overflow-y-auto p-3 pr-4" onDoubleClick={handleContentDoubleClick}>
+          {isEditing ? (
+            <textarea
+              ref={textareaRef}
+              value={label}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="Type here..."
+              className="w-full h-full border-none bg-transparent p-0 text-xs text-card-foreground outline-none nodrag"
+              style={{ resize: 'none' }}
+            />
+          ) : (
+            <div className={cn("prose-sm dark:prose-invert prose-p:my-1 prose-ul:my-1 prose-headings:my-1", "w-full text-xs break-words")}>
+              {label ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{label}</ReactMarkdown>
+              ) : (
+                  <span className="text-muted-foreground opacity-50">Type here...</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default CustomNode;
+export default React.memo(CustomNode);

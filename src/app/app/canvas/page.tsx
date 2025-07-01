@@ -122,7 +122,6 @@ function CanvasFlow() {
         x: reactFlowWrapper.current!.clientWidth / 2,
         y: reactFlowWrapper.current!.clientHeight / 2,
     });
-    const nodeCount = nodes.length + 1;
 
     const newNode: Node = {
       id: `node-${crypto.randomUUID()}`,
@@ -130,7 +129,7 @@ function CanvasFlow() {
       position: targetPosition,
       data: { 
         label: '',
-        title: `Card ${nodeCount} - Placeholder Text`,
+        title: '',
         color: 'hsl(var(--card))',
         onLabelChange,
         onTitleChange,
@@ -141,7 +140,7 @@ function CanvasFlow() {
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onTitleChange, onColorChange, project, setNodes, nodes.length]);
+  }, [onLabelChange, onTitleChange, onColorChange, project, setNodes]);
 
 
   const handlePaneContextMenu = useCallback(
@@ -190,7 +189,7 @@ function CanvasFlow() {
     setEdges((eds) =>
       eds.map((edge) => {
         if (selectedEdges.some(selected => selected.id === edge.id)) {
-          return { ...edge, style: { ...edge.style, stroke: color, strokeWidth: 2 } };
+          return { ...edge, style: { ...edge.style, stroke: color } };
         }
         return edge;
       })
@@ -224,17 +223,12 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
+                  stroke: 'hsl(var(--primary))'
               },
               zIndex: 10,
           };
       }
-      return {
-          ...edge,
-          style: {
-              ...edge.style,
-              strokeWidth: 0.5,
-          }
-      };
+      return { ...edge };
   });
 
   return (
