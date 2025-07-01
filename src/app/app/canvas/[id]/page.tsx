@@ -256,16 +256,10 @@ function CanvasFlow() {
         onTitleChange,
         onColorChange,
         nodeType: 'movie',
-        movieData: {
-            id: movie.id,
-            posterUrl: movie.posterUrl,
-            rating: movie.rating,
-            status: movie.status,
-            releaseDate: movie.releaseDate,
-        }
+        movieData: movie
       },
       width: 180,
-      height: 270,
+      height: 320,
     };
     setNodes((nds) => nds.concat(newNode));
   }, [project, setNodes, onLabelChange, onTitleChange, onColorChange]);

@@ -2,24 +2,13 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { Handle, Position, NodeResizer, type NodeProps } from 'reactflow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Clock, CircleCheck, PauseCircle, CircleOff, Bookmark } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
-import { RatingCircle } from '../rating-circle';
-
-type MovieNodeData = {
-    id: string;
-    posterUrl: string;
-    rating: number;
-    status: Movie['status'];
-    releaseDate: string;
-}
+import { MovieCard } from '../movie-card';
 
 type CustomNodeData = {
   label: string;
@@ -29,15 +18,7 @@ type CustomNodeData = {
   onTitleChange: (id: string, title: string) => void;
   onColorChange: (id: string, color: string) => void;
   nodeType?: 'movie' | 'standard';
-  movieData?: MovieNodeData;
-};
-
-const statusMap: Record<Movie['status'], { icon: React.ElementType, className: string, label: string }> = {
-    'Watching': { icon: Clock, className: 'text-chart-1', label: 'Watching' },
-    'Completed': { icon: CircleCheck, className: 'text-chart-2', label: 'Completed' },
-    'On-Hold': { icon: PauseCircle, className: 'text-chart-3', label: 'On Hold' },
-    'Dropped': { icon: CircleOff, className: 'text-destructive', label: 'Dropped' },
-    'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
+  movieData?: Movie;
 };
 
 
@@ -51,7 +32,6 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const isMovieNode = data.nodeType === 'movie' && data.movieData;
-  const statusInfo = isMovieNode ? statusMap[data.movieData.status] : null;
 
   useEffect(() => {
     setLabel(data.label);
@@ -112,9 +92,14 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     }
     return color.replace(/(\/\s*)[\d.]+\)/, '$11)');
   };
+  
+  const handleWrapperClick = (e: React.MouseEvent) => {
+    // Prevent the link inside MovieCard from being triggered when dragging the node
+    if (e.defaultPrevented) return;
+  };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" onClick={handleWrapperClick}>
       <div 
         className="absolute bottom-full left-0 mb-1 px-1 nodrag cursor-text"
         onClick={handleTitleClick}
@@ -145,8 +130,8 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       >
         <NodeResizer 
           isVisible={selected} 
-          minWidth={150} 
-          minHeight={isMovieNode ? 270 : 150}
+          minWidth={isMovieNode ? 180 : 150} 
+          minHeight={isMovieNode ? 320 : 150}
           handleClassName="bg-primary rounded-sm w-3 h-3 hover:bg-primary/80"
           lineClassName="border-primary"
         />
@@ -156,32 +141,17 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         <Handle type="source" position={Position.Right} id="source-right" className="!bg-green-500 !w-1.5 !h-8 !rounded-sm" />
         <Handle type="source" position={Position.Bottom} id="source-bottom" className="!bg-green-500 !w-8 !h-1.5 !rounded-sm" />
 
-        <div className="w-full h-full overflow-hidden" onDoubleClick={handleContentDoubleClick}>
+        <div 
+            className={cn(
+                "w-full h-full overflow-hidden",
+                isMovieNode && "p-0 rounded-lg"
+            )} 
+            onDoubleClick={handleContentDoubleClick}
+        >
           {isMovieNode ? (
-             <Link href={`/app/movie/${data.movieData.id}`} className="block relative w-full h-full group/moviecard" target="_blank">
-                <Image 
-                    src={data.movieData.posterUrl} 
-                    alt={`Poster for ${data.title}`} 
-                    layout="fill" 
-                    objectFit="cover" 
-                    className="transition-transform duration-300 group-hover/moviecard:scale-105"
-                    data-ai-hint="movie poster"
-                />
-
-                {statusInfo && (
-                    <div className="absolute top-2 left-2 z-10 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center">
-                        <statusInfo.icon className={cn("h-4 w-4", statusInfo.className)} />
-                    </div>
-                )}
-                
-                <div className="absolute -bottom-5 right-2 z-10">
-                  <RatingCircle percentage={data.movieData.rating} />
-                </div>
-                
-                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                  <p className="text-white text-sm font-bold truncate">{data.movieData.releaseDate?.substring(0,4)}</p>
-                </div>
-             </Link>
+            <div className="w-full h-full [&>a>div]:border-none [&>a>div]:shadow-none">
+                <MovieCard movie={data.movieData!} />
+            </div>
           ) : isEditing ? (
             <textarea
               ref={textareaRef}
