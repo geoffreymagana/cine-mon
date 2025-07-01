@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -36,6 +35,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { MovieService } from '@/lib/movie-service';
 
 const StatCard = ({ icon: Icon, title, value, description, children, className }: { icon?: React.ElementType, title: string, value: React.ReactNode, description?: string, children?: React.ReactNode, className?: string }) => (
     <Card className={className}>
@@ -106,14 +106,15 @@ export default function AnalyticsPage() {
     const [movies, setMovies] = React.useState<Movie[]>([]);
 
     React.useEffect(() => {
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) {
-                setMovies(JSON.parse(storedMovies));
+        const loadMovies = async () => {
+            try {
+                const moviesFromDb = await MovieService.getMovies();
+                setMovies(moviesFromDb);
+            } catch (error) {
+                console.error("Failed to load movies from DB:", error);
             }
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
+        };
+        loadMovies();
     }, []);
 
     const watchedMovies = React.useMemo(() =>
@@ -191,10 +192,13 @@ export default function AnalyticsPage() {
     
     const [storageSize, setStorageSize] = React.useState(0);
     React.useEffect(() => {
-        const data = localStorage.getItem('movies');
-        if(data) {
-            setStorageSize(new Blob([data]).size / 1024);
-        }
+        const calculateStorage = async () => {
+            if (navigator.storage && navigator.storage.estimate) {
+                const { usage } = await navigator.storage.estimate();
+                setStorageSize(usage ? usage / 1024 / 1024 : 0); // Show in MB
+            }
+        };
+        calculateStorage();
     }, [movies]);
 
     const seriesCompletion = React.useMemo(() => {
@@ -308,7 +312,7 @@ export default function AnalyticsPage() {
 
                             <StatCard icon={Percent} title="Rewatch Ratio" value={`${rewatchRatio.toFixed(0)}%`} description="of titles you've rewatched" />
                             
-                            <StatCard icon={Database} title="Storage Usage" value={`${storageSize.toFixed(2)} KB`} description="Local space used by your library data." />
+                            <StatCard icon={Database} title="Storage Usage" value={`${storageSize.toFixed(2)} MB`} description="Local space used by your library data." />
                             <StatCard icon={Palette} title="Poster Palette" value="Deep Blue" description="Most common poster color (dummy)" />
                             <StatCard icon={Moon} title="Night Owl Score" value="78%" description="Titles watched after 11pm (dummy)" />
 
