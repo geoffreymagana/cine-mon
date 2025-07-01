@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { ResizableBox, type ResizableBoxProps } from 'react-resizable';
 
 import type { Movie } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -49,6 +50,7 @@ import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 
 const CHART_COLORS = [
@@ -60,7 +62,7 @@ const CHART_COLORS = [
 ];
 
 const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, dragHandleProps }: { icon?: React.ElementType, title: string, value?: React.ReactNode, description?: string, children?: React.ReactNode, className?: string, onEdit?: () => void, dragHandleProps?: any }) => (
-    <Card className={className}>
+    <Card className={cn("flex flex-col", className)}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-2">
                 {dragHandleProps && (
@@ -79,7 +81,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
                  Icon && <Icon className="h-4 w-4 text-muted-foreground" />
             )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-grow">
             {value && <div className="text-2xl font-bold">{value}</div>}
             {children}
         </CardContent>
@@ -87,7 +89,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
 );
 
 const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleProps?: any }) => (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden h-full flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
              <div className="flex items-center gap-2">
                 {dragHandleProps && (
@@ -102,8 +104,8 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
             </div>
              <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-            <Link href={`/app/movie/${movie.id}`} className="flex items-center gap-4 group">
+        <CardContent className="flex-grow flex items-center">
+            <Link href={`/app/movie/${movie.id}`} className="flex items-center gap-4 group w-full">
                 <Image
                     src={movie.posterUrl}
                     alt={movie.title}
@@ -122,7 +124,7 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
     </Card>
 );
 
-const SortableCardWrapper = ({ id, children }: { id: string, children: React.ReactNode }) => {
+const SortableCardWrapper = ({ id, children, size, onResize }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number, height: number}) => void }) => {
     const {
         attributes,
         listeners,
@@ -140,8 +142,22 @@ const SortableCardWrapper = ({ id, children }: { id: string, children: React.Rea
     };
 
     return (
-        <div ref={setNodeRef} style={style}>
-            {React.cloneElement(children as React.ReactElement, { dragHandleProps: { ...attributes, ...listeners } })}
+        <div ref={setNodeRef} style={style} {...attributes}>
+            <ResizableBox
+                width={size.width}
+                height={size.height}
+                onResizeStop={(_e, data) => onResize({ width: data.size.width, height: data.size.height })}
+                minConstraints={[250, 140]}
+                maxConstraints={[800, 800]}
+                className="relative"
+            >
+                <div className="w-full h-full">
+                    {React.cloneElement(children as React.ReactElement, { 
+                        dragHandleProps: listeners,
+                        className: "h-full w-full"
+                    })}
+                </div>
+            </ResizableBox>
         </div>
     );
 };
@@ -151,10 +167,26 @@ const defaultCardOrder = {
     geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
 };
 
+const defaultCardSizes: Record<string, { width: number; height: number }> = {
+    totalTitles: { width: 350, height: 150 },
+    episodesWatched: { width: 350, height: 150 },
+    timeWatched: { width: 350, height: 150 },
+    averageRating: { width: 350, height: 150 },
+    watchGoal: { width: 350, height: 150 },
+    totalRewatches: { width: 350, height: 200 },
+    lastSuggestion: { width: 350, height: 160 },
+    mostActors: { width: 400, height: 380 },
+    mostDirectors: { width: 400, height: 380 },
+    topFranchises: { width: 400, height: 380 },
+    bingeRating: { width: 350, height: 150 },
+    nightOwlScore: { width: 400, height: 280 },
+    obscurityIndex: { width: 400, height: 280 },
+};
+
 const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="flex flex-wrap gap-6 items-start">
         {items.map(id => (
-            <Card key={id}>
+            <Card key={id} style={{ width: defaultCardSizes[id]?.width || 350, height: defaultCardSizes[id]?.height || 200 }}>
                 <CardHeader>
                     <Skeleton className="h-5 w-3/4" />
                     <Skeleton className="h-3 w-1/2" />
@@ -174,6 +206,7 @@ export default function AnalyticsPage() {
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
     const [hasMounted, setHasMounted] = React.useState(false);
+    const [cardSizes, setCardSizes] = React.useState<Record<string, { width: number; height: number }>>({});
 
     const [basicCardOrder, setBasicCardOrder] = React.useState<string[]>(defaultCardOrder.basic);
     const [geekCardOrder, setGeekCardOrder] = React.useState<string[]>(defaultCardOrder.geek);
@@ -193,16 +226,18 @@ export default function AnalyticsPage() {
     React.useEffect(() => {
         const loadData = async () => {
             try {
-                const [moviesFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder] = await Promise.all([
+                const [moviesFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder, storedCardSizes] = await Promise.all([
                     MovieService.getMovies(),
                     MovieService.getSetting('watchGoal'),
                     MovieService.getSetting('lastSpunMovieId'),
                     MovieService.getSetting('analyticsBasicOrder'),
                     MovieService.getSetting('analyticsGeekOrder'),
+                    MovieService.getSetting('analyticsCardSizes'),
                 ]);
                 
                 setMovies(moviesFromDb);
                 if (goalFromDb) setWatchGoal(goalFromDb);
+                if (storedCardSizes) setCardSizes(storedCardSizes);
 
                 if (storedBasicOrder) setBasicCardOrder(storedBasicOrder);
                 if (storedGeekOrder) setGeekCardOrder(storedGeekOrder);
@@ -245,6 +280,14 @@ export default function AnalyticsPage() {
                 });
             }
         }
+    };
+    
+    const handleResize = (id: string, size: { width: number; height: number; }) => {
+        setCardSizes(prev => {
+            const newSizes = { ...prev, [id]: size };
+            MovieService.setSetting('analyticsCardSizes', newSizes);
+            return newSizes;
+        });
     };
 
 
@@ -370,7 +413,7 @@ export default function AnalyticsPage() {
                         <Progress value={(totalTitlesWatched/watchGoal)*100} className="mt-2" />
                     </StatCard>,
         totalRewatches: <StatCard title="Total Rewatches">
-                            <ChartContainer config={rewatchConfig} className="mx-auto aspect-square h-[120px]">
+                            <ChartContainer config={rewatchConfig} className="mx-auto aspect-square h-full">
                                 <PieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
@@ -387,7 +430,7 @@ export default function AnalyticsPage() {
 
     const allGeekCards: Record<string, React.ReactNode> = {
         mostActors: <StatCard title="Most Watched Actors">
-                        <ChartContainer config={actorsConfig} className="h-[300px] w-full">
+                        <ChartContainer config={actorsConfig} className="h-full w-full">
                              <PieChart>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                 <Pie data={topActors} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5}>
@@ -398,7 +441,7 @@ export default function AnalyticsPage() {
                         </ChartContainer>
                     </StatCard>,
         mostDirectors: <StatCard title="Most Watched Directors">
-                            <ChartContainer config={directorsConfig} className="h-[300px] w-full">
+                            <ChartContainer config={directorsConfig} className="h-full w-full">
                                 <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20 }}>
                                     <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
                                     <XAxis type="number" hide />
@@ -409,7 +452,7 @@ export default function AnalyticsPage() {
                             </ChartContainer>
                         </StatCard>,
         topFranchises: <StatCard title="Top Franchises">
-                            <ChartContainer config={franchisesConfig} className="h-[260px] w-full">
+                            <ChartContainer config={franchisesConfig} className="h-full w-full">
                                 <PieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                     <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
@@ -421,7 +464,7 @@ export default function AnalyticsPage() {
                         </StatCard>,
         bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
         nightOwlScore: <StatCard title="Night Owl Score" description="Titles watched after 9 PM">
-                            <ChartContainer config={nightOwlConfig} className="h-[200px] w-full">
+                            <ChartContainer config={nightOwlConfig} className="h-full w-full">
                                 <LineChart data={nightOwlData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="hour" fontSize={12} />
@@ -432,7 +475,7 @@ export default function AnalyticsPage() {
                             </ChartContainer>
                         </StatCard>,
         obscurityIndex: <StatCard title="Obscurity Index" description="Your taste vs. popular taste">
-                             <ChartContainer config={obscurityConfig} className="h-[200px] w-full">
+                             <ChartContainer config={obscurityConfig} className="h-full w-full">
                                 <AreaChart data={obscurityData}>
                                     <defs>
                                         <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
@@ -483,10 +526,11 @@ export default function AnalyticsPage() {
                         {hasMounted ? (
                             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
                                 <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="flex flex-wrap gap-6 items-start">
                                         {basicCardOrder.map(cardId => {
                                             const card = allBasicCards[cardId];
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                            const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 350, height: 200 };
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)}>{card}</SortableCardWrapper> : null;
                                         })}
                                     </div>
                                 </SortableContext>
@@ -500,10 +544,11 @@ export default function AnalyticsPage() {
                          {hasMounted ? (
                             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
                                 <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="flex flex-wrap gap-6 items-start">
                                         {geekCardOrder.map(cardId => {
                                             const card = allGeekCards[cardId];
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                            const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 400, height: 350 };
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)}>{card}</SortableCardWrapper> : null;
                                         })}
                                     </div>
                                 </SortableContext>

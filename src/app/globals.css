@@ -299,3 +299,80 @@ body {
 .dark .sticky-note-text-obfuscated {
     background-color: hsla(0, 0%, 100%, 0.1) !important;
 }
+
+/* React-Resizable handles */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 20;
+}
+.react-resizable:hover .react-resizable-handle,
+.react-resizable-handle:hover {
+  opacity: 1;
+}
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--primary));
+  border-bottom-right-radius: 2px;
+}
+.react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: rotate(90deg);
+}
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+.react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+  transform: rotate(180deg);
+}
+.react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+  transform: rotate(270deg);
+}
+.react-resizable-handle-w,
+.react-resizable-handle-e {
+  top: 50%;
+  margin-top: -10px;
+  cursor: ew-resize;
+}
+.react-resizable-handle-w {
+  left: 0;
+  transform: rotate(135deg);
+}
+.react-resizable-handle-e {
+  right: 0;
+  transform: rotate(315deg);
+}
+.react-resizable-handle-n,
+.react-resizable-handle-s {
+  left: 50%;
+  margin-left: -10px;
+  cursor: ns-resize;
+}
+.react-resizable-handle-n {
+  top: 0;
+  transform: rotate(225deg);
+}
+.react-resizable-handle-s {
+  bottom: 0;
+  transform: rotate(45deg);
+}
