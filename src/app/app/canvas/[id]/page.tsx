@@ -14,6 +14,8 @@ import ReactFlow, {
   ReactFlowProvider,
   useReactFlow,
   MarkerType,
+  type OnNodeDrag,
+  type DefaultEdgeOptions,
 } from 'reactflow';
 import Link from 'next/link';
 import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, FileText } from 'lucide-react';
@@ -63,6 +65,10 @@ function downloadImage(dataUrl: string, fileName: string) {
     document.body.removeChild(a);
 }
 
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  interactionWidth: 75,
+};
+
 function CanvasFlow() {
   const params = useParams();
   const canvasId = params.id as string;
@@ -74,7 +80,8 @@ function CanvasFlow() {
   const [canvasName, setCanvasName] = useState('Untitled Canvas');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { project } = useReactFlow();
+  const { project, getEdge, addEdges, updateEdge } = useReactFlow();
+  const overlappedEdgeRef = useRef<string | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{
     top: number;
@@ -353,6 +360,64 @@ function CanvasFlow() {
       return { ...edge, style: { ...edge.style, strokeWidth: 0.5 } };
   });
 
+  const onNodeDrag: OnNodeDrag = useCallback(
+    (e, node) => {
+      const nodeDiv = document.querySelector(`.react-flow__node[data-id="${node.id}"]`);
+      if (!nodeDiv) return;
+      
+      const rect = nodeDiv.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const edgeElement = document
+        .elementsFromPoint(centerX, centerY)
+        .find((el) => el.classList.contains('react-flow__edge-interaction'))?.parentElement;
+      
+      const newOverlappedEdgeId = edgeElement?.dataset.id || null;
+      const lastOverlappedEdgeId = overlappedEdgeRef.current;
+
+      if (lastOverlappedEdgeId && lastOverlappedEdgeId !== newOverlappedEdgeId) {
+        updateEdge(lastOverlappedEdgeId, { style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } });
+      }
+
+      if (newOverlappedEdgeId && newOverlappedEdgeId !== lastOverlappedEdgeId) {
+        updateEdge(newOverlappedEdgeId, { style: { stroke: 'hsl(var(--primary))', strokeWidth: 2 } });
+      }
+
+      overlappedEdgeRef.current = newOverlappedEdgeId;
+    },
+    [updateEdge]
+  );
+
+  const onNodeDragStop: OnNodeDrag = useCallback(
+    (event, node) => {
+      const edgeId = overlappedEdgeRef.current;
+      if (!edgeId) return;
+      
+      const edge = getEdge(edgeId);
+      if (!edge) return;
+ 
+      updateEdge(edgeId, { source: edge.source, target: node.id, style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } });
+ 
+      addEdges({
+        id: `${node.id}->${edge.target}`,
+        source: node.id,
+        target: edge.target,
+        type: 'smoothstep',
+        style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
+        markerEnd: { type: MarkerType.ArrowClosed },
+        label: '',
+        labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem', textTransform: 'capitalize' },
+        labelBgPadding: [8, 4] as [number, number],
+        labelBgBorderRadius: 4,
+        labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
+      });
+ 
+      overlappedEdgeRef.current = null;
+    },
+    [getEdge, addEdges, updateEdge],
+  );
+
   return (
     <div 
       ref={reactFlowWrapper} 
@@ -409,6 +474,9 @@ function CanvasFlow() {
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
         onSelectionChange={onSelectionChange}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
+        defaultEdgeOptions={defaultEdgeOptions}
       >
         <Background variant="dot" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap />
