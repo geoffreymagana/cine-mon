@@ -706,5 +706,3 @@ export default function CanvasEditorPage() {
     </ReactFlowProvider>
   );
 }
-
-    
