@@ -500,7 +500,7 @@ export default function MovieDetailPage() {
                                     <TabsList>
                                         <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
                                         {isSeries && (movie.seasons?.length ?? 0) > 0 && <TabsTrigger value="seasons"><Tv className="mr-2" />Seasons</TabsTrigger>}
-                                        {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
+                                        {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast</TabsTrigger>}
                                         {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
                                     </TabsList>
                                 </div>

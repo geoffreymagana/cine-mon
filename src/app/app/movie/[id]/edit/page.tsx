@@ -390,7 +390,7 @@ export default function MovieEditPage() {
                 <CollapsibleTrigger asChild>
                   <div className="flex w-full cursor-pointer items-center justify-between p-6">
                     <div>
-                      <CardTitle>Cast & Crew</CardTitle>
+                      <CardTitle>Cast</CardTitle>
                       <CardDescription>Add director and cast members.</CardDescription>
                     </div>
                     <ChevronDown className={cn("h-5 w-5 transition-transform", isCastOpen && "rotate-180")} />
