@@ -151,8 +151,8 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                     />
                 </div>
                 <div className="flex-grow overflow-hidden relative pt-2">
-                    <ScrollArea className="h-full">
-                        <div className="space-y-4 pr-6">
+                    <ScrollArea className="h-full pr-4">
+                        <div className="space-y-4">
                             {isLoading && query.length > 1 && (
                                 Array.from({ length: 5 }).map((_, i) => (
                                     <div key={i} className="flex gap-4 p-2">
@@ -170,7 +170,7 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                 const isImporting = importingIds.has(result.id as number);
 
                                 const content = (
-                                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
+                                     <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-muted/50 w-full text-left">
                                         <Image
                                             src={result.posterUrl}
                                             alt={result.title}
@@ -181,8 +181,8 @@ export const SearchDialog = ({ isOpen, setIsOpen, onSave, existingMovies }: Sear
                                         />
                                         
                                         <div className="flex-grow min-w-0">
-                                            <div className="flex justify-between items-start gap-4">
-                                                <div className="flex-grow pr-4">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <div className="flex-grow min-w-0">
                                                     <h3 className="font-bold text-lg truncate" title={result.title}>{result.title}</h3>
                                                     <div className="text-sm text-muted-foreground flex items-center gap-2">
                                                         <span>{result.year}</span>
