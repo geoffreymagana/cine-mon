@@ -29,32 +29,25 @@ import {
     Edit,
     Film, 
     FlaskConical,
-    Folders, 
-    Goal,
-    Library,
-    Moon,
-    Palette,
-    Percent,
-    Repeat, 
-    Star, 
-    TrendingUp, 
+    GripVertical,
     Tv, 
-    User, 
-    UserSquare,
     Zap,
 } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 import type { Movie } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { MovieService } from '@/lib/movie-service';
 import { RatingCircle } from '@/components/rating-circle';
 import { Button } from '@/components/ui/button';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import { format } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
 
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
@@ -64,12 +57,19 @@ const CHART_COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit }: { icon?: React.ElementType, title: string, value?: React.ReactNode, description?: string, children?: React.ReactNode, className?: string, onEdit?: () => void }) => (
+const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, dragHandleProps }: { icon?: React.ElementType, title: string, value?: React.ReactNode, description?: string, children?: React.ReactNode, className?: string, onEdit?: () => void, dragHandleProps?: any }) => (
     <Card className={className}>
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-            <div>
-                <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center gap-2">
+                {dragHandleProps && (
+                    <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
+                        <GripVertical className="h-5 w-5" />
+                    </div>
+                )}
+                 <div>
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                    {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
+                </div>
             </div>
             {onEdit ? (
                 <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-1" onClick={onEdit}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
@@ -84,12 +84,19 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
     </Card>
 );
 
-const LastWatchedCard = ({ movie }: { movie: Movie }) => (
+const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleProps?: any }) => (
     <Card className="overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div>
-                <CardTitle className="text-sm font-medium">Last Suggestion</CardTitle>
-                <p className="text-xs text-muted-foreground pt-1">From "Surprise Me"</p>
+             <div className="flex items-center gap-2">
+                {dragHandleProps && (
+                    <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
+                        <GripVertical className="h-5 w-5" />
+                    </div>
+                )}
+                <div>
+                    <CardTitle className="text-sm font-medium">Last Suggestion</CardTitle>
+                    <p className="text-xs text-muted-foreground pt-1">From "Surprise Me"</p>
+                </div>
             </div>
              <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
@@ -113,23 +120,74 @@ const LastWatchedCard = ({ movie }: { movie: Movie }) => (
     </Card>
 );
 
+const SortableCardWrapper = ({ id, children }: { id: string, children: React.ReactNode }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style: React.CSSProperties = {
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        transition,
+        zIndex: isDragging ? 10 : 'auto',
+        opacity: isDragging ? 0.8 : 1,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style}>
+            {React.cloneElement(children as React.ReactElement, { dragHandleProps: { ...attributes, ...listeners } })}
+        </div>
+    );
+};
+
+
+const defaultCardOrder = {
+    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'averageRating', 'watchGoal', 'totalRewatches', 'lastSuggestion'],
+    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
+};
+
+
 export default function AnalyticsPage() {
     const [movies, setMovies] = React.useState<Movie[]>([]);
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
 
+    const [basicCardOrder, setBasicCardOrder] = React.useState<string[]>(defaultCardOrder.basic);
+    const [geekCardOrder, setGeekCardOrder] = React.useState<string[]>(defaultCardOrder.geek);
+    const isMobile = useIsMobile();
+    const { toast } = useToast();
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: isMobile ? 250 : 0,
+                tolerance: isMobile ? 5 : 2,
+            },
+        }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
     React.useEffect(() => {
         const loadData = async () => {
             try {
-                const [moviesFromDb, goalFromDb, lastSpunIdFromDb] = await Promise.all([
+                const [moviesFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder] = await Promise.all([
                     MovieService.getMovies(),
                     MovieService.getSetting('watchGoal'),
-                    MovieService.getSetting('lastSpunMovieId')
+                    MovieService.getSetting('lastSpunMovieId'),
+                    MovieService.getSetting('analyticsBasicOrder'),
+                    MovieService.getSetting('analyticsGeekOrder'),
                 ]);
                 
                 setMovies(moviesFromDb);
                 if (goalFromDb) setWatchGoal(goalFromDb);
+
+                if (storedBasicOrder) setBasicCardOrder(storedBasicOrder);
+                if (storedGeekOrder) setGeekCardOrder(storedGeekOrder);
                 
                 if (lastSpunIdFromDb) {
                     const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunIdFromDb);
@@ -138,10 +196,35 @@ export default function AnalyticsPage() {
 
             } catch (error) {
                 console.error("Failed to load data from DB:", error);
+                toast({ title: "Error", description: "Could not load analytics data.", variant: "destructive" });
             }
         };
         loadData();
-    }, []);
+    }, [toast]);
+
+    const handleDragEnd = (event: DragEndEvent, tab: 'basic' | 'geek') => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            if (tab === 'basic') {
+                setBasicCardOrder((items) => {
+                    const oldIndex = items.indexOf(active.id as string);
+                    const newIndex = items.indexOf(over.id as string);
+                    const newOrder = arrayMove(items, oldIndex, newIndex);
+                    MovieService.setSetting('analyticsBasicOrder', newOrder);
+                    return newOrder;
+                });
+            } else {
+                setGeekCardOrder((items) => {
+                    const oldIndex = items.indexOf(active.id as string);
+                    const newIndex = items.indexOf(over.id as string);
+                    const newOrder = arrayMove(items, oldIndex, newIndex);
+                    MovieService.setSetting('analyticsGeekOrder', newOrder);
+                    return newOrder;
+                });
+            }
+        }
+    };
+
 
     const watchedMovies = React.useMemo(() =>
         movies.filter(movie => movie.status !== 'Plan to Watch')
@@ -246,6 +329,109 @@ export default function AnalyticsPage() {
       YourTaste: { label: "Your Taste", color: "hsl(var(--chart-1))" },
       Popular: { label: "Popular", color: "hsl(var(--muted-foreground))" },
     } satisfies ChartConfig;
+    
+    const allBasicCards: Record<string, React.ReactNode> = {
+        totalTitles: <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} />,
+        episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />,
+        timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
+        averageRating: <StatCard title="Average Rating">
+                        <div className="flex items-center gap-4 pt-2">
+                            <RatingCircle percentage={averageRating} />
+                            <span className="text-2xl font-bold">{averageRating.toFixed(1)}/100</span>
+                        </div>
+                    </StatCard>,
+        watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
+                        <div className="flex items-end gap-2 text-2xl font-bold pt-2">
+                            {totalTitlesWatched} 
+                            <span className="text-muted-foreground text-lg">/ {watchGoal}</span>
+                        </div>
+                        <Progress value={(totalTitlesWatched/watchGoal)*100} className="mt-2" />
+                    </StatCard>,
+        totalRewatches: <StatCard title="Total Rewatches">
+                            <ChartContainer config={rewatchConfig} className="mx-auto aspect-square h-[120px]">
+                                <PieChart>
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                                       {rewatchData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Legend />
+                                </PieChart>
+                            </ChartContainer>
+                        </StatCard>,
+        lastSuggestion: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
+    };
+
+    const allGeekCards: Record<string, React.ReactNode> = {
+        mostActors: <StatCard title="Most Watched Actors">
+                        <ChartContainer config={actorsConfig} className="h-[300px] w-full">
+                             <PieChart>
+                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                <Pie data={topActors} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                                    {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                </Pie>
+                                <Legend iconSize={8} />
+                            </PieChart>
+                        </ChartContainer>
+                    </StatCard>,
+        mostDirectors: <StatCard title="Most Watched Directors">
+                            <ChartContainer config={directorsConfig} className="h-[300px] w-full">
+                                <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20 }}>
+                                    <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={20} />
+                                </BarChart>
+                            </ChartContainer>
+                        </StatCard>,
+        topFranchises: <StatCard title="Top Franchises">
+                            <ChartContainer config={franchisesConfig} className="h-[260px] w-full">
+                                <PieChart>
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                    <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
+                                       {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                    </Pie>
+                                    <Legend wrapperStyle={{fontSize: '12px'}} />
+                                </PieChart>
+                            </ChartContainer>
+                        </StatCard>,
+        bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
+        nightOwlScore: <StatCard title="Night Owl Score" description="Titles watched after 9 PM">
+                            <ChartContainer config={nightOwlConfig} className="h-[200px] w-full">
+                                <LineChart data={nightOwlData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="hour" fontSize={12} />
+                                    <YAxis fontSize={12} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                                </LineChart>
+                            </ChartContainer>
+                        </StatCard>,
+        obscurityIndex: <StatCard title="Obscurity Index" description="Your taste vs. popular taste">
+                             <ChartContainer config={obscurityConfig} className="h-[200px] w-full">
+                                <AreaChart data={obscurityData}>
+                                    <defs>
+                                        <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorPopular" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" fontSize={12} />
+                                    <YAxis fontSize={12} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
+                                    <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
+                                </AreaChart>
+                            </ChartContainer>
+                         </StatCard>,
+    };
 
     return (
         <>
@@ -272,113 +458,29 @@ export default function AnalyticsPage() {
                     </TabsList>
                     
                     <TabsContent value="basic">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} className="lg:col-span-1" />
-                            <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />
-                            <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />
-                            <StatCard title="Average Rating">
-                                <div className="flex items-center gap-4 pt-2">
-                                    <RatingCircle percentage={averageRating} />
-                                    <span className="text-2xl font-bold">{averageRating.toFixed(1)}/100</span>
+                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
+                            <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {basicCardOrder.map(cardId => {
+                                        const card = allBasicCards[cardId];
+                                        return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                    })}
                                 </div>
-                            </StatCard>
-                            
-                            <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
-                                <div className="flex items-end gap-2 text-2xl font-bold pt-2">
-                                    {totalTitlesWatched} 
-                                    <span className="text-muted-foreground text-lg">/ {watchGoal}</span>
-                                </div>
-                                <Progress value={(totalTitlesWatched/watchGoal)*100} className="mt-2" />
-                            </StatCard>
-
-                            <StatCard title="Total Rewatches" className="md:col-span-2">
-                                <ChartContainer config={rewatchConfig} className="mx-auto aspect-square h-[120px]">
-                                    <PieChart>
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
-                                        <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
-                                           {rewatchData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
-                                        </Pie>
-                                        <Legend />
-                                    </PieChart>
-                                </ChartContainer>
-                            </StatCard>
-                            
-                            {lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />}
-                        </div>
+                            </SortableContext>
+                        </DndContext>
                     </TabsContent>
 
                     <TabsContent value="geek">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatCard title="Most Watched Actors" className="md:col-span-1 lg:row-span-2">
-                                <ChartContainer config={actorsConfig} className="h-[300px] w-full">
-                                     <PieChart>
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                        <Pie data={topActors} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5}>
-                                            {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                        <Legend iconSize={8} />
-                                    </PieChart>
-                                </ChartContainer>
-                            </StatCard>
-                             <StatCard title="Most Watched Directors" className="md:col-span-1 lg:col-span-2">
-                                <ChartContainer config={directorsConfig} className="h-[300px] w-full">
-                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20 }}>
-                                        <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
-                                        <XAxis type="number" hide />
-                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={20} />
-                                    </BarChart>
-                                </ChartContainer>
-                            </StatCard>
-                             <StatCard title="Top Franchises" className="md:col-span-1 lg:col-span-2">
-                                <ChartContainer config={franchisesConfig} className="h-[260px] w-full">
-                                    <PieChart>
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                        <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
-                                           {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                        <Legend wrapperStyle={{fontSize: '12px'}} />
-                                    </PieChart>
-                                </ChartContainer>
-                            </StatCard>
-                            <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />
-                            <StatCard title="Night Owl Score" description="Titles watched after 9 PM" className="md:col-span-1 lg:col-span-2">
-                                <ChartContainer config={nightOwlConfig} className="h-[200px] w-full">
-                                    <LineChart data={nightOwlData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="hour" fontSize={12} />
-                                        <YAxis fontSize={12} />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                                    </LineChart>
-                                </ChartContainer>
-                            </StatCard>
-                             <StatCard title="Obscurity Index" description="Your taste vs. popular taste" className="md:col-span-2 lg:col-span-3">
-                                 <ChartContainer config={obscurityConfig} className="h-[200px] w-full">
-                                    <AreaChart data={obscurityData}>
-                                        <defs>
-                                            <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                                                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                                            </linearGradient>
-                                            <linearGradient id="colorPopular" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3}/>
-                                                <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="month" fontSize={12} />
-                                        <YAxis fontSize={12} />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
-                                        <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
-                                    </AreaChart>
-                                </ChartContainer>
-                             </StatCard>
-                        </div>
+                         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
+                            <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                     {geekCardOrder.map(cardId => {
+                                        const card = allGeekCards[cardId];
+                                        return card ? <SortableCardWrapper key={cardId} id={cardId}>{card}</SortableCardWrapper> : null;
+                                    })}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
                     </TabsContent>
                 </Tabs>
             </div>
