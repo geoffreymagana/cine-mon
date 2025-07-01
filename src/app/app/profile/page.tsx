@@ -168,33 +168,41 @@ export default function ProfilePage() {
                 importedMovies.forEach(importedMovie => {
                     if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
                         skippedCount++;
-                        return; // Skip invalid entries
+                        return;
                     }
 
-                    const movieToProcess = { ...importedMovie };
+                    // Sanitize every imported movie object to ensure data integrity
+                    const sanitizedImportedMovie: Partial<Movie> = { ...importedMovie };
+                    if (!Array.isArray(sanitizedImportedMovie.tags)) {
+                        sanitizedImportedMovie.tags = [];
+                    }
+                    if (sanitizedImportedMovie.id && typeof sanitizedImportedMovie.id !== 'string') {
+                        sanitizedImportedMovie.id = String(sanitizedImportedMovie.id);
+                    }
 
-                    if (movieToProcess.id && movieMap.has(movieToProcess.id)) {
-                        const existingMovie = movieMap.get(movieToProcess.id)!;
-                        movieMap.set(movieToProcess.id, { ...existingMovie, ...movieToProcess });
+                    const existingMovie = sanitizedImportedMovie.id ? movieMap.get(sanitizedImportedMovie.id) : undefined;
+
+                    if (existingMovie) {
+                        // Update existing movie, ensuring no indexed fields are overwritten with invalid types
+                        const updatedMovie = { ...existingMovie, ...sanitizedImportedMovie };
+                        if (!Array.isArray(updatedMovie.tags)) updatedMovie.tags = existingMovie.tags;
+                        movieMap.set(updatedMovie.id, updatedMovie);
                         updatedCount++;
                     } else {
-                        if (!movieToProcess.id || movieMap.has(movieToProcess.id)) {
-                            movieToProcess.id = crypto.randomUUID();
-                        }
-                        
+                        // Create new movie with defaults
                         const newMovie: Movie = {
-                            id: movieToProcess.id,
-                            title: movieToProcess.title,
-                            description: movieToProcess.description || '',
-                            posterUrl: movieToProcess.posterUrl || 'https://placehold.co/500x750.png',
-                            type: ['Movie', 'TV Show', 'Anime'].includes(movieToProcess.type) ? movieToProcess.type : 'Movie',
-                            status: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(movieToProcess.status) ? movieToProcess.status : 'Plan to Watch',
-                            watchedEpisodes: typeof movieToProcess.watchedEpisodes === 'number' ? movieToProcess.watchedEpisodes : 0,
-                            totalEpisodes: typeof movieToProcess.totalEpisodes === 'number' && movieToProcess.totalEpisodes > 0 ? movieToProcess.totalEpisodes : 1,
-                            rating: typeof movieToProcess.rating === 'number' ? movieToProcess.rating : 0,
-                            tags: Array.isArray(movieToProcess.tags) ? movieToProcess.tags : [],
-                            releaseDate: typeof movieToProcess.releaseDate === 'string' ? movieToProcess.releaseDate : '',
-                            ...movieToProcess
+                            id: sanitizedImportedMovie.id || crypto.randomUUID(),
+                            title: sanitizedImportedMovie.title || 'Untitled',
+                            description: sanitizedImportedMovie.description || '',
+                            posterUrl: sanitizedImportedMovie.posterUrl || 'https://placehold.co/500x750.png',
+                            type: ['Movie', 'TV Show', 'Anime'].includes(sanitizedImportedMovie.type as any) ? sanitizedImportedMovie.type as any : 'Movie',
+                            status: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitizedImportedMovie.status as any) ? sanitizedImportedMovie.status as any : 'Plan to Watch',
+                            watchedEpisodes: typeof sanitizedImportedMovie.watchedEpisodes === 'number' ? sanitizedImportedMovie.watchedEpisodes : 0,
+                            totalEpisodes: typeof sanitizedImportedMovie.totalEpisodes === 'number' && sanitizedImportedMovie.totalEpisodes > 0 ? sanitizedImportedMovie.totalEpisodes : 1,
+                            rating: typeof sanitizedImportedMovie.rating === 'number' ? sanitizedImportedMovie.rating : 0,
+                            tags: Array.isArray(sanitizedImportedMovie.tags) ? sanitizedImportedMovie.tags : [],
+                            releaseDate: typeof sanitizedImportedMovie.releaseDate === 'string' ? sanitizedImportedMovie.releaseDate : '',
+                            ...sanitizedImportedMovie,
                         };
                         movieMap.set(newMovie.id, newMovie);
                         newCount++;

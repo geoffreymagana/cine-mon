@@ -41,8 +41,6 @@ export const DashboardHeader = ({
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = React.useState("My");
 
-  // This effect will run on the client to get data from IndexedDB.
-  // It also listens for profile updates to stay in sync.
   const loadProfileData = React.useCallback(async () => {
     try {
         const [storedAvatar, storedName] = await Promise.all([
