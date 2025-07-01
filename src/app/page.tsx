@@ -174,7 +174,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition duration-300 hover:bg-neutral-200 hover:text-black">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 hover:text-black btn-fill-hover">
                   <Github className="mr-2" /> Fork on GitHub
                 </Button>
               </a>
@@ -199,7 +199,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold font-headline text-white">{feature.title}</h3>
+                    <h3 className="text-lg font-bold font-headline landing-page-text">{feature.title}</h3>
                     <p className="mt-1 text-neutral-400">{feature.description}</p>
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export default function LandingPage() {
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                       <feature.icon className="w-6 h-6 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-xl text-white">{feature.title}</CardTitle>
+                    <CardTitle className="font-headline text-xl landing-page-text">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-neutral-400">{feature.description}</p>
@@ -282,7 +282,7 @@ export default function LandingPage() {
                                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold text-white">{testimonial.name}</p>
+                                    <p className="font-semibold landing-page-text">{testimonial.name}</p>
                                     <p className="text-sm text-neutral-500">{testimonial.handle}</p>
                                 </div>
                             </CardHeader>
@@ -306,7 +306,7 @@ export default function LandingPage() {
                   </Button>
               </Link>
               <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 transition duration-300 hover:bg-neutral-200 hover:text-black">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border border-neutral-700 text-neutral-300 hover:text-black btn-fill-hover">
                   <Github className="mr-2" /> Fork on GitHub
                 </Button>
               </a>

@@ -93,6 +93,13 @@ body {
 
   html.theme-blue { --primary: 217 91% 60%; --ring: 217 91% 60%; }
   html.dark.theme-blue { --primary: 217 91% 70%; --ring: 217 91% 70%; }
+
+  .landing-page-text {
+    color: hsl(var(--foreground));
+  }
+  .dark .landing-page-text {
+      color: white;
+  }
 }
 
 @layer base {
@@ -102,6 +109,25 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+    .btn-fill-hover {
+        @apply relative overflow-hidden transition-colors duration-300 ease-in-out;
+        z-index: 1;
+    }
+
+    .btn-fill-hover::before {
+        content: '';
+        @apply absolute top-0 left-0 w-full h-full bg-neutral-200 transition-transform duration-300 ease-in-out;
+        transform: scaleX(0);
+        transform-origin: left;
+        z-index: -1;
+    }
+
+    .btn-fill-hover:hover::before {
+        transform: scaleX(1);
+    }
 }
 
 .revolving-carousel-container {

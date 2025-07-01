@@ -19,24 +19,24 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
         <>
             <div className="text-center mb-16">
                 <h1 className="text-5xl font-bold font-headline text-white">Changelog</h1>
-                <p className="text-muted-foreground mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
+                <p className="text-neutral-400 mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
             </div>
             
             {versions.length > 0 ? (
-                <div className="relative">
+                <div className="relative max-w-prose mx-auto">
                     {/* Vertical Timeline */}
                     <div className="absolute left-2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-transparent via-border to-transparent -z-10" />
 
                     {versions.map((versionInfo, v_idx) => (
-                        <div key={`${versionInfo.version}-${v_idx}`} className="flex items-start gap-x-6 mb-16">
+                        <div key={`${versionInfo.version}-${v_idx}`} className="flex items-baseline gap-x-6 mb-16">
                             {/* Dot */}
-                            <div className="w-4 h-4 bg-background rounded-full border-2 border-primary ring-4 ring-background mt-1 flex-shrink-0" />
+                            <div className="w-4 h-4 bg-background rounded-full border-2 border-primary ring-4 ring-background flex-shrink-0" />
                             
                             {/* Content */}
                             <div className="flex-1">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-baseline gap-4 mb-4">
                                     <Badge variant="outline" className="text-lg py-1 px-3">v{versionInfo.version}</Badge>
-                                    <p className="text-sm text-muted-foreground">{versionInfo.date}</p>
+                                    <p className="text-sm text-neutral-400">{versionInfo.date}</p>
                                 </div>
                                 <div className="space-y-6">
                                     {versionInfo.sections.map((section, s_idx) => {
@@ -51,15 +51,16 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                                                 )}
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
-                                                    className="prose prose-lg prose-invert max-w-none"
+                                                    className="text-neutral-300 space-y-4"
                                                     components={{
-                                                        a: ({node, ...props}) => <span {...props} />, // Disable links
-                                                        h3: () => null, // Already rendered manually
-                                                        h4: ({node, ...props}) => <h4 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-                                                        ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2 space-y-2" {...props} />,
+                                                        a: ({node, ...props}) => <span className="text-primary hover:underline" {...props} />,
+                                                        h3: () => null,
+                                                        h4: ({node, ...props}) => <h4 className="text-lg font-semibold mt-4 mb-2 text-white" {...props} />,
+                                                        ul: ({node, ...props}) => <ul className="list-disc pl-6 my-4 space-y-2" {...props} />,
                                                         li: ({node, ...props}) => <li className="pl-2" {...props} />,
                                                         img: ({node, ...props}) => <img className="max-w-full md:max-w-md rounded-md border my-4 shadow-md" alt="" {...props} />,
                                                         code: ({node, ...props}) => <code className="bg-muted text-muted-foreground px-1 py-0.5 rounded-sm font-mono text-xs" {...props} />,
+                                                        p: ({node, ...props}) => <p className="leading-relaxed" {...props} />
                                                     }}
                                                 >
                                                     {section.content}
@@ -73,7 +74,7 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                     ))}
                 </div>
             ) : (
-                 <div className="text-center text-muted-foreground py-16">
+                 <div className="text-center text-neutral-400 py-16">
                     <p>No changelog entries found.</p>
                 </div>
             )}

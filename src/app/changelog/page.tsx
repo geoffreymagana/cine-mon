@@ -14,7 +14,7 @@ export default async function PublicChangelogPage() {
   const versions = await parseChangelog();
   
   return (
-    <div className="bg-black text-neutral-100 font-body antialiased">
+    <div className="bg-black text-white font-body antialiased">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -41,7 +41,7 @@ export default async function PublicChangelogPage() {
 
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-6 py-12">
-            <div className="max-w-4xl mx-auto prose prose-lg prose-invert max-w-none">
+            <div className="max-w-4xl mx-auto">
                 <ChangelogDisplay versions={versions} />
             </div>
         </div>
