@@ -342,7 +342,6 @@ function CanvasFlow() {
               style: {
                   ...edge.style,
                   strokeWidth: 2,
-                  stroke: edge.style?.stroke || 'hsl(var(--primary))',
               },
               zIndex: 10,
           };
