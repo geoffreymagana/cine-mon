@@ -397,21 +397,22 @@ function CanvasFlow() {
       const edge = getEdge(edgeId);
       if (!edge) return;
  
-      updateEdge(edgeId, { source: edge.source, target: node.id, style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } });
- 
-      addEdges({
-        id: `${node.id}->${edge.target}`,
-        source: node.id,
-        target: edge.target,
-        type: 'smoothstep',
-        style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 },
-        markerEnd: { type: MarkerType.ArrowClosed },
-        label: '',
-        labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500, fontSize: '0.5rem', textTransform: 'capitalize' },
-        labelBgPadding: [8, 4] as [number, number],
-        labelBgBorderRadius: 4,
-        labelBgStyle: { fill: 'hsl(var(--background))', fillOpacity: 0.95 },
+      // Update the first segment of the edge. It now connects to the dropped node.
+      updateEdge(edgeId, { 
+          target: node.id, 
+          style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 } 
       });
+ 
+      // Create the second segment, inheriting properties from the original edge.
+      const newEdge = { 
+           ...edge, // Inherit type, marker, label styles etc.
+           id: `${node.id}->${edge.target}`, // Create a new unique ID
+           source: node.id,
+           target: edge.target,
+           style: { stroke: 'hsl(var(--foreground))', strokeWidth: 0.5 }, // Reset style
+      };
+
+      addEdges(newEdge);
  
       overlappedEdgeRef.current = null;
     },
