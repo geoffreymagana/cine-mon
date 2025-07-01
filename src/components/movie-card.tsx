@@ -11,6 +11,7 @@ import { Clock, CircleCheck, PauseCircle, CircleOff, Bookmark, Trash2 } from "lu
 import { RatingCircle } from "./rating-circle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 type MovieCardProps = {
   movie: Movie;
@@ -32,6 +33,16 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
     'Dropped': { icon: CircleOff, className: 'text-destructive', label: 'Dropped' },
     'Plan to Watch': { icon: Bookmark, className: 'text-muted-foreground', label: 'Plan to Watch' },
   }[movie.status];
+
+  const formattedDate = React.useMemo(() => {
+    if (!movie.releaseDate) return 'Unknown';
+    try {
+        // Appending T00:00:00 ensures the date is parsed in local time, avoiding timezone-related off-by-one errors.
+        return format(new Date(`${movie.releaseDate}T00:00:00`), 'MMM d, yyyy');
+    } catch (e) {
+        return movie.releaseDate;
+    }
+  }, [movie.releaseDate]);
 
   const CardInnerComponent = (
     <Card className="overflow-visible flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 bg-card h-full">
@@ -90,7 +101,7 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false }
         <p className="text-base font-bold leading-tight truncate flex-grow" title={movie.title}>
           {movie.title}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">{movie.releaseDate}</p>
+        <p className="text-xs text-muted-foreground mt-1">{formattedDate}</p>
       </CardContent>
     </Card>
   );

@@ -36,6 +36,7 @@ import {
     Check,
     PlusCircle
 } from 'lucide-react';
+import { format } from 'date-fns';
 
 import type { Movie, UserCollection } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -236,6 +237,16 @@ export default function MovieDetailPage() {
             description: `"${movie.title}" has been added to your new ${newCollection.type.toLowerCase()} "${newCollection.name}".`,
         });
     };
+
+    const formattedReleaseDate = React.useMemo(() => {
+        if (!movie?.releaseDate) return 'N/A';
+        try {
+            // Appending T00:00:00 ensures the date is parsed in local time, avoiding timezone-related off-by-one errors.
+            return format(new Date(`${movie.releaseDate}T00:00:00`), 'MMM d, yyyy');
+        } catch (e) {
+            return movie.releaseDate;
+        }
+    }, [movie?.releaseDate]);
 
     if (movie === undefined) {
         return (
@@ -510,7 +521,7 @@ export default function MovieDetailPage() {
                                                         <RatingProgressBar percentage={movie.rating} className="mt-2" />
                                                     </div>
                                                 </div>
-                                                <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
+                                                <DetailItem icon={Calendar} label="Release Date" value={formattedReleaseDate} />
                                                 <DetailItem icon={isSeries ? Tv : Film} label="Type" value={movie.type} />
                                                 {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
                                                 <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
@@ -670,7 +681,7 @@ export default function MovieDetailPage() {
                                             />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{collectionMovie.title}</p>
-                                                <p className="text-sm text-muted-foreground">{collectionMovie.releaseDate}</p>
+                                                <p className="text-sm text-muted-foreground">{collectionMovie.releaseDate ? format(new Date(`${collectionMovie.releaseDate}T00:00:00`), 'MMM d, yyyy') : ''}</p>
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         </div>
