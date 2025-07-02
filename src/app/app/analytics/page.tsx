@@ -356,21 +356,20 @@ export default function AnalyticsPage() {
 
         const rewatchRatio = totalTitlesWatched > 0 ? (totalRewatches / totalTitlesWatched) : 0;
         
-        const timelineData = allMovies
-            .filter(m => m.sortOrder)
+        const decadeDistributionData = watchedMovies
+            .filter(movie => movie.releaseDate && /^\d{4}/.test(movie.releaseDate))
             .reduce((acc, movie) => {
-                const dateKey = format(new Date(movie.sortOrder!), 'yyyy-MM');
-                acc[dateKey] = (acc[dateKey] || 0) + 1;
+                const year = parseInt(movie.releaseDate!.substring(0, 4), 10);
+                const decade = Math.floor(year / 10) * 10;
+                const decadeLabel = `${decade}s`;
+                
+                acc[decadeLabel] = (acc[decadeLabel] || 0) + 1;
                 return acc;
             }, {} as Record<string, number>);
 
-        const collectionTimeline = Object.entries(timelineData)
-            .map(([date, count]) => ({ date, count, }))
-            .sort((a, b) => a.date.localeCompare(b.date))
-            .map(item => ({
-                date: format(new Date(item.date), 'MMM yy'),
-                count: item.count
-            }));
+        const decadeDistribution = Object.entries(decadeDistributionData)
+            .map(([decade, count]) => ({ decade, count }))
+            .sort((a, b) => a.decade.localeCompare(b.decade));
             
         return {
             totalTitlesWatched,
@@ -387,7 +386,7 @@ export default function AnalyticsPage() {
             topCollections,
             seriesCompletion: seriesWithProgress,
             rewatchRatio: rewatchRatio.toFixed(2),
-            collectionTimeline,
+            decadeDistribution,
         };
     }, [allMovies, watchedMovies, allCollections]);
     
@@ -508,11 +507,11 @@ export default function AnalyticsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard icon={History} title="Collection Timeline" description="Movies added over time" className="lg:col-span-4">
-                        {data.collectionTimeline.length > 1 ? (
+                    <StatCard icon={History} title="Decade Distribution" description="Release decades of your watched titles" className="lg:col-span-4">
+                        {data.decadeDistribution.length > 1 ? (
                             <div className="w-full h-64 -ml-4">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={data.collectionTimeline} margin={{ top: 5, right: 20, left: 10, bottom: 0 }}>
+                                    <AreaChart data={data.decadeDistribution} margin={{ top: 5, right: 20, left: 10, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="timelineGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
@@ -520,16 +519,16 @@ export default function AnalyticsPage() {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" vertical={false} />
-                                        <XAxis dataKey="date" fontSize={11} tickLine={false} axisLine={false} tickMargin={8}/>
+                                        <XAxis dataKey="decade" fontSize={11} tickLine={false} axisLine={false} tickMargin={8}/>
                                         <YAxis fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} width={25} />
                                         <Tooltip content={<CustomTooltipContent />} />
-                                        <Area type="monotone" dataKey="count" name="New Titles" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#timelineGradient)" />
+                                        <Area type="monotone" dataKey="count" name="Titles" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#timelineGradient)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-16">
-                               Not enough data for a timeline. Add more movies over time.
+                               Not enough data for a timeline. Watch more movies from different decades.
                             </div>
                         )}
                     </StatCard>
