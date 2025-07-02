@@ -337,9 +337,9 @@ export default function AnalyticsPage() {
                                    barSize={12}
                                >
                                     <defs>
-                                        <linearGradient id="goalGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
-                                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                                        <linearGradient id="goalGradient" x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
                                         </linearGradient>
                                     </defs>
                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
@@ -520,15 +520,15 @@ export default function AnalyticsPage() {
                                     >
                                         <defs>
                                             {posterPaletteData.map((entry, index) => (
-                                                <radialGradient key={`gradient-${index}`} id={`paletteGradient${index}`}>
-                                                    <stop offset="0%" stopColor={entry.baseColor} stopOpacity={1} />
-                                                    <stop offset="100%" stopColor={entry.baseColor} stopOpacity={0.4} />
-                                                </radialGradient>
+                                                <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
+                                                    <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
+                                                    <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
+                                                </linearGradient>
                                             ))}
                                         </defs>
                                         <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
                                             {posterPaletteData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} className="stroke-background stroke-2" />
+                                                <Cell key={`cell-${index}`} fill={entry.fill} />
                                             ))}
                                         </RadialBar>
                                         <Tooltip content={({ active, payload }) => {
@@ -649,3 +649,4 @@ export default function AnalyticsPage() {
     
 
   
+
