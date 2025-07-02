@@ -101,7 +101,7 @@ function distanceToLineSegment(
   const yy = lineStart.y + param * D;
   
   const dx = point.x - xx;
-  const dy = point.y - dy;
+  const dy = point.y - yy;
   
   return Math.sqrt(dx * dx + dy * dy);
 }
@@ -847,3 +847,5 @@ export default function CanvasEditorPage() {
     </ReactFlowProvider>
   );
 }
+
+    
