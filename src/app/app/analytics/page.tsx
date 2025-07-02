@@ -43,6 +43,7 @@ import {
     Video,
     Zap,
 } from 'lucide-react';
+import { format } from 'date-fns';
 import { MovieService } from '@/lib/movie-service';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import type { Movie, UserCollection } from '@/lib/types';
@@ -354,6 +355,22 @@ export default function AnalyticsPage() {
             .slice(0, 5);
 
         const rewatchRatio = totalTitlesWatched > 0 ? (totalRewatches / totalTitlesWatched) : 0;
+        
+        const timelineData = allMovies
+            .filter(m => m.sortOrder)
+            .reduce((acc, movie) => {
+                const dateKey = format(new Date(movie.sortOrder!), 'yyyy-MM');
+                acc[dateKey] = (acc[dateKey] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>);
+
+        const collectionTimeline = Object.entries(timelineData)
+            .map(([date, count]) => ({ date, count, }))
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map(item => ({
+                date: format(new Date(item.date), 'MMM yy'),
+                count: item.count
+            }));
             
         return {
             totalTitlesWatched,
@@ -370,6 +387,7 @@ export default function AnalyticsPage() {
             topCollections,
             seriesCompletion: seriesWithProgress,
             rewatchRatio: rewatchRatio.toFixed(2),
+            collectionTimeline,
         };
     }, [allMovies, watchedMovies, allCollections]);
     
@@ -490,10 +508,30 @@ export default function AnalyticsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard icon={History} title="Collection Timeline" description="Detailed timeline requires 'date added' for each title" className="lg:col-span-4">
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-16">
-                           Feature coming soon.
-                        </div>
+                    <StatCard icon={History} title="Collection Timeline" description="Movies added over time" className="lg:col-span-4">
+                        {data.collectionTimeline.length > 1 ? (
+                            <div className="w-full h-64 -ml-4">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={data.collectionTimeline} margin={{ top: 5, right: 20, left: 10, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="timelineGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
+                                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" vertical={false} />
+                                        <XAxis dataKey="date" fontSize={11} tickLine={false} axisLine={false} tickMargin={8}/>
+                                        <YAxis fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} width={25} />
+                                        <Tooltip content={<CustomTooltipContent />} />
+                                        <Area type="monotone" dataKey="count" name="New Titles" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#timelineGradient)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-16">
+                               Not enough data for a timeline. Add more movies over time.
+                            </div>
+                        )}
                     </StatCard>
 
                     <StatCard icon={Video} title="Most Watched Directors" description="Directors who appear most often" className="lg:col-span-4">
