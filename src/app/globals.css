@@ -242,7 +242,6 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
 }
 
-<<<<<<< Updated upstream
 /* Sticky Note Styles */
 .sticky-note {
   background: #ffc;
@@ -376,7 +375,8 @@ body {
 .react-resizable-handle-s {
   bottom: 0;
   transform: rotate(45deg);
-=======
+}
+
 .theme-wrapped-sci-fi {
   background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
 }
@@ -406,5 +406,4 @@ body {
 @keyframes float {
   0% { transform: translateY(0) translateX(0); opacity: 1; }
   100% { transform: translateY(-100vh) translateX(10vw); opacity: 0; }
->>>>>>> Stashed changes
 }

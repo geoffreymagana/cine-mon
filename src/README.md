@@ -30,7 +30,7 @@ Cine-Mon is packed with features designed for both casual viewers and serious ci
     -   Watch trailers directly within the app in an embedded ambient player.
     -   A "Surprise Me" spin-the-wheel feature to help you break decision paralysis.
 -   **Your Data, Your Control**:
-    -   **100% Offline-First**: All your data is stored locally in your browser's `localStorage`.
+    -   **100% Offline-First**: All your data is stored locally in your browser's IndexedDB.
     -   **Full Data Portability**: Easily import or export your entire collection to JSON or CSV.
 -   **PWA Ready**: Install Cine-Mon on your mobile device for a native, full-screen app experience.
 
@@ -62,7 +62,7 @@ The Canvas is a powerful, free-form space designed for visual thinkers, storytel
 -   **Components**: [ShadCN UI](https://ui.shadcn.com/)
 -   **Canvas**: [React Flow](https://reactflow.dev/)
 -   **AI Features**: [Firebase Genkit](https://firebase.google.com/docs/genkit) with the Gemini API
--   **State Management**: React Context and client-side `localStorage`
+-   **State Management**: React Context and client-side IndexedDB
 -   **Deployment**: Ready for any static/Next.js hosting (e.g., Firebase App Hosting, Vercel).
 
 ## ⚙️ Local Development
@@ -97,8 +97,8 @@ To run Cine-Mon on your local machine:
 
 This section sheds light on some of the interesting challenges and design decisions made during the development of Cine-Mon.
 
-#### Local-First Storage
-The core design principle of Cine-Mon is privacy and data ownership. All user data (movies, collections, profile settings) is stored directly in the browser's **`localStorage`**.
+#### IndexedDB-First Storage
+The core design principle of Cine-Mon is privacy and data ownership. All user data (movies, collections, profile settings) is stored directly in the browser's **IndexedDB**.
 
 -   **Pros**: Zero-Login, blazing fast, fully offline, and ultimate privacy.
 -   **Cons/Trade-offs**: Data is tied to a specific browser on a specific device. **Use the Export feature to create regular backups!**
@@ -156,8 +156,7 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
 #### Lucide Icons
