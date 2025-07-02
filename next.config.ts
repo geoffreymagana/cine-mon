@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const withPWA = require('next-pwa')({
@@ -19,7 +20,7 @@ const withPWA = require('next-pwa')({
     },
     {
       urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
-      handler: 'CacheFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'movie-posters',
         expiration: {
