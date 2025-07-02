@@ -11,6 +11,7 @@ import { ParticleBackground } from './ParticleBackground';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { X } from 'lucide-react';
+import { AudioController } from './AudioController';
 
 type WrappedSlideshowProps = {
   slides: WrappedSlide[];
@@ -19,6 +20,7 @@ type WrappedSlideshowProps = {
 export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const slideRef = useRef<HTMLDivElement>(null);
 
   const currentSlide = slides[index];
@@ -61,7 +63,12 @@ export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
     <div className="relative w-full h-screen bg-black text-white font-headline overflow-hidden">
         <ParticleBackground />
 
-        <div className="absolute top-4 right-4 z-20 flex gap-4">
+        <div className="absolute top-4 right-4 z-20 flex gap-2 items-center">
+            <AudioController 
+              soundscapeSrc={currentSlide.soundscape}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+            />
             <ShareButton elementRef={slideRef} title={currentSlide.title} />
             <Link href="/app/dashboard">
                 <Button size="icon" variant="ghost"><X /></Button>

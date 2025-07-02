@@ -81,7 +81,7 @@ export type CanvasBoard = {
   name: string;
   nodes: Node[];
   edges: Edge[];
-  lastModified: string; // ISO string
+  lastModified: string;
 };
 
 export type Soundtrack = {
@@ -118,6 +118,7 @@ export interface WrappedSlide {
   subtitle: string;
   stats: string;
   visualTheme: 'sci-fi' | 'horror' | 'romance' | 'action' | 'drama' | 'default';
+  soundscape?: string;
   musicSuggestion?: {
     title: string;
     artist: string;

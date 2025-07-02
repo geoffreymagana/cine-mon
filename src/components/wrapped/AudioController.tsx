@@ -34,8 +34,15 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     if (audioSourceRef.current) {
       fadeOut();
       setTimeout(() => {
-        audioSourceRef.current?.stop();
-        audioSourceRef.current = null;
+        // Check if it's still there before stopping
+        if (audioSourceRef.current) {
+            try {
+                audioSourceRef.current.stop();
+            } catch (e) {
+                // Can throw if already stopped
+            }
+            audioSourceRef.current = null;
+        }
       }, 500);
     }
   }, [fadeOut]);
@@ -47,6 +54,10 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
 
     try {
       const response = await fetch(src);
+      if (!response.ok) {
+        console.error(`Failed to fetch audio: ${response.statusText}`);
+        return;
+      }
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
@@ -73,7 +84,8 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     } else {
       stopAudio();
     }
-  }, [soundscapeSrc, isPlaying, playAudio, stopAudio]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [soundscapeSrc, isPlaying, playAudio]);
   
   const handleTogglePlay = () => {
     if (!audioContextRef.current) {
@@ -86,6 +98,17 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     
     setIsPlaying(!isPlaying);
   };
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopAudio();
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    }
+  }, [stopAudio]);
 
   return (
     <Button onClick={handleTogglePlay} size="icon" variant="ghost">

@@ -36,6 +36,16 @@ const SlideContent = ({ data }: { data: WrappedSlide }) => {
 
 export const WrappedSlideComponent = ({ data }: WrappedSlideProps) => {
   const themeClass = `theme-wrapped-${data.visualTheme}`;
+  
+  const statsLength = data.stats?.length || 0;
+  const statsClassName = cn(
+    "text-5xl md:text-8xl font-bold my-4 text-glow",
+    {
+      "md:text-7xl": statsLength > 15 && statsLength <= 25,
+      "md:text-6xl": statsLength > 25 && statsLength <= 35,
+      "text-4xl md:text-5xl": statsLength > 35,
+    }
+  );
 
   return (
     <div className={cn("w-full h-screen flex flex-col items-center justify-center p-8 text-center text-white transition-colors duration-1000", themeClass)}>
@@ -48,7 +58,7 @@ export const WrappedSlideComponent = ({ data }: WrappedSlideProps) => {
             <h2 className="text-2xl md:text-3xl font-light opacity-80">{data.subtitle}</h2>
             
             {data.stats && (
-                <h1 className="text-5xl md:text-8xl font-bold my-4 text-glow" style={{ textShadow: '0 0 20px hsla(var(--primary), 0.7)' }}>
+                <h1 className={statsClassName} style={{ textShadow: '0 0 20px hsla(var(--primary), 0.7)' }}>
                     {data.stats}
                 </h1>
             )}
