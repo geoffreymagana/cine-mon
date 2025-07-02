@@ -14,101 +14,101 @@ type AudioControllerProps = {
 
 export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: AudioControllerProps) => {
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  const sourceRef = useRef<{ source: AudioBufferSourceNode; gainNode: GainNode; src: string } | null>(null);
 
-  const fadeOut = useCallback(() => {
-    if (gainNodeRef.current && audioContextRef.current) {
-      gainNodeRef.current.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.5);
-    }
-  }, []);
-
-  const fadeIn = useCallback(() => {
-    if (gainNodeRef.current && audioContextRef.current) {
-        gainNodeRef.current.gain.setValueAtTime(0.0001, audioContextRef.current.currentTime);
-        gainNodeRef.current.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.5);
-    }
-  }, []);
-
-  const stopAudio = useCallback(() => {
-    if (audioSourceRef.current) {
-      fadeOut();
-      setTimeout(() => {
-        // Check if it's still there before stopping
-        if (audioSourceRef.current) {
-            try {
-                audioSourceRef.current.stop();
-            } catch (e) {
-                // Can throw if already stopped
-            }
-            audioSourceRef.current = null;
-        }
-      }, 500);
-    }
-  }, [fadeOut]);
-
-  const playAudio = useCallback(async (src: string) => {
+  const changeSound = useCallback(async (newSrc?: string) => {
     if (!audioContextRef.current) return;
-    
-    stopAudio();
 
+    // 1. Fade out the current sound, if it exists
+    if (sourceRef.current) {
+      const currentSource = sourceRef.current;
+      currentSource.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.5);
+      
+      // Schedule the source to stop after fading out
+      setTimeout(() => {
+        try { currentSource.source.stop(); } catch(e) { /* Fails silently if already stopped */ }
+      }, 550);
+    }
+    
+    // Clear the ref immediately to allow a new sound to be prepared.
+    sourceRef.current = null;
+    
+    // 2. If there's no new sound or we are paused, we're done.
+    if (!newSrc || !isPlaying) return;
+
+    // 3. Load and fade in the new sound
     try {
-      const response = await fetch(src);
-      if (!response.ok) {
-        console.error(`Failed to fetch audio: ${response.statusText}`);
-        return;
-      }
+      const response = await fetch(newSrc);
+      if (!response.ok) throw new Error('Failed to fetch audio');
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = audioBuffer;
-      source.loop = true;
+      const sourceNode = audioContextRef.current.createBufferSource();
+      const gainNode = audioContextRef.current.createGain();
 
-      gainNodeRef.current = audioContextRef.current.createGain();
-      source.connect(gainNodeRef.current);
-      gainNodeRef.current.connect(audioContextRef.current.destination);
+      sourceNode.buffer = audioBuffer;
+      sourceNode.loop = true;
+      gainNode.gain.setValueAtTime(0.0001, audioContextRef.current.currentTime);
       
-      source.start();
-      audioSourceRef.current = source;
-      fadeIn();
+      sourceNode.connect(gainNode);
+      gainNode.connect(audioContextRef.current.destination);
+      sourceNode.start();
 
+      // Fade in
+      gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.5);
+      
+      sourceRef.current = { source: sourceNode, gainNode, src: newSrc };
     } catch (error) {
-      console.error('Error playing audio:', error);
+      console.error('Error changing sound:', error);
     }
-  }, [fadeIn, stopAudio]);
+  }, [isPlaying]);
 
   useEffect(() => {
-    if (soundscapeSrc && isPlaying) {
-      playAudio(soundscapeSrc);
-    } else {
-      stopAudio();
+    // Effect to handle changes in sound source
+    if (soundscapeSrc !== sourceRef.current?.src) {
+      if (audioContextRef.current) { // Ensure context exists before changing sound
+        changeSound(soundscapeSrc);
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [soundscapeSrc, isPlaying, playAudio]);
-  
+  }, [soundscapeSrc, changeSound]);
+
+  useEffect(() => {
+    // Effect to handle play/pause state
+    if (!audioContextRef.current || !sourceRef.current) return;
+
+    if (isPlaying) {
+      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.5);
+    } else {
+      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.5);
+    }
+  }, [isPlaying]);
+
   const handleTogglePlay = () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
-    
     setIsPlaying(!isPlaying);
+
+    // If starting from scratch, trigger the sound change
+    if (!sourceRef.current && soundscapeSrc && !isPlaying === false) {
+      changeSound(soundscapeSrc);
+    }
   };
   
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopAudio();
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
+      if (sourceRef.current) {
+        try { sourceRef.current.source.stop(); } catch(e) {}
       }
-    }
-  }, [stopAudio]);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <Button onClick={handleTogglePlay} size="icon" variant="ghost">
