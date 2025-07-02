@@ -48,17 +48,41 @@ const themes = [
 const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
     const sanitized = { ...existing, ...movie };
     
-    // Ensure essential fields have valid types, falling back to defaults.
+    // Core fields
     sanitized.id = sanitized.id && typeof sanitized.id === 'string' ? sanitized.id : existing?.id || crypto.randomUUID();
     sanitized.title = typeof sanitized.title === 'string' && sanitized.title ? sanitized.title : 'Untitled';
-    sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags.filter((t: any) => typeof t === 'string') : [];
+    sanitized.description = typeof sanitized.description === 'string' ? sanitized.description : '';
     sanitized.posterUrl = typeof sanitized.posterUrl === 'string' ? sanitized.posterUrl : 'https://placehold.co/500x750.png';
     sanitized.type = ['Movie', 'TV Show', 'Anime'].includes(sanitized.type) ? sanitized.type : 'Movie';
     sanitized.status = ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'].includes(sanitized.status) ? sanitized.status : 'Plan to Watch';
-    sanitized.watchedEpisodes = typeof sanitized.watchedEpisodes === 'number' ? sanitized.watchedEpisodes : 0;
-    sanitized.totalEpisodes = typeof sanitized.totalEpisodes === 'number' && sanitized.totalEpisodes > 0 ? sanitized.totalEpisodes : 1;
+    
+    // Numeric fields
     sanitized.rating = typeof sanitized.rating === 'number' ? sanitized.rating : 0;
     sanitized.sortOrder = typeof sanitized.sortOrder === 'number' ? sanitized.sortOrder : Date.now();
+    sanitized.rewatchCount = typeof sanitized.rewatchCount === 'number' ? sanitized.rewatchCount : 0;
+    sanitized.budget = typeof sanitized.budget === 'number' ? sanitized.budget : undefined;
+    sanitized.revenue = typeof sanitized.revenue === 'number' ? sanitized.revenue : undefined;
+    sanitized.runtime = typeof sanitized.runtime === 'number' ? sanitized.runtime : undefined;
+
+    // Series specific
+    sanitized.watchedEpisodes = typeof sanitized.watchedEpisodes === 'number' ? sanitized.watchedEpisodes : 0;
+    sanitized.totalEpisodes = typeof sanitized.totalEpisodes === 'number' && sanitized.totalEpisodes > 0 ? sanitized.totalEpisodes : 1;
+    sanitized.seasons = Array.isArray(sanitized.seasons) ? sanitized.seasons : undefined;
+    
+    // String fields
+    sanitized.releaseDate = typeof sanitized.releaseDate === 'string' ? sanitized.releaseDate : '';
+    sanitized.director = typeof sanitized.director === 'string' ? sanitized.director : undefined;
+    sanitized.collection = typeof sanitized.collection === 'string' ? sanitized.collection : undefined;
+    sanitized.backdropUrl = typeof sanitized.backdropUrl === 'string' ? sanitized.backdropUrl : undefined;
+    sanitized.trailerUrl = typeof sanitized.trailerUrl === 'string' ? sanitized.trailerUrl : undefined;
+    sanitized.productionCountries = typeof sanitized.productionCountries === 'string' ? sanitized.productionCountries : undefined;
+    sanitized.scriptUrl = typeof sanitized.scriptUrl === 'string' ? sanitized.scriptUrl : undefined;
+    sanitized.dominantColor = typeof sanitized.dominantColor === 'string' ? sanitized.dominantColor : undefined;
+
+    // Array fields
+    sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags.filter((t: any) => typeof t === 'string') : [];
+    sanitized.cast = Array.isArray(sanitized.cast) ? sanitized.cast : undefined;
+    sanitized.alternatePosters = Array.isArray(sanitized.alternatePosters) ? sanitized.alternatePosters : undefined;
     
     return sanitized as Movie;
 };
@@ -196,10 +220,21 @@ export default function ProfilePage() {
                 let importedMovies: any[] = [];
                 if (Array.isArray(parsedData)) {
                     importedMovies = parsedData;
-                } else if (typeof parsedData === 'object' && parsedData !== null && Array.isArray(parsedData.movies)) {
-                    importedMovies = parsedData.movies;
-                } else {
-                    throw new Error("Invalid JSON structure: Please provide a valid Cine-Mon backup file.");
+                } else if (typeof parsedData === 'object' && parsedData !== null) {
+                    if (Array.isArray(parsedData.movies)) {
+                        importedMovies = parsedData.movies;
+                    } else if (parsedData.title) {
+                        importedMovies = [parsedData];
+                    }
+                }
+                
+                if (importedMovies.length === 0) {
+                    toast({
+                        title: "Empty File",
+                        description: "The imported file contains no movie data.",
+                        variant: 'destructive'
+                    });
+                    return;
                 }
                 
                 const existingMoviesById = new Map(allMovies.map(m => [m.id, m]));
@@ -210,18 +245,18 @@ export default function ProfilePage() {
                     if (movie.tmdbId) {
                         existingMoviesByTmdbId.set(movie.tmdbId, movie);
                     }
-                    const key = `${movie.title.toLowerCase().trim()}|${movie.releaseDate || ''}`;
-                    existingMoviesByTitleAndDate.set(key, movie);
+                    const key = `${(movie.title || '').toLowerCase().trim()}|${movie.releaseDate || ''}`;
+                    if(movie.title) existingMoviesByTitleAndDate.set(key, movie);
                 });
 
                 const newMovies: Movie[] = [];
                 const conflictingMovies: Movie[] = [];
                 let skippedCount = 0;
 
-                importedMovies.forEach(importedMovie => {
+                for (const importedMovie of importedMovies) {
                     if (typeof importedMovie !== 'object' || importedMovie === null || !importedMovie.title) {
                         skippedCount++;
-                        return;
+                        continue;
                     }
 
                     let existingMovie: Movie | undefined = undefined;
@@ -231,8 +266,8 @@ export default function ProfilePage() {
                     } else if (importedMovie.id && existingMoviesById.has(importedMovie.id)) {
                         existingMovie = existingMoviesById.get(importedMovie.id);
                     } else {
-                        const key = `${importedMovie.title.toLowerCase().trim()}|${importedMovie.releaseDate || ''}`;
-                        if (existingMoviesByTitleAndDate.has(key)) {
+                        const key = `${(importedMovie.title || '').toLowerCase().trim()}|${importedMovie.releaseDate || ''}`;
+                        if (key && existingMoviesByTitleAndDate.has(key)) {
                             existingMovie = existingMoviesByTitleAndDate.get(key);
                         }
                     }
@@ -242,7 +277,7 @@ export default function ProfilePage() {
                     } else {
                         newMovies.push(importedMovie);
                     }
-                });
+                }
                 
                 if (conflictingMovies.length > 0) {
                     setImportData({ newMovies, conflictingMovies });
