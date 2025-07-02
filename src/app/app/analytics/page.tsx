@@ -16,6 +16,10 @@ import {
     LineChart,
     Pie, 
     PieChart, 
+    PolarAngleAxis,
+    RadialBar,
+    RadialBarChart,
+    ResponsiveContainer,
     XAxis, 
     YAxis 
 } from 'recharts';
@@ -30,6 +34,7 @@ import {
     Film, 
     FlaskConical,
     GripVertical,
+    Sparkles,
     Tv, 
     Zap,
 } from 'lucide-react';
@@ -37,20 +42,17 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { ResizableBox } from 'react-resizable';
 
-import type { Movie } from '@/lib/types';
+import type { Movie, UserCollection } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { MovieService } from '@/lib/movie-service';
-import { RatingCircle } from '@/components/rating-circle';
-import { Button } from '@/components/ui/button';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { MovieService } from '@/lib/movie-service';
 
 
 const CHART_COLORS = [
@@ -124,7 +126,7 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
     </Card>
 );
 
-const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number; height: number }) => void, minConstraints: [number, number] }) => {
+const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string; children: React.ReactNode; size: { width: number; height: number; }; onResize: (size: { width: number; height: number; }) => void; minConstraints: [number, number]; }) => {
     const {
         attributes,
         listeners,
@@ -163,18 +165,21 @@ const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: {
 };
 
 const defaultCardOrder = {
-    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'averageRating', 'watchGoal', 'totalRewatches', 'lastSuggestion'],
+    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'watchGoal', 'onWatchlist', 'topGenres', 'collectionTypes', 'averageRating', 'totalRewatches', 'lastWatched'],
     geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
 };
 
 const defaultCardSizes: Record<string, { width: number; height: number }> = {
-    totalTitles: { width: 350, height: 150 },
-    episodesWatched: { width: 350, height: 150 },
-    timeWatched: { width: 350, height: 150 },
+    totalTitles: { width: 250, height: 150 },
+    episodesWatched: { width: 250, height: 150 },
+    timeWatched: { width: 250, height: 150 },
     averageRating: { width: 350, height: 150 },
-    watchGoal: { width: 350, height: 150 },
+    watchGoal: { width: 350, height: 250 },
+    onWatchlist: { width: 250, height: 150 },
+    topGenres: { width: 350, height: 280 },
+    collectionTypes: { width: 350, height: 280 },
     totalRewatches: { width: 350, height: 200 },
-    lastSuggestion: { width: 350, height: 160 },
+    lastWatched: { width: 350, height: 160 },
     mostActors: { width: 400, height: 380 },
     mostDirectors: { width: 400, height: 380 },
     topFranchises: { width: 400, height: 380 },
@@ -188,9 +193,12 @@ const cardMinSizes: Record<string, [number, number]> = {
     episodesWatched: [200, 140],
     timeWatched: [200, 140],
     averageRating: [250, 140],
-    watchGoal: [250, 140],
+    watchGoal: [250, 240],
+    onWatchlist: [200, 140],
+    topGenres: [300, 250],
+    collectionTypes: [300, 250],
     totalRewatches: [250, 200],
-    lastSuggestion: [300, 160],
+    lastWatched: [300, 160],
     mostActors: [300, 300],
     mostDirectors: [350, 300],
     topFranchises: [300, 300],
@@ -218,6 +226,7 @@ const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
 
 export default function AnalyticsPage() {
     const [movies, setMovies] = React.useState<Movie[]>([]);
+    const [collections, setCollections] = React.useState<UserCollection[]>([]);
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
@@ -242,8 +251,9 @@ export default function AnalyticsPage() {
     React.useEffect(() => {
         const loadData = async () => {
             try {
-                const [moviesFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder, storedCardSizes] = await Promise.all([
+                const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder, storedCardSizes] = await Promise.all([
                     MovieService.getMovies(),
+                    MovieService.getCollections(),
                     MovieService.getSetting('watchGoal'),
                     MovieService.getSetting('lastSpunMovieId'),
                     MovieService.getSetting('analyticsBasicOrder'),
@@ -252,6 +262,7 @@ export default function AnalyticsPage() {
                 ]);
                 
                 setMovies(moviesFromDb);
+                setCollections(collectionsFromDb);
                 if (goalFromDb) setWatchGoal(goalFromDb);
                 if (storedCardSizes) setCardSizes(storedCardSizes);
 
@@ -308,7 +319,7 @@ export default function AnalyticsPage() {
 
 
     const watchedMovies = React.useMemo(() =>
-        movies.filter(movie => movie.status !== 'Plan to Watch')
+        movies.filter(movie => movie.status === 'Completed' || movie.status === 'Watching')
     , [movies]);
     
     // Basic Stats
@@ -320,6 +331,7 @@ export default function AnalyticsPage() {
         return acc + duration;
     }, 0) / 60);
     const averageRating = watchedMovies.length > 0 ? (watchedMovies.reduce((acc, m) => acc + m.rating, 0) / watchedMovies.length) : 0;
+    const onWatchlistCount = movies.filter(movie => movie.status === 'Plan to Watch').length;
     
     const rewatchData = React.useMemo(() => {
         const rewatchedCount = watchedMovies.filter(m => (m.rewatchCount || 0) > 0).length;
@@ -336,6 +348,44 @@ export default function AnalyticsPage() {
       Rewatched: { label: 'Rewatched' },
       'Watched Once': { label: 'Watched Once' },
     } satisfies ChartConfig
+
+    const topGenres = React.useMemo(() => {
+        const genreCounts = watchedMovies
+            .flatMap(m => m.tags || [])
+            .reduce((acc, name) => {
+                acc[name] = (acc[name] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>);
+        return Object.entries(genreCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
+    }, [watchedMovies]);
+    
+    const genresConfig = {
+      value: { label: 'Titles' },
+      ...topGenres.reduce((acc, genre) => {
+        acc[genre.name] = { label: genre.name, color: genre.fill };
+        return acc;
+      }, {} as ChartConfig),
+    } satisfies ChartConfig;
+
+    const collectionsData = React.useMemo(() => {
+        const vaultCount = collections.filter(c => c.type === 'Vault').length;
+        const spotlightCount = collections.filter(c => c.type === 'Spotlight').length;
+        return [
+            { name: 'Vaults', value: vaultCount, fill: 'hsl(var(--chart-1))' },
+            { name: 'Spotlights', value: spotlightCount, fill: 'hsl(var(--chart-2))' },
+        ];
+    }, [collections]);
+
+    const collectionsConfig = {
+      value: { label: 'Count' },
+      Vaults: { label: 'Vaults' },
+      Spotlights: { label: 'Spotlights' },
+    } satisfies ChartConfig;
+    
+    const goalProgress = watchGoal > 0 ? (totalTitlesWatched / watchGoal) * 100 : 0;
+    const gaugeValue = Math.min(goalProgress, 100);
+    const goalGaugeData = [{ value: gaugeValue, fill: "hsl(var(--primary))" }];
+
 
     // Geek Stats
     const topActors = React.useMemo(() => {
@@ -415,18 +465,54 @@ export default function AnalyticsPage() {
         totalTitles: <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} />,
         episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />,
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
+        onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
+        topGenres: <StatCard title="Top Genres">
+                        <ChartContainer config={genresConfig} className="h-full w-full">
+                            <PieChart>
+                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                <Pie data={topGenres} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
+                                    {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                </Pie>
+                                <Legend />
+                            </PieChart>
+                        </ChartContainer>
+                   </StatCard>,
+        collectionTypes: <StatCard title="Curated Collections">
+                            <ChartContainer config={collectionsConfig} className="h-full w-full">
+                                <PieChart>
+                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                    <Pie data={collectionsData} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
+                                        {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                    </Pie>
+                                    <Legend />
+                                </PieChart>
+                            </ChartContainer>
+                        </StatCard>,
+        watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
+                       <div className="w-full h-full relative">
+                           <ChartContainer config={{}} className="w-full h-full">
+                               <RadialBarChart
+                                   data={goalGaugeData}
+                                   startAngle={180}
+                                   endAngle={-180}
+                                   innerRadius="70%"
+                                   outerRadius="100%"
+                                   barSize={12}
+                               >
+                                   <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                   <RadialBar background dataKey="value" cornerRadius={6} />
+                               </RadialBarChart>
+                           </ChartContainer>
+                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                               <span className="text-3xl font-bold">{totalTitlesWatched}</span>
+                               <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
+                           </div>
+                       </div>
+                   </StatCard>,
         averageRating: <StatCard title="Average Rating">
                         <div className="flex items-center gap-4 pt-2">
-                            <RatingCircle percentage={averageRating} />
-                            <span className="text-2xl font-bold">{averageRating.toFixed(1)}/100</span>
+                            <span className="text-3xl font-bold">{averageRating.toFixed(1)}/100</span>
                         </div>
-                    </StatCard>,
-        watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
-                        <div className="flex items-end gap-2 text-2xl font-bold pt-2">
-                            {totalTitlesWatched} 
-                            <span className="text-muted-foreground text-lg">/ {watchGoal}</span>
-                        </div>
-                        <Progress value={(totalTitlesWatched/watchGoal)*100} className="mt-2" />
                     </StatCard>,
         totalRewatches: <StatCard title="Total Rewatches">
                             <ChartContainer config={rewatchConfig} className="h-full w-full">
@@ -441,7 +527,7 @@ export default function AnalyticsPage() {
                                 </PieChart>
                             </ChartContainer>
                         </StatCard>,
-        lastSuggestion: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
+        lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
     };
 
     const allGeekCards: Record<string, React.ReactNode> = {
@@ -587,3 +673,5 @@ export default function AnalyticsPage() {
         </>
     );
 }
+
+    
