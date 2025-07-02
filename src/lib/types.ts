@@ -118,7 +118,6 @@ export interface WrappedSlide {
   subtitle: string;
   stats: string;
   visualTheme: 'sci-fi' | 'horror' | 'romance' | 'action' | 'drama' | 'default';
-  soundscape?: string;
   musicSuggestion?: {
     title: string;
     artist: string;

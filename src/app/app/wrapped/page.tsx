@@ -8,26 +8,24 @@ import { generateWrappedSlides } from '@/lib/wrapped';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { MovieService } from '@/lib/movie-service';
 
 export default function WrappedPage() {
   const [slides, setSlides] = React.useState<any[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const movies: Movie[] = JSON.parse(storedMovies);
-        const generatedSlides = generateWrappedSlides(movies);
-        setSlides(generatedSlides);
-      } else {
-        const generatedSlides = generateWrappedSlides([]);
-        setSlides(generatedSlides);
-      }
-    } catch (e) {
-      console.error("Error generating Wrapped slides:", e);
-      setError("Could not generate your Wrapped data. The data in your local storage might be corrupted.");
-    }
+    const fetchMoviesAndGenerateSlides = async () => {
+        try {
+            const movies: Movie[] = await MovieService.getMovies();
+            const generatedSlides = generateWrappedSlides(movies);
+            setSlides(generatedSlides);
+        } catch (e) {
+            console.error("Error generating Wrapped slides:", e);
+            setError("Could not generate your Wrapped data.");
+        }
+    };
+    fetchMoviesAndGenerateSlides();
   }, []);
 
   if (error) {

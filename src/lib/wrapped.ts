@@ -3,15 +3,6 @@
 
 import type { Movie, WrappedSlide } from './types';
 
-const soundscapes: Record<string, string> = {
-  'sci-fi': '/sounds/ambient-space.mp3',
-  'horror': '/sounds/dark-ambience.mp3', 
-  'romance': '/sounds/gentle-piano.mp3',
-  'action': '/sounds/epic-cinematic.mp3',
-  'drama': '/sounds/emotional-strings.mp3',
-  'default': '/sounds/gentle-piano.mp3',
-};
-
 const genreThemeMap: Record<string, WrappedSlide['visualTheme']> = {
     'Science Fiction': 'sci-fi',
     'Sci-Fi': 'sci-fi',
@@ -45,7 +36,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: "You have no movies in your collection for 2025.",
       stats: "Add some movies to see your Wrapped!",
       visualTheme: 'default',
-      soundscape: soundscapes.default
     }];
   }
 
@@ -60,7 +50,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
     subtitle: "You've journeyed through",
     stats: `${movies.length} stories`,
     visualTheme: 'default',
-    soundscape: soundscapes.default,
   });
 
   // Slide 2: Top Genre
@@ -73,7 +62,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
   const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0];
   if (topGenre) {
     const topGenreName = topGenre[0];
-    const topGenrePercentage = Math.round((topGenre[1] / allTags.length) * 100);
     const theme = genreThemeMap[topGenreName] || 'default';
     slides.push({
       id: 'top-genre',
@@ -81,7 +69,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: `Your top genre was`,
       stats: `${topGenreName}`,
       visualTheme: theme,
-      soundscape: soundscapes[theme],
       musicSuggestion: {
         title: 'Sounds of ' + topGenreName,
         artist: 'Various Artists',
@@ -105,7 +92,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: "You trusted one director's vision more than any other.",
       stats: topDirector[0],
       visualTheme: 'drama',
-      soundscape: soundscapes.drama,
     });
   }
 
@@ -118,7 +104,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: 'The longest journey you took was',
       stats: `${longestMovie.title} (${longestMovie.runtime} min)`,
       visualTheme: 'action',
-      soundscape: soundscapes.action,
     });
   }
 
@@ -131,7 +116,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: 'You revisited this story the most',
       stats: `${mostRewatched.title}`,
       visualTheme: 'romance',
-      soundscape: soundscapes.romance
     });
   }
 
@@ -148,7 +132,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
     subtitle: 'You dedicated',
     stats: `${totalHours.toLocaleString()} hours`,
     visualTheme: 'sci-fi',
-    soundscape: soundscapes['sci-fi']
   });
   
   // Slide 7: Decade Distribution
@@ -169,7 +152,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
       subtitle: "Here's when your favorite stories were made.",
       stats: '',
       visualTheme: 'default',
-      soundscape: soundscapes.default,
       component: 'decadeChart',
       componentData: decadeData,
     });
@@ -182,7 +164,6 @@ export function generateWrappedSlides(movies: Movie[]): WrappedSlide[] {
     subtitle: "Here's to another year of unforgettable stories.",
     stats: "Cine-Mon",
     visualTheme: 'default',
-    soundscape: soundscapes.romance,
   });
 
   return slides;

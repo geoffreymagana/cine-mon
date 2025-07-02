@@ -36,7 +36,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const filter = searchParams.get('filter') || 'All';
 
     // This will check if the current page is a movie detail or edit page
-    const isImmersivePage = pathname.startsWith('/app/movie') || pathname.startsWith('/app/canvas');
+    const isImmersivePage = pathname.startsWith('/app/movie') || pathname.startsWith('/app/canvas') || pathname.startsWith('/app/wrapped');
     
     const loadData = React.useCallback(async () => {
         const movies = await MovieService.getMovies();

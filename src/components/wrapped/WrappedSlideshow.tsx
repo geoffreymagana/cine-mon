@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { WrappedSlide } from '@/lib/types';
 import { WrappedSlideComponent } from '@/components/wrapped/WrappedSlide';
 import { SlideNavigation } from '@/components/wrapped/SlideNavigation';
-import { AudioController } from '@/components/wrapped/AudioController';
 import { ShareButton } from '@/components/wrapped/ShareButton';
 import { ParticleBackground } from './ParticleBackground';
 import Link from 'next/link';
@@ -20,7 +19,6 @@ type WrappedSlideshowProps = {
 export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
   const currentSlide = slides[index];
@@ -64,11 +62,6 @@ export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
         <ParticleBackground />
 
         <div className="absolute top-4 right-4 z-20 flex gap-4">
-            <AudioController
-                soundscapeSrc={currentSlide.soundscape}
-                isPlaying={isPlaying}
-                setIsPlaying={setIsPlaying}
-            />
             <ShareButton elementRef={slideRef} title={currentSlide.title} />
             <Link href="/app/dashboard">
                 <Button size="icon" variant="ghost"><X /></Button>
