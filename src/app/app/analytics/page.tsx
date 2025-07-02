@@ -89,7 +89,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
 );
 
 const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
-    <div className="bg-card rounded-lg border px-6 pt-6 pb-8 shadow-sm h-full overflow-hidden">
+    <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6 text-muted-foreground" />
@@ -156,50 +156,77 @@ export default function AnalyticsPage() {
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isClient, setIsClient] = React.useState(false);
     const [isProcessingColors, setIsProcessingColors] = React.useState(false);
+    const [processingQueue, setProcessingQueue] = React.useState<Movie[]>([]);
     
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
 
-    const loadData = React.useCallback(async () => {
-        const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunId] = await Promise.all([
-            MovieService.getMovies(),
-            MovieService.getCollections(),
-            MovieService.getSetting('watchGoal'),
-            MovieService.getSetting('lastSpunMovieId')
-        ]);
-        setMovies(moviesFromDb);
-        setCollections(collectionsFromDb);
-        if (goalFromDb) setWatchGoal(goalFromDb);
-        
-        const unprocessedMovies = moviesFromDb.filter(m => !m.dominantColor);
-        if (unprocessedMovies.length > 0) {
-            setIsProcessingColors(true);
-            setTimeout(async () => {
-                for (const movie of unprocessedMovies) {
-                    try {
-                        const color = await getDominantColor(movie.posterUrl);
-                        await MovieService.updateMovie(movie.id, { dominantColor: color });
-                        // Update state in a way that triggers re-render for the chart
-                        setMovies(prevMovies => prevMovies.map(m => 
-                            m.id === movie.id ? { ...m, dominantColor: color } : m
-                        ));
-                    } catch (e) {
-                        console.error(`Failed to process color for ${movie.title}`, e);
-                    }
-                }
-                setIsProcessingColors(false);
-            }, 100);
-        }
+    // Effect 1: Initial data load
+    React.useEffect(() => {
+        const loadInitialData = async () => {
+            const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunId] = await Promise.all([
+                MovieService.getMovies(),
+                MovieService.getCollections(),
+                MovieService.getSetting('watchGoal'),
+                MovieService.getSetting('lastSpunMovieId')
+            ]);
+            
+            setMovies(moviesFromDb);
+            setCollections(collectionsFromDb);
+            if (goalFromDb) setWatchGoal(goalFromDb);
 
-        if (lastSpunId) {
-            const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunId);
-            if (lastSpunMovie) setLastWatchedMovie(lastSpunMovie);
-        }
+            const unprocessed = moviesFromDb.filter(m => !m.dominantColor);
+            if (unprocessed.length > 0) {
+                setProcessingQueue(unprocessed);
+                setIsProcessingColors(true);
+            }
+
+            if (lastSpunId) {
+                const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunId);
+                if (lastSpunMovie) setLastWatchedMovie(lastSpunMovie);
+            }
+        };
+
+        loadInitialData();
+        setIsClient(true);
     }, []);
 
+    // Effect 2: Process the color analysis queue
     React.useEffect(() => {
-        loadData();
-        setIsClient(true);
-    }, [loadData]);
+        if (processingQueue.length === 0) {
+            setIsProcessingColors(false);
+            return;
+        }
+
+        let isCancelled = false;
+        
+        const processNextMovie = async () => {
+            const movieToProcess = processingQueue[0];
+            if (!movieToProcess) return;
+
+            try {
+                const color = await getDominantColor(movieToProcess.posterUrl);
+                if (isCancelled) return;
+
+                await MovieService.updateMovie(movieToProcess.id, { dominantColor: color });
+                
+                setMovies(prevMovies => prevMovies.map(m => 
+                    m.id === movieToProcess.id ? { ...m, dominantColor: color } : m
+                ));
+                
+                setProcessingQueue(prevQueue => prevQueue.slice(1));
+                
+            } catch (e) {
+                console.error(`Failed to process color for ${movieToProcess.title}`, e);
+                setProcessingQueue(prevQueue => prevQueue.slice(1));
+            }
+        };
+
+        processNextMovie();
+        
+        return () => {
+            isCancelled = true;
+        };
+    }, [processingQueue]);
 
 
     const watchedMovies = React.useMemo(() =>
@@ -330,7 +357,7 @@ export default function AnalyticsPage() {
     ];
     
     const posterPaletteData = React.useMemo(() => {
-        const colorCounts = watchedMovies
+        const colorCounts = movies
             .map(m => m.dominantColor)
             .filter(Boolean)
             .reduce((acc: Record<string, number>, name) => {
@@ -362,7 +389,7 @@ export default function AnalyticsPage() {
                 fill: colorMap[name] || '#6b7280'
             }))
             .sort((a, b) => b.size - a.size);
-    }, [watchedMovies]);
+    }, [movies]);
     
     const [activeTab, setActiveTab] = React.useState('basic');
     
@@ -633,14 +660,12 @@ export default function AnalyticsPage() {
                 setIsOpen={setIsGoalDialogOpen} 
                 currentGoal={watchGoal} 
                 onGoalSet={(newGoal) => {
+                    MovieService.setSetting('watchGoal', newGoal);
                     setWatchGoal(newGoal);
-                    loadData();
                 }}
             />
         </>
     )
 }
-
-    
 
     
