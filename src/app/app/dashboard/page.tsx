@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -159,6 +160,16 @@ function DashboardContent() {
     handleClearSelection();
   };
 
+  const handleSelectAll = () => {
+    if (selectedMovieIds.size === filteredMovies.length) {
+      setSelectedMovieIds(new Set());
+    } else {
+      setSelectedMovieIds(new Set(filteredMovies.map(m => m.id)));
+    }
+  };
+
+  const isAllSelected = filteredMovies.length > 0 && selectedMovieIds.size === filteredMovies.length;
+
   return (
     <>
       <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
@@ -171,6 +182,8 @@ function DashboardContent() {
             onClearSelection={handleClearSelection}
             onDeleteSelected={() => setIsDeleteAlertOpen(true)}
             onAddToCollection={() => setIsAddToCollectionOpen(true)}
+            onSelectAll={handleSelectAll}
+            isAllSelected={isAllSelected}
           />
           <div className="flex-grow p-4 md:p-8">
               <DndContext

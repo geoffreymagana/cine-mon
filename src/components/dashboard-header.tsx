@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, Share2, PlusCircle, Trash2, Sparkles } from "lucide-react";
+import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,6 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
@@ -26,6 +28,8 @@ type DashboardHeaderProps = {
   onClearSelection: () => void;
   onDeleteSelected: () => void;
   onAddToCollection: () => void;
+  onSelectAll: () => void;
+  isAllSelected: boolean;
 };
 
 export const DashboardHeader = ({ 
@@ -36,7 +40,9 @@ export const DashboardHeader = ({
   selectedCount,
   onClearSelection,
   onDeleteSelected,
-  onAddToCollection
+  onAddToCollection,
+  onSelectAll,
+  isAllSelected
 }: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
@@ -76,10 +82,19 @@ export const DashboardHeader = ({
           </Button>
           <span className="font-semibold text-lg">{selectedCount} Selected</span>
         </div>
-        <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon"><Share2 /></Button>
-            <Button variant="ghost" size="icon" onClick={onAddToCollection}><PlusCircle /></Button>
-            <Button variant="destructive" size="icon" onClick={onDeleteSelected}><Trash2 /></Button>
+        <div className="flex items-center gap-4">
+            <div className="flex items-center space-x-2">
+                <Checkbox
+                    id="select-all"
+                    checked={isAllSelected}
+                    onCheckedChange={onSelectAll}
+                />
+                <Label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer">
+                    Select all
+                </Label>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onAddToCollection} title="Add to Collection"><PlusCircle /></Button>
+            <Button variant="destructive" size="icon" onClick={onDeleteSelected} title="Delete Selected"><Trash2 /></Button>
         </div>
       </header>
     )
