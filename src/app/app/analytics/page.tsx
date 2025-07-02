@@ -129,8 +129,8 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
 );
 
 const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
-    <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden">
-        <div className="flex items-center justify-between mb-4">
+    <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6 text-muted-foreground" />
                 <div>
@@ -139,21 +139,23 @@ const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
                 </div>
             </div>
         </div>
-        {movie ? (
-             <div className="flex items-center gap-4 group cursor-pointer h-full">
-                <div className="w-16 h-24 bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                    <Image src={movie.posterUrl} alt={movie.title} width={64} height={96} className="object-cover w-full h-full transition-transform group-hover:scale-105" data-ai-hint="movie poster" />
+        <div className="flex-grow flex items-center justify-center">
+            {movie ? (
+                <div className="flex items-center gap-4 group cursor-pointer">
+                    <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        <Image src={movie.posterUrl} alt={movie.title} width={64} height={96} className="object-cover w-full h-full transition-transform group-hover:scale-105" data-ai-hint="movie poster" />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                        <p className="font-bold truncate group-hover:text-primary transition-colors">{movie.title}</p>
+                        <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
+                    </div>
                 </div>
-                <div className="flex-grow min-w-0">
-                    <p className="font-bold truncate group-hover:text-primary transition-colors">{movie.title}</p>
-                    <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
+            ) : (
+                <div className="text-muted-foreground text-sm">
+                    No spin history yet.
                 </div>
-            </div>
-        ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                No spin history yet.
-            </div>
-        )}
+            )}
+        </div>
     </div>
 );
 
