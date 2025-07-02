@@ -15,7 +15,7 @@ import {
     Line,
     LineChart,
     Pie, 
-    PieChart, 
+    PieChart as RechartsPieChart,
     PolarAngleAxis,
     RadialBar,
     RadialBarChart,
@@ -34,8 +34,15 @@ import {
     Film, 
     FlaskConical,
     GripVertical,
+    Layers,
+    Moon,
+    PieChart,
+    Repeat,
     Sparkles,
+    Star,
     Tv, 
+    Users,
+    Video,
     Zap,
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -266,6 +273,7 @@ export default function AnalyticsPage() {
                 setCollections(collectionsFromDb);
                 if (goalFromDb) setWatchGoal(goalFromDb);
                 if (storedCardSizes) setCardSizes(storedCardSizes);
+                else setCardSizes(defaultCardSizes);
 
                 if (storedBasicOrder) setBasicCardOrder(storedBasicOrder);
                 if (storedGeekOrder) setGeekCardOrder(storedGeekOrder);
@@ -467,26 +475,26 @@ export default function AnalyticsPage() {
         episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />,
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
         onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
-        topGenres: <StatCard title="Top Genres">
+        topGenres: <StatCard icon={PieChart} title="Top Genres">
                         <ChartContainer config={genresConfig} className="h-full w-full">
-                            <PieChart>
+                            <RechartsPieChart>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                 <Pie data={topGenres} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
                                     {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                 </Pie>
                                 <Legend />
-                            </PieChart>
+                            </RechartsPieChart>
                         </ChartContainer>
                    </StatCard>,
-        collectionTypes: <StatCard title="Curated Collections">
+        collectionTypes: <StatCard icon={Sparkles} title="Curated Collections">
                             <ChartContainer config={collectionsConfig} className="h-full w-full">
-                                <PieChart>
+                                <RechartsPieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                     <Pie data={collectionsData} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
                                         {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Legend />
-                                </PieChart>
+                                </RechartsPieChart>
                             </ChartContainer>
                         </StatCard>,
         watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
@@ -510,14 +518,14 @@ export default function AnalyticsPage() {
                            </div>
                        </div>
                    </StatCard>,
-        averageRating: <StatCard title="Average Rating">
+        averageRating: <StatCard icon={Star} title="Average Rating">
                         <div className="flex items-center gap-4 pt-2">
                             <span className="text-3xl font-bold">{averageRating.toFixed(1)}/100</span>
                         </div>
                     </StatCard>,
-        totalRewatches: <StatCard title="Total Rewatches">
+        totalRewatches: <StatCard icon={Repeat} title="Total Rewatches">
                             <ChartContainer config={rewatchConfig} className="h-full w-full">
-                                <PieChart>
+                                <RechartsPieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
                                        {rewatchData.map((entry, index) => (
@@ -525,25 +533,25 @@ export default function AnalyticsPage() {
                                         ))}
                                     </Pie>
                                     <Legend />
-                                </PieChart>
+                                </RechartsPieChart>
                             </ChartContainer>
                         </StatCard>,
         lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
     };
 
     const allGeekCards: Record<string, React.ReactNode> = {
-        mostActors: <StatCard title="Most Watched Actors">
+        mostActors: <StatCard icon={Users} title="Most Watched Actors">
                         <ChartContainer config={actorsConfig} className="h-full w-full">
-                             <PieChart>
+                             <RechartsPieChart>
                                 <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                 <Pie data={topActors} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5}>
                                     {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                 </Pie>
                                 <Legend iconSize={8} />
-                            </PieChart>
+                            </RechartsPieChart>
                         </ChartContainer>
                     </StatCard>,
-        mostDirectors: <StatCard title="Most Watched Directors">
+        mostDirectors: <StatCard icon={Video} title="Most Watched Directors">
                             <ChartContainer config={directorsConfig} className="h-full w-full">
                                 <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20 }}>
                                     <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
@@ -554,19 +562,19 @@ export default function AnalyticsPage() {
                                 </BarChart>
                             </ChartContainer>
                         </StatCard>,
-        topFranchises: <StatCard title="Top Franchises">
+        topFranchises: <StatCard icon={Layers} title="Top Franchises">
                             <ChartContainer config={franchisesConfig} className="h-full w-full">
-                                <PieChart>
+                                <RechartsPieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
                                     <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
                                        {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Legend wrapperStyle={{fontSize: '12px'}} />
-                                </PieChart>
+                                </RechartsPieChart>
                             </ChartContainer>
                         </StatCard>,
         bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
-        nightOwlScore: <StatCard title="Night Owl Score" description="Titles watched after 9 PM">
+        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Titles watched after 9 PM">
                             <ChartContainer config={nightOwlConfig} className="h-full w-full">
                                 <LineChart data={nightOwlData}>
                                     <CartesianGrid strokeDasharray="3 3" />
@@ -577,7 +585,7 @@ export default function AnalyticsPage() {
                                 </LineChart>
                             </ChartContainer>
                         </StatCard>,
-        obscurityIndex: <StatCard title="Obscurity Index" description="Your taste vs. popular taste">
+        obscurityIndex: <StatCard icon={FlaskConical} title="Obscurity Index" description="Your taste vs. popular taste">
                              <ChartContainer config={obscurityConfig} className="h-full w-full">
                                 <AreaChart data={obscurityData}>
                                     <defs>
