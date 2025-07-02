@@ -88,8 +88,9 @@ const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
 };
 
 type ImportData = {
-    newMovies: Movie[];
-    conflictingMovies: Movie[];
+    newMovies?: Movie[];
+    conflictingMovies?: Movie[];
+    movies?: Movie[];
     collections?: UserCollection[];
     canvases?: CanvasBoard[];
     settings?: Setting[];
@@ -350,17 +351,17 @@ export default function ProfilePage() {
             let toastDescription = "";
 
             if (resolution === 'skip') {
-                const newSanitizedMovies = importData.newMovies.map(m => sanitizeMovie(m));
+                const newSanitizedMovies = (importData.newMovies || []).map(m => sanitizeMovie(m));
                 finalMovies.push(...newSanitizedMovies);
-                toastDescription = `${newSanitizedMovies.length} new titles imported. ${importData.conflictingMovies.length} duplicates skipped.`;
+                toastDescription = `${newSanitizedMovies.length} new titles imported. ${(importData.conflictingMovies || []).length} duplicates skipped.`;
             } else if (resolution === 'overwrite') {
                 const movieMap = new Map(finalMovies.map(m => [m.id, m]));
-                [...importData.newMovies, ...importData.conflictingMovies].forEach(m => {
+                [...(importData.newMovies || []), ...(importData.conflictingMovies || [])].forEach(m => {
                     const existing = movieMap.get(m.id);
                     movieMap.set(m.id, sanitizeMovie(m, existing));
                 });
                 finalMovies = Array.from(movieMap.values());
-                toastDescription = `${importData.newMovies.length} new titles added and ${importData.conflictingMovies.length} existing titles updated.`;
+                toastDescription = `${(importData.newMovies || []).length} new titles added and ${(importData.conflictingMovies || []).length} existing titles updated.`;
             }
 
             try {
@@ -660,10 +661,12 @@ export default function ProfilePage() {
         <ImportConfirmationDialog
             isOpen={isImportConfirmOpen}
             onConfirm={handleImportConfirm}
-            conflictsCount={importData?.conflictingMovies.length || 0}
-            newCount={importData?.newMovies.length || 0}
+            conflictsCount={importData?.conflictingMovies?.length || 0}
+            newCount={importData?.newMovies?.length || 0}
             isFullBackup={isFullBackupImport}
         />
         </>
     );
 }
+
+    
