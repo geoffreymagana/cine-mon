@@ -22,12 +22,12 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     // 1. Fade out the current sound, if it exists
     if (sourceRef.current) {
       const currentSource = sourceRef.current;
-      currentSource.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.5);
+      currentSource.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
       
       // Schedule the source to stop after fading out
       setTimeout(() => {
         try { currentSource.source.stop(); } catch(e) { /* Fails silently if already stopped */ }
-      }, 550);
+      }, 350);
     }
     
     // Clear the ref immediately to allow a new sound to be prepared.
@@ -58,7 +58,7 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
       sourceNode.start();
 
       // Fade in
-      gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.5);
+      gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
       
       sourceRef.current = { source: sourceNode, gainNode, src: newSrc };
     } catch (error) {
@@ -80,9 +80,9 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     if (!audioContextRef.current || !sourceRef.current) return;
 
     if (isPlaying) {
-      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.5);
+      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
     } else {
-      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.5);
+      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
     }
   }, [isPlaying]);
 
