@@ -121,7 +121,10 @@ export const DashboardHeader = ({
         ) : null}
         <h1 className="text-base md:text-lg font-headline font-semibold">{userName === "My" ? "My Collection" : `${userName}'s Collection`}</h1>
       </div>
+      
+      {/* Container for the right side actions */}
       <div className="flex items-center gap-2">
+        {/* Desktop Search Input */}
         <div className="relative hidden sm:block">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -132,14 +135,29 @@ export const DashboardHeader = ({
               readOnly
             />
         </div>
-        <Button variant="ghost" size="icon" className="sm:hidden shrink-0" onClick={onSearchClick}>
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
-        </Button>
-        <Button onClick={onAddMovieClick} className="shrink-0">
+
+        {/* --- Buttons with responsive visibility and styling --- */}
+        
+        {/* Add Manually Button: solid on desktop, ghost on mobile */}
+        {/* This is now FIRST in order on mobile */}
+        <Button onClick={onAddMovieClick} className="hidden sm:inline-flex shrink-0">
           <Plus className="h-4 w-4" />
           <span className="hidden md:inline ml-2">Add Manually</span>
         </Button>
+        <Button onClick={onAddMovieClick} variant="ghost" size="icon" className="sm:hidden shrink-0">
+            <Plus className="h-5 w-5" />
+            <span className="sr-only">Add Manually</span>
+        </Button>
+        
+        {/* Mobile: Search Button (solid background) */}
+        {/* This is now SECOND in order on mobile */}
+        <Button variant="default" size="icon" className="sm:hidden shrink-0" onClick={onSearchClick}>
+            <Search className="h-5 w-5" />
+            <span className="sr-only">Search</span>
+        </Button>
+        
+
+        {/* More Options Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="shrink-0">
