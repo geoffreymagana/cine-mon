@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Plus, Lock, Projector, Folder, Share2 } from 'lucide-react';
+import { ArrowLeft, Plus, Lock, Projector, Share2, MoreVertical, X, Trash2, Check } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import type { UserCollection } from '@/lib/types';
@@ -13,12 +13,35 @@ import { MovieService } from '@/lib/movie-service';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 
-const CollectionCard = ({ collection }: { collection: UserCollection }) => (
-    <Link href={`/app/collections/${collection.id}`} className="block group">
-        <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted shadow-md transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-primary/20">
-            {collection.type === 'Spotlight' && (
+const CollectionCard = ({ 
+    collection,
+    isSelectionMode = false,
+    isSelected = false,
+    onSelect
+}: { 
+    collection: UserCollection,
+    isSelectionMode?: boolean,
+    isSelected?: boolean,
+    onSelect?: () => void
+}) => {
+    
+    const cardContent = (
+        <div className={cn("relative aspect-video w-full overflow-hidden rounded-lg bg-muted shadow-md transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-lg group-hover:shadow-primary/20", isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background")}>
+            {isSelectionMode && (
+              <div className="absolute inset-0 z-30 bg-black/30 flex items-center justify-center">
+                  <div className="absolute top-3 left-3 h-6 w-6 rounded-md bg-background/80 flex items-center justify-center border-2 border-primary">
+                    {isSelected && <Check className="h-4 w-4 text-primary font-bold" />}
+                  </div>
+              </div>
+            )}
+            {collection.type === 'Spotlight' && !isSelectionMode && (
                 <Button
                     variant="ghost"
                     size="icon"
@@ -47,10 +70,35 @@ const CollectionCard = ({ collection }: { collection: UserCollection }) => (
                 <p className="text-sm text-gray-300 line-clamp-1">{collection.description || `${collection.movieIds.length} items`}</p>
             </div>
         </div>
-    </Link>
-);
+    );
 
-const SortableCollectionCard = ({ collection }: { collection: UserCollection }) => {
+    if (isSelectionMode) {
+        return (
+            <div className="block group cursor-pointer" onClick={onSelect}>
+                {cardContent}
+            </div>
+        )
+    }
+
+    return (
+        <Link href={`/app/collections/${collection.id}`} className="block group">
+            {cardContent}
+        </Link>
+    )
+};
+
+
+const SortableCollectionCard = ({ 
+    collection,
+    isSelectionMode,
+    isSelected,
+    onSelect
+}: { 
+    collection: UserCollection,
+    isSelectionMode?: boolean,
+    isSelected?: boolean,
+    onSelect?: () => void
+}) => {
     const {
         attributes,
         listeners,
@@ -58,7 +106,7 @@ const SortableCollectionCard = ({ collection }: { collection: UserCollection }) 
         transform,
         transition,
         isDragging,
-    } = useSortable({ id: collection.id });
+    } = useSortable({ id: collection.id, disabled: isSelectionMode });
 
     const style: React.CSSProperties = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -67,8 +115,13 @@ const SortableCollectionCard = ({ collection }: { collection: UserCollection }) 
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            <CollectionCard collection={collection} />
+        <div ref={setNodeRef} style={style} {...attributes} {...(isSelectionMode ? {} : listeners)}>
+            <CollectionCard 
+                collection={collection} 
+                isSelectionMode={isSelectionMode}
+                isSelected={isSelected}
+                onSelect={onSelect}
+            />
         </div>
     );
 };
@@ -80,7 +133,13 @@ export default function CollectionsPage() {
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [dialogType, setDialogType] = React.useState<'Vault' | 'Spotlight'>('Vault');
     const isMobile = useIsMobile();
+    const { toast } = useToast();
     
+    // State for selection
+    const [selectionModeFor, setSelectionModeFor] = React.useState<'Vault' | 'Spotlight' | null>(null);
+    const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = React.useState(false);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -149,22 +208,90 @@ export default function CollectionsPage() {
         }
     };
 
+    const handleToggleSelectionMode = (type: 'Vault' | 'Spotlight') => {
+        if (selectionModeFor === type) {
+            setSelectionModeFor(null);
+            setSelectedIds(new Set());
+        } else {
+            setSelectionModeFor(type);
+            setSelectedIds(new Set());
+        }
+    };
+    
+    const handleClearSelection = () => {
+        setSelectionModeFor(null);
+        setSelectedIds(new Set());
+    };
+
+    const handleSelectCollection = (collectionId: string) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(collectionId)) {
+                newSet.delete(collectionId);
+            } else {
+                newSet.add(collectionId);
+            }
+            return newSet;
+        });
+    };
+
+    const handleSelectAll = () => {
+        const currentList = selectionModeFor === 'Vault' ? vaults : spotlights;
+        if (selectedIds.size === currentList.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(currentList.map(c => c.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        await MovieService.deleteCollections(Array.from(selectedIds));
+        toast({
+            title: `${selectedIds.size} Collection(s) Deleted`,
+            description: "The selected collections have been removed.",
+            variant: 'destructive'
+        });
+        loadCollections();
+        handleClearSelection();
+    };
+
+
     const CollectionGrid = ({ items, type }: { items: UserCollection[], type: 'Vault' | 'Spotlight'}) => {
+        const isSelectionMode = selectionModeFor === type;
         const typeName = type === 'Vault' ? 'Vaults' : 'Spotlights';
         const typeIcon = type === 'Vault' ? <Lock className="mr-2"/> : <Projector className="mr-2"/>;
         return (
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold flex items-center">{typeIcon} {typeName}</h2>
-                    <Button onClick={() => handleCreateClick(type)}>
-                        <Plus className="mr-2"/> Create New {type}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button onClick={() => handleCreateClick(type)}>
+                            <Plus className="mr-2"/> Create New {type}
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreVertical/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => handleToggleSelectionMode(type)}>
+                                    {isSelectionMode ? "Cancel Selection" : "Select Items"}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
                 {items.length > 0 ? (
-                     <SortableContext items={items.map(i => i.id)} strategy={rectSwappingStrategy}>
+                     <SortableContext items={items.map(i => i.id)} strategy={rectSwappingStrategy} disabled={isSelectionMode}>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {items.map(collection => (
-                               <SortableCollectionCard key={collection.id} collection={collection} />
+                               <SortableCollectionCard
+                                    key={collection.id}
+                                    collection={collection}
+                                    isSelectionMode={isSelectionMode}
+                                    isSelected={selectedIds.has(collection.id)}
+                                    onSelect={() => handleSelectCollection(collection.id)}
+                                />
                             ))}
                         </div>
                      </SortableContext>
@@ -181,7 +308,31 @@ export default function CollectionsPage() {
 
     return (
         <>
-            <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8 dotted-background-permanent">
+            {selectionModeFor && (
+                <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-secondary px-4 md:px-8">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={handleClearSelection}><X className="h-5 w-5"/></Button>
+                        <span className="font-semibold text-lg">{selectedIds.size} Selected</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="select-all"
+                                checked={
+                                    selectedIds.size > 0 &&
+                                    selectedIds.size === (selectionModeFor === 'Vault' ? vaults.length : spotlights.length)
+                                }
+                                onCheckedChange={handleSelectAll}
+                            />
+                            <label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer">Select all</label>
+                        </div>
+                        <Button variant="destructive" onClick={() => setIsDeleteAlertOpen(true)} disabled={selectedIds.size === 0}>
+                            <Trash2 className="mr-2"/> Delete ({selectedIds.size})
+                        </Button>
+                    </div>
+                </div>
+            )}
+            <div className={cn("flex min-h-screen flex-col bg-background p-4 sm:p-8", !selectionModeFor && "dotted-background-permanent")}>
                 <div className="w-full max-w-7xl mx-auto">
                     <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
                         <ArrowLeft className="w-5 h-5"/>
@@ -215,6 +366,21 @@ export default function CollectionsPage() {
                 type={dialogType}
                 onCollectionCreated={loadCollections}
             />
+            <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete {selectedIds.size} collection(s). This action cannot be undone. The movies inside will NOT be deleted from your main library.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete}>Delete Collections</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }
+

@@ -64,6 +64,10 @@ export class MovieService {
   static async deleteCollection(id: string): Promise<void> {
     return await db.collections.delete(id);
   }
+
+  static async deleteCollections(ids: string[]): Promise<void> {
+    await db.collections.bulkDelete(ids);
+  }
   
   // Canvas Methods
   static async getCanvases(): Promise<CanvasBoard[]> {
