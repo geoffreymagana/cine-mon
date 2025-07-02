@@ -7,7 +7,7 @@ const genreThemeMap: Record<string, WrappedSlide['visualTheme']> = {
     'Science Fiction': 'sci-fi',
     'Sci-Fi': 'sci-fi',
     'Horror': 'horror',
-    'Thriller': 'horror',
+    'Thriller': 'mystery',
     'Mystery': 'mystery',
     'Romance': 'romance',
     'Action': 'action',
@@ -19,7 +19,7 @@ const genreThemeMap: Record<string, WrappedSlide['visualTheme']> = {
     'Comedy': 'romance', // Re-using for a lighter feel
     'Animation': 'default',
     'Family': 'default',
-    'Fantasy': 'sci-fi',
+    'Fantasy': 'epic',
 };
 
 const soundscapes: Record<WrappedSlide['visualTheme'], string> = {
@@ -31,8 +31,64 @@ const soundscapes: Record<WrappedSlide['visualTheme'], string> = {
   'mystery': '/sounds/myst-dark-drone-synth-female-vocal-choir-atmo-ambience-cinematic.wav',
   'nostalgic': '/sounds/nostalgic-piano-loop.wav',
   'epic': '/sounds/epic-movie-ending.wav',
-  'default': '/sounds/gentle-piano.mp3', // fallback
+  'default': '/sounds/gentle-piano.mp3',
 };
+
+const timeWatchedCommentary = {
+  low: [
+    "A film a month. We love a casual commitment.",
+    "You blinked and missed it. Literally.",
+    "Your watch history is basically a trailer.",
+    "Minimalist? Or just distracted?",
+  ],
+  moderate: [
+    "One foot in the cinema, one foot in real life.",
+    "Respectable. Balanced. Still enough time to touch grass.",
+    "Not a binge, more of a polite nibble.",
+    "The algorithm nods in quiet approval.",
+  ],
+  heavy: [
+    "Okay binge mode, we see you.",
+    "You've seen more screen time than some actors this year.",
+    "You *could* have learned French… but this was probably more fun.",
+    "The popcorn didn’t stand a chance.",
+  ],
+  extreme: [
+    "Call Hollywood. You basically live there now.",
+    "This wasn’t watching. This was *training*.",
+    "Impressive. Concerning. Iconic.",
+    "Hope your couch has a loyalty program.",
+  ],
+  offTheCharts: [
+    "Cine-Mon says go outside. Please.",
+    "That’s not a watchlist, that’s a full-time job.",
+    "You could’ve walked to Uganda and back.",
+    "At this point, you *are* the main character.",
+  ],
+};
+
+const decadeCommentary = {
+    '1940s': "Serving black & white realness with a side of jazz hands.",
+    '1950s': "Your taste has vintage filter energy — *no app required*.",
+    '1960s': "You vibe with movies where people wore hats to dinner.",
+    '1970s': "You like your movies gritty, grainy, and groovy.",
+    '1980s': "Your movies come with a synth soundtrack and a training montage.",
+    '1990s': "You probably still rewind things for fun.",
+    '2000s': "Everything you watched has a Linkin Park remix.",
+    '2010s': "You’re the algorithm’s favorite child.",
+    '2020s': "You're living in real time. No spoilers please.",
+    'default': "You're not bound by time. Just taste."
+};
+
+const goalCommentary = {
+    noGoal: "No goals, just vibes.",
+    hitExactly: "Precision? We love an intentional viewer.",
+    overshot: "You said ‘one more’ and meant it... weekly.",
+    smashed: "Goal? Smashed. Standards? High.",
+    under: "Life got in the way. Or maybe just sleep."
+};
+
+const getRandomComment = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
 export const generateMusicLinks = (query: string) => ({
   spotify: `https://open.spotify.com/search/${encodeURIComponent(query)}`,
@@ -57,7 +113,6 @@ const PALETTE_COLORS: Record<string, string> = {
     'Light Gray': '#d1d5db',
 };
 
-
 export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200): WrappedSlide[] {
   if (movies.length === 0) {
     return [{
@@ -73,47 +128,84 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   const slides: WrappedSlide[] = [];
   const currentYear = new Date().getFullYear();
   
-  // Slide 1: Year Overview
-  let overviewSubtitle = "You journeyed through";
-  if (movies.length < 10) {
-      overviewSubtitle = "A curated year. You explored";
-  } else if (movies.length > 200) {
-      overviewSubtitle = "The cinema is your second home. You conquered";
-  } else if (movies.length > 100) {
-      overviewSubtitle = "A true cinephile. You devoured";
-  }
-  slides.push({
-    id: 'overview',
-    title: `Your ${currentYear} in Review`,
-    subtitle: overviewSubtitle,
-    stats: `${movies.length} stories`,
-    visualTheme: 'epic',
-    soundscape: soundscapes.epic,
-  });
+  // --- CALCULATIONS ---
+  const totalMinutes = movies.reduce((acc, movie) => {
+    const isMovie = movie.type === 'Movie';
+    const duration = isMovie ? (movie.runtime || 90) : (movie.watchedEpisodes * (movie.runtime || 24));
+    return acc + (duration * (1 + (movie.rewatchCount || 0)));
+  }, 0);
+  const totalHours = Math.floor(totalMinutes / 60);
 
-  // Slide 2: Top Genre
   const allTags = movies.flatMap(m => m.tags);
   const genreCounts = allTags.reduce((acc, genre) => {
     acc[genre] = (acc[genre] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-
   const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0];
+  
+  const directorCounts = movies
+    .filter(m => m.director)
+    .reduce((acc, m) => {
+      acc[m.director!] = (acc[m.director!] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  const topDirector = Object.entries(directorCounts).sort((a, b) => b[1] - a[1])[0];
+  
+  const allActorsWithAvatars = movies.flatMap(m => m.cast?.map(c => ({ name: c.name, avatarUrl: c.avatarUrl })) || []);
+  const actorCounts = allActorsWithAvatars.reduce((acc, actor) => {
+      if (!acc[actor.name]) {
+          acc[actor.name] = { count: 0, avatarUrl: actor.avatarUrl };
+      }
+      acc[actor.name].count++;
+      return acc;
+  }, {} as Record<string, { count: number, avatarUrl: string }>);
+  const topActors = Object.entries(actorCounts).sort((a, b) => b[1].count - a[1].count).slice(0, 3).map(([name, data]) => ({ name, avatarUrl: data.avatarUrl, count: data.count }));
+  
+  const longestMovie = [...movies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
+  
+  const totalRewatches = movies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
+  const mostRewatched = totalRewatches > 0 ? [...movies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0] : null;
+
+  const completedSeries = movies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
+  
+  const decadeCounts: Record<string, number> = {};
+  movies.forEach(m => {
+    const year = m.releaseDate ? parseInt(m.releaseDate.substring(0, 4), 10) : 0;
+    if (year) {
+      const decade = `${Math.floor(year / 10) * 10}s`;
+      decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
+    }
+  });
+  const decadeData = Object.entries(decadeCounts).map(([name, value]) => ({ name, value })).sort((a,b) => a.name.localeCompare(b.name));
+  const topDecade = decadeData.length > 0 ? [...decadeData].sort((a, b) => b.value - a.value)[0] : null;
+  
+  const posterPalette = movies
+    .map(m => m.dominantColor)
+    .filter((c): c is string => !!c && c !== 'Gray' && c !== 'Light Gray')
+    .reduce((acc, color) => {
+        acc[color] = (acc[color] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+  const topColor = Object.entries(posterPalette).sort((a,b) => b[1] - a[1])[0];
+  
+  // --- SLIDE GENERATION ---
+  
+  slides.push({
+    id: 'overview',
+    title: `Your ${currentYear} in Review`,
+    subtitle: "A cinematic journey through",
+    stats: `${movies.length} stories`,
+    visualTheme: 'epic',
+    soundscape: soundscapes.epic,
+  });
+
   if (topGenre) {
     const topGenreName = topGenre[0];
     const theme = genreThemeMap[topGenreName] || 'default';
-    let genreSubtitle = `Your top genre was`;
-    if (topGenreName === 'Horror') {
-        genreSubtitle = 'You faced your fears. Your top genre was';
-    } else if (topGenreName === 'Comedy') {
-        genreSubtitle = 'You kept things light. Your top genre was'
-    } else if (topGenreName === 'Action') {
-        genreSubtitle = 'You lived for the thrill. Your top genre was';
-    }
     slides.push({
       id: 'top-genre',
       title: 'Your Comfort Zone',
-      subtitle: genreSubtitle,
+      subtitle: `Your top genre was`,
       stats: `${topGenreName}`,
       visualTheme: theme,
       soundscape: soundscapes[theme],
@@ -124,15 +216,38 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
       }
     });
   }
-  
-  // Slide 3: Most Watched Director
-  const directorCounts = movies
-    .filter(m => m.director)
-    .reduce((acc, m) => {
-      acc[m.director!] = (acc[m.director!] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  const topDirector = Object.entries(directorCounts).sort((a, b) => b[1] - a[1])[0];
+
+  let timeComment = getRandomComment(timeWatchedCommentary.moderate);
+  if (totalHours < 10) timeComment = getRandomComment(timeWatchedCommentary.low);
+  else if (totalHours >= 50 && totalHours < 150) timeComment = getRandomComment(timeWatchedCommentary.heavy);
+  else if (totalHours >= 150 && totalHours < 300) timeComment = getRandomComment(timeWatchedCommentary.extreme);
+  else if (totalHours >= 300) timeComment = getRandomComment(timeWatchedCommentary.offTheCharts);
+
+  slides.push({
+    id: 'total-time',
+    title: 'Time Well Spent',
+    subtitle: timeComment,
+    stats: `${totalHours.toLocaleString()} hours`,
+    visualTheme: 'sci-fi',
+    soundscape: soundscapes['sci-fi'],
+  });
+
+  if (longestMovie && longestMovie.runtime) {
+    slides.push({
+      id: 'longest-movie',
+      title: `Your longest journey was ${longestMovie.runtime} minutes with`,
+      subtitle: 'A true test of endurance',
+      stats: `${longestMovie.title}`,
+      visualTheme: 'action',
+      soundscape: soundscapes.action,
+      musicSuggestion: {
+        title: longestMovie.title,
+        artist: 'Original Soundtrack',
+        searchQuery: `${longestMovie.title} official soundtrack`,
+      }
+    });
+  }
+
   if(topDirector && topDirector[1] > 1) {
      slides.push({
       id: 'top-director',
@@ -148,16 +263,8 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
       }
     });
   }
-
-  // Slide 4: Most Watched Actors
-  const topActors = movies.flatMap(m => m.cast?.map(c => c.name) || [])
-    .reduce((acc, name) => {
-        acc[name] = (acc[name] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
-  const sortedTopActors = Object.entries(topActors).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
-
-  if (sortedTopActors.length > 0) {
+  
+  if (topActors.length > 0) {
     slides.push({
         id: 'top-actors',
         title: 'Your Leading Stars',
@@ -166,41 +273,15 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
         visualTheme: 'default',
         soundscape: soundscapes.default,
         component: 'topActorsList',
-        componentData: sortedTopActors
+        componentData: topActors,
     })
   }
 
-  // Slide 5: Longest Movie
-  const longestMovie = [...movies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
-  if (longestMovie && longestMovie.runtime) {
-    slides.push({
-      id: 'longest-movie',
-      title: `${longestMovie.title}`,
-      subtitle: 'Your longest marathon viewing was',
-      stats: `${longestMovie.runtime} minutes`,
-      visualTheme: 'action',
-      soundscape: soundscapes.action,
-      musicSuggestion: {
-        title: longestMovie.title,
-        artist: 'Original Soundtrack',
-        searchQuery: `${longestMovie.title} official soundtrack`,
-      }
-    });
-  }
-
-  // Slide 6: Rewatches
-  const totalRewatches = movies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
-  const mostRewatched = [...movies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0];
-
-  if (totalRewatches > 0) {
-    let rewatchSubtitle = `You hit rewind on ${totalRewatches} stories.`;
-    if (totalRewatches > 20) {
-        rewatchSubtitle = `Familiar faces are the best. You rewatched ${totalRewatches} titles.`
-    }
+  if (mostRewatched) {
     slides.push({
         id: 'total-rewatches',
         title: 'Round Two (and Three, and Four...)',
-        subtitle: rewatchSubtitle,
+        subtitle: `You hit rewind on ${totalRewatches} stories. Your most rewatched was`,
         stats: `${mostRewatched.title}`,
         visualTheme: 'romance',
         soundscape: soundscapes.romance,
@@ -211,65 +292,25 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
         }
     })
   }
-
-  // Slide 7: Series Completion
-  const completedSeries = movies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
+  
   if (completedSeries.length > 0) {
-    let seriesSubtitle = "A job well done. You completed";
-    if (completedSeries.length > 10) {
-        seriesSubtitle = "A true completionist. You finished every episode of";
-    }
     slides.push({
         id: 'series-completion',
         title: 'Series Slayer',
-        subtitle: seriesSubtitle,
+        subtitle: `A true completionist. You finished every episode of`,
         stats: `${completedSeries.length} series`,
         visualTheme: 'nostalgic',
         soundscape: soundscapes.nostalgic
     });
   }
   
-  // Slide 8: Total Watch Time
-  const totalMinutes = movies.reduce((acc, movie) => {
-    const isMovie = movie.type === 'Movie';
-    const duration = isMovie ? (movie.runtime || 90) : (movie.watchedEpisodes * (movie.runtime || 24));
-    return acc + (duration * (1 + (movie.rewatchCount || 0)));
-  }, 0);
-  const totalHours = Math.floor(totalMinutes / 60);
-
-  let timeSubtitle = "You dedicated";
-  if (totalHours > 1000) {
-      timeSubtitle = "That's a lot of popcorn. You dedicated";
-  } else if (totalHours < 50) {
-      timeSubtitle = "A respectable start. You dedicated";
-  }
-
-  slides.push({
-    id: 'total-time',
-    title: 'Time Well Spent',
-    subtitle: timeSubtitle,
-    stats: `${totalHours.toLocaleString()} hours`,
-    visualTheme: 'sci-fi',
-    soundscape: soundscapes['sci-fi'],
-  });
-  
-  // Slide 9: Decade Distribution
-  const decadeCounts: Record<string, number> = {};
-  movies.forEach(m => {
-    const year = m.releaseDate ? new Date(m.releaseDate).getFullYear() : 0;
-    if (year) {
-      const decade = `${Math.floor(year / 10) * 10}s`;
-      decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
-    }
-  });
-  const decadeData = Object.entries(decadeCounts).map(([name, value]) => ({ name, value })).sort((a,b) => a.name.localeCompare(b.name));
-  
-  if (decadeData.length > 0) {
-    const topDecade = [...decadeData].sort((a, b) => b.value - a.value)[0];
+  if (topDecade) {
+    const decadeKey = topDecade.name.substring(0, 4) as keyof typeof decadeCommentary;
+    const decadeSass = decadeCommentary[decadeKey] || decadeCommentary.default;
     slides.push({
       id: 'decades',
       title: 'A Walk Through Time',
-      subtitle: `Your favorite stories were mostly from the`,
+      subtitle: decadeSass,
       stats: topDecade.name,
       visualTheme: 'nostalgic',
       soundscape: soundscapes.nostalgic,
@@ -282,29 +323,6 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
       }
     });
   }
-
-  // Slide 10: Watch Goal
-  const goalProgress = watchGoal > 0 ? Math.round((movies.length / watchGoal) * 100) : 0;
-  if (goalProgress >= 100) {
-    slides.push({
-        id: 'goal-reached',
-        title: 'Goal Smashed!',
-        subtitle: `You aimed for ${watchGoal} titles and hit`,
-        stats: `${movies.length}!`,
-        visualTheme: 'epic',
-        soundscape: soundscapes.epic
-    });
-  }
-
-  // Slide 11: Color Palette
-  const posterPalette = movies
-    .map(m => m.dominantColor)
-    .filter((c): c is string => !!c && c !== 'Gray' && c !== 'Light Gray')
-    .reduce((acc, color) => {
-        acc[color] = (acc[color] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
-  const topColor = Object.entries(posterPalette).sort((a,b) => b[1] - a[1])[0];
 
   if (topColor) {
     slides.push({
@@ -321,8 +339,19 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
         }
     });
   }
-
-  // Final Slide
+  
+  const goalProgress = watchGoal > 0 ? Math.round((movies.length / watchGoal) * 100) : 0;
+  if (goalProgress >= 100) {
+    slides.push({
+        id: 'goal-reached',
+        title: 'Goal Smashed!',
+        subtitle: `You aimed for ${watchGoal} titles and hit`,
+        stats: `${movies.length}!`,
+        visualTheme: 'epic',
+        soundscape: soundscapes.epic
+    });
+  }
+  
   slides.push({
     id: 'final',
     title: `That's a Wrap on ${currentYear}!`,

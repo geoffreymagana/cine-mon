@@ -8,6 +8,7 @@ import type { WrappedSlide } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { MusicSuggestionCard } from './MusicSuggestionCard';
 import { ChartContainer } from '@/components/ui/chart';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 type WrappedSlideProps = {
   data: WrappedSlide;
@@ -52,19 +53,23 @@ const SlideContent = ({ data }: { data: WrappedSlide }) => {
   }
   if (data.component === 'topActorsList' && Array.isArray(data.componentData)) {
     return (
-      <div className="mt-8 flex flex-col items-center gap-4">
-        {data.componentData.map((actor: string, index: number) => (
-          <motion.div
-            key={actor}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 + index * 0.2 }}
-            className="text-2xl md:text-4xl font-semibold bg-black/20 px-4 py-2 rounded-lg"
-          >
-            {actor}
-          </motion.div>
-        ))}
-      </div>
+        <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            {data.componentData.map((actor: {name: string, avatarUrl: string}, index: number) => (
+                <motion.div
+                    key={actor.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5 + index * 0.2 }}
+                    className="flex flex-col items-center gap-2"
+                >
+                    <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white/50">
+                        <AvatarImage src={actor.avatarUrl} alt={actor.name} data-ai-hint="person portrait" />
+                        <AvatarFallback>{actor.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="font-semibold text-lg md:text-xl text-center">{actor.name}</p>
+                </motion.div>
+            ))}
+        </div>
     );
   }
   if (data.component === 'colorPalette' && data.componentData) {
