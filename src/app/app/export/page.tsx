@@ -8,21 +8,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { MovieService } from '@/lib/movie-service';
 
 export default function ExportPage() {
     const { toast } = useToast();
     const [movies, setMovies] = React.useState<Movie[]>([]);
 
     React.useEffect(() => {
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) {
-                setMovies(JSON.parse(storedMovies));
+        const loadMovies = async () => {
+            try {
+                const storedMovies = await MovieService.getMovies();
+                setMovies(storedMovies);
+            } catch (error) {
+                console.error("Failed to load movies from DB:", error);
+                toast({
+                    title: "Error",
+                    description: "Could not load collection data.",
+                    variant: "destructive"
+                });
             }
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
-    }, []);
+        };
+
+        loadMovies();
+    }, [toast]);
 
     const handleExport = (format: 'json' | 'csv') => {
         if (movies.length === 0) {
@@ -45,7 +53,10 @@ export default function ExportPage() {
             const rows = movies.map(row => 
                 Object.values(row).map(value => {
                     if (Array.isArray(value)) {
-                        return `"${value.join(';')}"`; // Handle tags array
+                        return `"${value.join(';')}"`; // Handle arrays like tags
+                    }
+                     if (typeof value === 'object' && value !== null) {
+                        return `"${JSON.stringify(value).replace(/"/g, '""')}"`; // Handle nested objects
                     }
                     const strValue = String(value);
                     return `"${strValue.replace(/"/g, '""')}"`; // Escape double quotes
