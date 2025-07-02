@@ -151,7 +151,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             </SidebarMenuItem>
                             <SidebarSeparator />
                             {!isMobile && (
-                                <SidebarMenuItem>
+                                <SidebarMenuItem className="pt-1">
                                     <SidebarMenuButton onClick={() => router.push('/app/analytics')} tooltip="Stats" isActive={pathname.startsWith('/app/analytics')}>
                                         <TrendingUp />
                                         <span>Stats</span>
