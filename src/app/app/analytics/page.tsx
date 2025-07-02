@@ -487,23 +487,11 @@ export default function AnalyticsPage() {
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
         onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
         topGenres: <StatCard icon={PieChart} title="Top Genres">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <RechartsPieChart>
-                                <Pie data={topGenres} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
-                                    {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                />
-                                <Legend iconSize={8} />
-                            </RechartsPieChart>
-                        </ResponsiveContainer>
-                   </StatCard>,
-        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
+                        <div className="w-full h-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <Pie data={collectionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
-                                        {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                    <Pie data={topGenres} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                                        {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip
                                         contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
@@ -511,6 +499,22 @@ export default function AnalyticsPage() {
                                     <Legend iconSize={8} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
+                        </div>
+                   </StatCard>,
+        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RechartsPieChart>
+                                        <Pie data={collectionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                                            {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Legend iconSize={8} />
+                                    </RechartsPieChart>
+                                </ResponsiveContainer>
+                            </div>
                         </StatCard>,
         watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
                        <div className="w-full h-full relative">
@@ -539,12 +543,32 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>,
         totalRewatches: <StatCard icon={Repeat} title="Total Rewatches">
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RechartsPieChart>
+                                        <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} cx="50%" cy="50%" paddingAngle={5}>
+                                        {rewatchData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Legend iconSize={8} />
+                                    </RechartsPieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </StatCard>,
+        lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
+    };
+
+    const allGeekCards: Record<string, React.ReactNode> = {
+        mostActors: <StatCard icon={Users} title="Most Watched Actors">
+                        <div className="w-full h-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} cx="50%" cy="50%" paddingAngle={5}>
-                                       {rewatchData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
+                                    <Pie data={topActors} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                                        {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip
                                         contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
@@ -552,65 +576,55 @@ export default function AnalyticsPage() {
                                     <Legend iconSize={8} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
-                        </StatCard>,
-        lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
-    };
-
-    const allGeekCards: Record<string, React.ReactNode> = {
-        mostActors: <StatCard icon={Users} title="Most Watched Actors">
-                        <ResponsiveContainer width="100%" height="100%">
-                             <RechartsPieChart>
-                                <Pie data={topActors} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
-                                    {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                />
-                                <Legend iconSize={8} />
-                            </RechartsPieChart>
-                        </ResponsiveContainer>
+                        </div>
                     </StatCard>,
         mostDirectors: <StatCard icon={Video} title="Most Watched Directors">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
-                                    <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
-                                    <Tooltip
-                                        cursor={{ fill: 'hsl(var(--muted))' }}
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
-                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
+                                        <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
+                                        <XAxis type="number" hide />
+                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
+                                        <Tooltip
+                                            cursor={{ fill: 'hsl(var(--muted))' }}
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </StatCard>,
         topFranchises: <StatCard icon={Layers} title="Top Franchises">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
-                                    <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
-                                       {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
-                                    <Legend wrapperStyle={{fontSize: '12px'}} iconSize={8} />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RechartsPieChart>
+                                        <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+                                        {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Legend wrapperStyle={{fontSize: '12px'}} iconSize={8} />
+                                    </RechartsPieChart>
+                                </ResponsiveContainer>
+                            </div>
                         </StatCard>,
         collectionTimeline: (
             <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" fontSize={12} />
-                        <YAxis fontSize={12} />
-                        <Tooltip
-                            cursor={{ fill: 'hsl(var(--muted))' }}
-                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                        />
-                        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
+                <div className="w-full h-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" fontSize={12} />
+                            <YAxis fontSize={12} />
+                            <Tooltip
+                                cursor={{ fill: 'hsl(var(--muted))' }}
+                                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                            />
+                            <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
             </StatCard>
         ),
         rewatchRatio: <StatCard icon={Repeat} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="Of your collection has been rewatched" />,
@@ -639,41 +653,45 @@ export default function AnalyticsPage() {
         ),
         bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
         nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Titles watched after 9 PM">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={nightOwlData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="hour" fontSize={12} />
-                                    <YAxis fontSize={12} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
-                                    <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={nightOwlData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="hour" fontSize={12} />
+                                        <YAxis fontSize={12} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </StatCard>,
         obscurityIndex: <StatCard icon={FlaskConical} title="Obscurity Index" description="Your taste vs. popular taste">
-                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={obscurityData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                                        </linearGradient>
-                                        <linearGradient id="colorPopular" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" fontSize={12} />
-                                    <YAxis fontSize={12} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
-                                    <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
-                                    <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                            <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={obscurityData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                                                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                                            </linearGradient>
+                                            <linearGradient id="colorPopular" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="month" fontSize={12} />
+                                        <YAxis fontSize={12} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                        />
+                                        <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
+                                        <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
                          </StatCard>,
     };
 
