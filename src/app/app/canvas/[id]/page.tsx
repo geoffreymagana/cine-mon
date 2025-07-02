@@ -22,7 +22,7 @@ import ReactFlow, {
   Position,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote, Lock } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 import CustomNode from '@/components/canvas/custom-node';
@@ -208,6 +208,7 @@ function CanvasFlow() {
                         onTitleChange,
                         onColorChange,
                         onChange: onNodeTextChange,
+                        isReadOnly: false,
                     },
                 }));
                 setNodes(loadedNodes);
@@ -230,11 +231,20 @@ function CanvasFlow() {
 
   }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange, onNodeTextChange]);
   
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: { ...node.data, isReadOnly: isReadOnly },
+      }))
+    );
+  }, [isReadOnly, setNodes]);
+
   const handleSave = useCallback(async () => {
     if (!canvasId) return;
 
     const nodesToSave = getNodes().map(n => {
-      const { onLabelChange, onTitleChange, onColorChange, onChange, ...restData } = n.data;
+      const { onLabelChange, onTitleChange, onColorChange, onChange, isReadOnly, ...restData } = n.data;
       return { ...n, data: restData };
     });
 
@@ -288,6 +298,7 @@ function CanvasFlow() {
 
   const onConnect = useCallback(
     (params: Edge | Connection) => {
+       if (isReadOnly) return;
        const newEdge = { 
            ...params, 
            type: 'default',
@@ -301,10 +312,12 @@ function CanvasFlow() {
         };
        setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges]
+    [setEdges, isReadOnly]
   );
   
   const addNode = useCallback((type: 'custom' | 'movie' | 'sticky', position?: XYPosition) => {
+    if (isReadOnly) return;
+
     if (type === 'movie') {
         setIsImportMovieOpen(true);
         return;
@@ -328,6 +341,7 @@ function CanvasFlow() {
           onColorChange: onColorChange,
           nodeType: 'sticky',
           color: 'hsla(54, 85%, 51%, 0.7)',
+          isReadOnly,
         },
         width: 200,
         height: 200,
@@ -346,6 +360,7 @@ function CanvasFlow() {
           onTitleChange,
           onColorChange,
           nodeType: 'standard',
+          isReadOnly,
         },
         width: 200,
         height: 150,
@@ -353,9 +368,11 @@ function CanvasFlow() {
     }
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes, onNodeTextChange]);
+  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes, onNodeTextChange, isReadOnly]);
 
   const addMovieNode = useCallback((movie: Movie) => {
+    if (isReadOnly) return;
+
     const position = screenToFlowPosition({
         x: reactFlowWrapper.current!.clientWidth / 2,
         y: reactFlowWrapper.current!.clientHeight / 2,
@@ -374,20 +391,22 @@ function CanvasFlow() {
         onTitleChange,
         onColorChange,
         nodeType: 'movie',
-        movieData: movie
+        movieData: movie,
+        isReadOnly,
       },
       width: 150,
       height: 267,
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [screenToFlowPosition, setNodes, onLabelChange, onTitleChange, onColorChange]);
+  }, [screenToFlowPosition, setNodes, onLabelChange, onTitleChange, onColorChange, isReadOnly]);
   
   const onEdgeDoubleClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
+      if (isReadOnly) return;
       setEditingEdge(edge);
       setCurrentLabel(edge.label as string || '');
     },
-    []
+    [isReadOnly]
   );
 
   const handleSaveEdgeLabel = () => {
@@ -510,6 +529,7 @@ function CanvasFlow() {
 
   const onNodeDragStop: OnNodeDrag = useCallback(
     (event, node) => {
+      if (isReadOnly) return;
       setIsDragging(false);
       
       if (intersectedEdgeId) {
@@ -532,7 +552,7 @@ function CanvasFlow() {
       
       setIntersectedEdgeId(null);
     },
-    [intersectedEdgeId, edges, setEdges]
+    [intersectedEdgeId, edges, setEdges, isReadOnly]
   );
   
   const onContextMenu = useCallback(
@@ -554,7 +574,7 @@ function CanvasFlow() {
   const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
   
   const handlePaste = useCallback(() => {
-    if (!clipboard) return;
+    if (!clipboard || isReadOnly) return;
     const { nodes: copiedNodes, edges: copiedEdges } = clipboard;
     if (copiedNodes.length === 0) return;
 
@@ -588,7 +608,7 @@ function CanvasFlow() {
     setEdges(eds => [...eds.map(e => ({ ...e, selected: false })), ...newEdges]);
 
     setClipboard({ nodes: newNodes, edges: newEdges });
-  }, [clipboard, setNodes, setEdges, setClipboard]);
+  }, [clipboard, setNodes, setEdges, setClipboard, isReadOnly]);
 
 
   useEffect(() => {
@@ -612,6 +632,8 @@ function CanvasFlow() {
         return;
       }
       
+      if (isReadOnly) return;
+
       if (e.key === 'Backspace') {
         e.preventDefault();
         setNodes(nds => nds.filter(n => !selectedNodes.some(sn => sn.id === n.id)));
@@ -663,7 +685,7 @@ function CanvasFlow() {
     
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, [selectedNodes, selectedEdges, setNodes, setEdges, handlePaste, addNode]);
+  }, [selectedNodes, selectedEdges, setNodes, setEdges, handlePaste, addNode, isReadOnly, toast]);
   
   const reactFlowInstance = useReactFlow();
 
@@ -704,11 +726,13 @@ function CanvasFlow() {
           onChange={(e) => setCanvasName(e.target.value)}
           className="text-lg font-bold w-96 bg-background/50 capitalize"
           placeholder="Untitled Canvas"
+          disabled={isReadOnly}
         />
+        {isReadOnly && <Badge variant="secondary" className="flex items-center gap-2"><Lock className="h-3 w-3" /> Read-Only</Badge>}
       </div>
 
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <Button onClick={handleSave}><Save className="mr-2 h-4 w-4"/>Save</Button>
+        <Button onClick={handleSave} disabled={isReadOnly}><Save className="mr-2 h-4 w-4"/>Save</Button>
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -743,7 +767,11 @@ function CanvasFlow() {
         onPaneClick={onPaneClick}
         onContextMenu={onContextMenu}
         proOptions={{ hideAttribution: true }}
-        selectNodesOnDrag={false}
+        nodesDraggable={!isReadOnly}
+        nodesConnectable={!isReadOnly}
+        nodesFocusable={!isReadOnly}
+        edgesFocusable={!isReadOnly}
+        selectNodesOnDrag={!isReadOnly}
       >
         <Background variant="dots" gap={20} size={1} color="hsl(var(--border) / 0.5)" />
         <MiniMap />
@@ -756,9 +784,11 @@ function CanvasFlow() {
         canRedo={false} 
         onShowHelp={() => setIsHelpOpen(true)}
         onLayout={onLayout}
+        isReadOnly={isReadOnly}
+        setIsReadOnly={setIsReadOnly}
       />
 
-      <NodeCreator onAddNode={(type) => addNode(type)} onAddMovieClick={() => addNode('movie')} />
+      {!isReadOnly && <NodeCreator onAddNode={(type) => addNode(type)} onAddMovieClick={() => addNode('movie')} />}
 
       {menu && (
         <CanvasContextMenu
@@ -774,7 +804,7 @@ function CanvasFlow() {
         />
       )}
 
-      {selectedNodes.length > 0 && (selectedNodes[0].type === 'custom' || selectedNodes[0].type === 'sticky') && (
+      {selectedNodes.length > 0 && !isReadOnly && (selectedNodes[0].type === 'custom' || selectedNodes[0].type === 'sticky') && (
         <ColorPickerToolbar
           node={selectedNodes[0]}
           onColorChange={(color) => {
@@ -783,7 +813,7 @@ function CanvasFlow() {
         />
       )}
 
-      {selectedEdges.length > 0 && selectedNodes.length === 0 && (
+      {selectedEdges.length > 0 && selectedNodes.length === 0 && !isReadOnly && (
           <EdgeToolbar
               selectedEdges={selectedEdges}
               onEdgeColorChange={onEdgeColorChange}
@@ -800,6 +830,8 @@ function CanvasFlow() {
         onZoomToFit={() => runCommand(() => reactFlowInstance.fitView({ duration: 300 }))}
         onAutoLayoutTB={() => runCommand(() => onLayout('TB'))}
         onAutoLayoutLR={() => runCommand(() => onLayout('LR'))}
+        isReadOnly={isReadOnly}
+        setIsReadOnly={setIsReadOnly}
       />
       
       <ImportMovieDialog
@@ -847,5 +879,3 @@ export default function CanvasEditorPage() {
     </ReactFlowProvider>
   );
 }
-
-    

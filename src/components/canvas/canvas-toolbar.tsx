@@ -30,9 +30,11 @@ type CanvasToolbarProps = {
     canRedo: boolean;
     onShowHelp: () => void;
     onLayout: (direction: 'TB' | 'LR') => void;
+    isReadOnly: boolean;
+    setIsReadOnly: (isReadOnly: boolean) => void;
 };
 
-export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, onLayout }: CanvasToolbarProps) {
+export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, onLayout, isReadOnly, setIsReadOnly }: CanvasToolbarProps) {
     const { zoomIn, zoomOut, fitView } = useReactFlow();
 
     return (
@@ -65,7 +67,7 @@ export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, on
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="read-only">Read only</Label>
-                                    <Switch id="read-only" />
+                                    <Switch id="read-only" checked={isReadOnly} onCheckedChange={setIsReadOnly} />
                                 </div>
                             </div>
                         </div>
@@ -107,7 +109,7 @@ export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, on
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" aria-label="Auto Layout">
+                            <Button variant="ghost" size="icon" aria-label="Auto Layout" disabled={isReadOnly}>
                                 <Layout className="w-5 h-5" />
                             </Button>
                         </PopoverTrigger>
@@ -128,7 +130,7 @@ export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, on
 
              <Tooltip>
                 <TooltipTrigger asChild>
-                     <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
+                     <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo || isReadOnly} aria-label="Undo">
                         <Undo2 className="w-5 h-5" />
                     </Button>
                 </TooltipTrigger>
@@ -136,7 +138,7 @@ export function CanvasToolbar({ onUndo, onRedo, canUndo, canRedo, onShowHelp, on
             </Tooltip>
              <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
+                    <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo || isReadOnly} aria-label="Redo">
                         <Redo2 className="w-5 h-5" />
                     </Button>
                 </TooltipTrigger>

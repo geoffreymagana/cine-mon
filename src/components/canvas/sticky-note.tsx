@@ -11,6 +11,7 @@ type StickyNodeData = {
   onColorChange: (id: string, color: string) => void;
   color?: string;
   nodeType: 'sticky';
+  isReadOnly?: boolean;
 };
 
 const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
@@ -38,7 +39,10 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
     }
   }, [isEditing]);
 
-  const handleDoubleClick = () => setIsEditing(true);
+  const handleDoubleClick = () => {
+    if (data.isReadOnly) return;
+    setIsEditing(true)
+  };
 
   const handleBlur = () => {
     setIsEditing(false);
@@ -56,7 +60,7 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
         onDoubleClick={handleDoubleClick}
     >
         <NodeResizer
-            isVisible={selected}
+            isVisible={selected && !data.isReadOnly}
             minWidth={100}
             minHeight={100}
             lineClassName="resize-handle-line"

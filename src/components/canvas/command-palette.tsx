@@ -8,7 +8,8 @@ import {
   Save,
   Minimize,
   ArrowDownUp,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Lock
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -29,6 +30,8 @@ type CommandPaletteProps = {
   onZoomToFit: () => void;
   onAutoLayoutTB: () => void;
   onAutoLayoutLR: () => void;
+  isReadOnly: boolean;
+  setIsReadOnly: (isReadOnly: boolean) => void;
 };
 
 export function CommandPalette({
@@ -40,6 +43,8 @@ export function CommandPalette({
   onZoomToFit,
   onAutoLayoutTB,
   onAutoLayoutLR,
+  isReadOnly,
+  setIsReadOnly,
 }: CommandPaletteProps) {
   const runCommand = React.useCallback((command: () => unknown) => {
     setIsOpen(false);
@@ -52,29 +57,36 @@ export function CommandPalette({
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Actions">
-          <CommandItem onSelect={() => runCommand(onAddNode)}>
+          <CommandItem onSelect={() => runCommand(onAddNode)} disabled={isReadOnly}>
             <FileText className="mr-2 h-4 w-4" />
             <span>Add Card</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(onAddMovieNode)}>
+          <CommandItem onSelect={() => runCommand(onAddMovieNode)} disabled={isReadOnly}>
             <Clapperboard className="mr-2 h-4 w-4" />
             <span>Add Movie from Collection</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(onSave)}>
+          <CommandItem onSelect={() => runCommand(onSave)} disabled={isReadOnly}>
             <Save className="mr-2 h-4 w-4" />
             <span>Save Canvas</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Layout">
-          <CommandItem onSelect={() => runCommand(onAutoLayoutTB)}>
+          <CommandItem onSelect={() => runCommand(onAutoLayoutTB)} disabled={isReadOnly}>
             <ArrowDownUp className="mr-2 h-4 w-4" />
             <span>Auto-Arrange (Top to Bottom)</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(onAutoLayoutLR)}>
+          <CommandItem onSelect={() => runCommand(onAutoLayoutLR)} disabled={isReadOnly}>
             <ArrowRightLeft className="mr-2 h-4 w-4" />
             <span>Auto-Arrange (Left to Right)</span>
           </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Settings">
+            <CommandItem onSelect={() => { setIsReadOnly(!isReadOnly); setIsOpen(false); }}>
+                <Lock className="mr-2 h-4 w-4" />
+                <span>{isReadOnly ? 'Disable Read-Only Mode' : 'Enable Read-Only Mode'}</span>
+            </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="View">

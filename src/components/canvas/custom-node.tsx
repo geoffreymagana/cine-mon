@@ -21,6 +21,7 @@ type CustomNodeData = {
   onColorChange: (id: string, color: string) => void;
   nodeType?: 'movie' | 'standard';
   movieData?: Movie;
+  isReadOnly?: boolean;
 };
 
 
@@ -61,6 +62,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   }, [isTitleEditing]);
   
   const handleNodeDoubleClick = () => {
+    if (data.isReadOnly) return;
     if (isMovieNode && data.movieData) {
         router.push(`/app/movie/${data.movieData.id}`);
     } else {
@@ -78,6 +80,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   };
 
   const handleTitleClick = (e: React.MouseEvent) => {
+    if (data.isReadOnly) return;
     e.stopPropagation();
     setIsTitleEditing(true);
   };
@@ -133,7 +136,7 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
         }}
       >
         <NodeResizer 
-          isVisible={selected} 
+          isVisible={selected && !data.isReadOnly} 
           minWidth={isMovieNode ? 120 : 150} 
           minHeight={isMovieNode ? 213 : 150}
           handleClassName="bg-primary rounded-sm w-3 h-3 hover:bg-primary/80"

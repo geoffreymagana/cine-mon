@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -83,15 +84,15 @@ export function CanvasContextMenu({
             className="fixed z-50 w-56 p-1 shadow-lg bg-popover"
             onContextMenu={(e) => e.preventDefault()}
         >
-            <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))}>Add card</MenuItem>
-            <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))}>Add sticky note</MenuItem>
+            <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))} disabled={isReadOnly}>Add card</MenuItem>
+            <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))} disabled={isReadOnly}>Add sticky note</MenuItem>
             <MenuItem icon={BookText} disabled>Add note from vault</MenuItem>
-            <MenuItem icon={Clapperboard} disabled>Add media from vault</MenuItem>
+            <MenuItem icon={Clapperboard} disabled={isReadOnly}>Add media from vault</MenuItem>
             <MenuItem icon={Link2} disabled>Add web page</MenuItem>
             <MenuItem icon={BoxSelect} disabled>Create group</MenuItem>
             <Separator className="my-1" />
-            <MenuItem icon={Undo2} disabled={!canUndo}>Undo</MenuItem>
-            <MenuItem icon={ClipboardPaste} disabled>Paste</MenuItem>
+            <MenuItem icon={Undo2} disabled={!canUndo || isReadOnly}>Undo</MenuItem>
+            <MenuItem icon={ClipboardPaste} disabled={isReadOnly}>Paste</MenuItem>
             <Separator className="my-1" />
             <MenuItem icon={Grid} onClick={() => setIsSnapToGrid(!isSnapToGrid)} isCheckbox checked={isSnapToGrid}>Snap to grid</MenuItem>
             <MenuItem icon={Lock} onClick={() => setIsReadOnly(!isReadOnly)} isCheckbox checked={isReadOnly}>Read-only</MenuItem>
