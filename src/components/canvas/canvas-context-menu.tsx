@@ -1,10 +1,9 @@
-
 'use client';
 
 import * as React from 'react';
 import {
   FileText,
-  Clapperboard,
+  Film,
   BoxSelect,
   Undo2,
   ClipboardPaste,
@@ -94,7 +93,7 @@ export function CanvasContextMenu({
         >
             <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))} disabled={isReadOnly}>Add card</MenuItem>
             <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))} disabled={isReadOnly}>Add sticky note</MenuItem>
-            <MenuItem icon={Clapperboard} onClick={() => handleAction(() => onAddNode('movie'))} disabled={isReadOnly}>Add media from vault</MenuItem>
+            <MenuItem icon={Film} onClick={() => handleAction(() => onAddNode('movie'))} disabled={isReadOnly}>Add media from vault</MenuItem>
             <MenuItem icon={Link2} onClick={() => handleAction(() => onAddNode('web'))} disabled={isReadOnly}>Add web page</MenuItem>
             <MenuItem icon={BoxSelect} disabled>Create group</MenuItem>
             <Separator className="my-1" />

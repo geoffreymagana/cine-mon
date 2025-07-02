@@ -1,8 +1,7 @@
-
 'use client';
 
 import * as React from 'react';
-import { FileText, Clapperboard, Link2, StickyNote } from 'lucide-react';
+import { FileText, Film, Link2, StickyNote } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -54,7 +53,7 @@ export function NodeCreator({ onAddNode, onAddMovieClick }: NodeCreatorProps) {
             onClick={onAddMovieClick} 
             className="transition-all hover:-translate-y-1 hover:bg-primary/20"
           >
-            <Clapperboard className="w-5 h-5" />
+            <Film className="w-5 h-5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
