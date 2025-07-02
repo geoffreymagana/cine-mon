@@ -32,8 +32,9 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import type { Movie } from '@/lib/types';
+import type { Movie, UserCollection, CanvasBoard, Setting } from '@/lib/types';
 import { MovieService } from '@/lib/movie-service';
+import { db } from '@/lib/database';
 import { ImportConfirmationDialog } from '@/components/import-confirmation-dialog';
 
 const themes = [
@@ -62,6 +63,13 @@ const sanitizeMovie = (movie: any, existing?: Movie): Movie => {
     return sanitized as Movie;
 };
 
+type ImportData = {
+    newMovies: Movie[];
+    conflictingMovies: Movie[];
+    collections?: UserCollection[];
+    canvases?: CanvasBoard[];
+    settings?: Setting[];
+};
 
 export default function ProfilePage() {
     const [name, setName] = React.useState('Cine-Mon User');
@@ -77,7 +85,8 @@ export default function ProfilePage() {
 
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [isImportConfirmOpen, setIsImportConfirmOpen] = React.useState(false);
-    const [importData, setImportData] = React.useState<{ newMovies: Movie[], conflictingMovies: Movie[] } | null>(null);
+    const [importData, setImportData] = React.useState<ImportData | null>(null);
+    const [isFullBackupImport, setIsFullBackupImport] = React.useState(false);
 
     const sections = ['personal-info', 'appearance', 'settings', 'resources'];
     const sectionRefs = React.useMemo(() => sections.reduce((acc, sec) => {
@@ -177,13 +186,20 @@ export default function ProfilePage() {
                 const json = event.target?.result as string;
                 const parsedData = JSON.parse(json);
 
+                if (parsedData.format === 'CineMon-Backup' && parsedData.data) {
+                    setImportData(parsedData.data);
+                    setIsFullBackupImport(true);
+                    setIsImportConfirmOpen(true);
+                    return;
+                }
+
                 let importedMovies: any[] = [];
                 if (Array.isArray(parsedData)) {
                     importedMovies = parsedData;
                 } else if (typeof parsedData === 'object' && parsedData !== null && Array.isArray(parsedData.movies)) {
                     importedMovies = parsedData.movies;
                 } else {
-                    throw new Error("Invalid JSON structure: The file should contain an array of movies, optionally within a 'movies' key.");
+                    throw new Error("Invalid JSON structure: Please provide a valid Cine-Mon backup file.");
                 }
                 
                 const existingMoviesById = new Map(allMovies.map(m => [m.id, m]));
@@ -210,16 +226,11 @@ export default function ProfilePage() {
 
                     let existingMovie: Movie | undefined = undefined;
 
-                    // Priority 1: Check by TMDB ID
                     if (importedMovie.tmdbId && existingMoviesByTmdbId.has(importedMovie.tmdbId)) {
                         existingMovie = existingMoviesByTmdbId.get(importedMovie.tmdbId);
-                    } 
-                    // Priority 2: Check by internal ID
-                    else if (importedMovie.id && existingMoviesById.has(importedMovie.id)) {
+                    } else if (importedMovie.id && existingMoviesById.has(importedMovie.id)) {
                         existingMovie = existingMoviesById.get(importedMovie.id);
-                    }
-                    // Priority 3: Fallback to title and release date
-                    else {
+                    } else {
                         const key = `${importedMovie.title.toLowerCase().trim()}|${importedMovie.releaseDate || ''}`;
                         if (existingMoviesByTitleAndDate.has(key)) {
                             existingMovie = existingMoviesByTitleAndDate.get(key);
@@ -232,9 +243,10 @@ export default function ProfilePage() {
                         newMovies.push(importedMovie);
                     }
                 });
-
+                
                 if (conflictingMovies.length > 0) {
                     setImportData({ newMovies, conflictingMovies });
+                    setIsFullBackupImport(false);
                     setIsImportConfirmOpen(true);
                 } else if (newMovies.length > 0) {
                     const moviesToSave = newMovies.map(m => sanitizeMovie(m));
@@ -266,54 +278,68 @@ export default function ProfilePage() {
         reader.readAsText(file);
     };
     
-    const handleImportConfirm = async (resolution: 'skip' | 'overwrite' | 'cancel') => {
-        if (!importData) return;
-    
+    const handleImportConfirm = async (resolution: 'skip' | 'overwrite' | 'cancel' | 'overwrite-all') => {
         setIsImportConfirmOpen(false);
-    
+
         if (resolution === 'cancel') {
             setImportData(null);
+            setIsFullBackupImport(false);
             toast({ title: "Import Canceled" });
             return;
         }
-    
-        let finalMovies: Movie[] = [...allMovies];
-        let toastDescription = "";
-    
-        if (resolution === 'skip') {
-            const newSanitizedMovies = importData.newMovies.map(m => sanitizeMovie(m));
-            finalMovies.push(...newSanitizedMovies);
-            toastDescription = `${newSanitizedMovies.length} new titles have been imported. ${importData.conflictingMovies.length} duplicates were skipped.`;
-        } else if (resolution === 'overwrite') {
-            const moviesToProcess = [...importData.newMovies, ...importData.conflictingMovies];
-            const finalMovieMap = new Map(allMovies.map(m => [m.id, m]));
-            
-            moviesToProcess.forEach(m => {
-                 const existing = finalMovieMap.get(m.id);
-                 finalMovieMap.set(m.id, sanitizeMovie(m, existing));
-            });
-            
-            finalMovies = Array.from(finalMovieMap.values());
-            toastDescription = `${importData.newMovies.length} new titles added and ${importData.conflictingMovies.length} existing titles updated.`;
-        }
-    
-        try {
-            await MovieService.saveAllMovies(finalMovies);
-            toast({
-                title: "Import Complete!",
-                description: `${toastDescription} The page will now reload.`,
-            });
-            setTimeout(() => window.location.reload(), 3000);
-        } catch (error) {
-            console.error("Failed to save movies after confirmation:", error);
-            toast({
-                title: "Import Failed",
-                description: "An error occurred while saving the movies.",
-                variant: "destructive",
-            });
+
+        if (isFullBackupImport && resolution === 'overwrite-all') {
+            if (!importData) return;
+            try {
+                toast({ title: "Restoring library...", description: "Please wait, this may take a moment." });
+                await db.transaction('rw', db.movies, db.collections, db.canvases, db.settings, async () => {
+                    await Promise.all([
+                        db.movies.clear(),
+                        db.collections.clear(),
+                        db.canvases.clear(),
+                        db.settings.clear(),
+                    ]);
+                    if (importData.movies) await db.movies.bulkPut(importData.movies);
+                    if (importData.collections) await db.collections.bulkPut(importData.collections);
+                    if (importData.canvases) await db.canvases.bulkPut(importData.canvases);
+                    if (importData.settings) await db.settings.bulkPut(importData.settings);
+                });
+                toast({ title: "Library Restored!", description: "Your data has been restored from the backup. The page will now reload." });
+                setTimeout(() => window.location.reload(), 2000);
+            } catch (error) {
+                console.error("Full backup restore failed:", error);
+                toast({ title: "Restore Failed", description: "An error occurred while restoring your library.", variant: "destructive" });
+            }
+        } else if (!isFullBackupImport && importData) {
+            let finalMovies: Movie[] = [...allMovies];
+            let toastDescription = "";
+
+            if (resolution === 'skip') {
+                const newSanitizedMovies = importData.newMovies.map(m => sanitizeMovie(m));
+                finalMovies.push(...newSanitizedMovies);
+                toastDescription = `${newSanitizedMovies.length} new titles imported. ${importData.conflictingMovies.length} duplicates skipped.`;
+            } else if (resolution === 'overwrite') {
+                const movieMap = new Map(finalMovies.map(m => [m.id, m]));
+                [...importData.newMovies, ...importData.conflictingMovies].forEach(m => {
+                    const existing = movieMap.get(m.id);
+                    movieMap.set(m.id, sanitizeMovie(m, existing));
+                });
+                finalMovies = Array.from(movieMap.values());
+                toastDescription = `${importData.newMovies.length} new titles added and ${importData.conflictingMovies.length} existing titles updated.`;
+            }
+
+            try {
+                await MovieService.saveAllMovies(finalMovies);
+                toast({ title: "Import Complete!", description: `${toastDescription} Page will now reload.` });
+                setTimeout(() => window.location.reload(), 3000);
+            } catch (error) {
+                console.error("Failed to save movies after confirmation:", error);
+                toast({ title: "Import Failed", description: "An error occurred while saving the movies.", variant: "destructive" });
+            }
         }
         
         setImportData(null);
+        setIsFullBackupImport(false);
     };
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -473,10 +499,10 @@ export default function ProfilePage() {
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <Label>Import Library</Label>
-                                                <p className="text-sm text-muted-foreground">Import your collection from a JSON file.</p>
+                                                <p className="text-sm text-muted-foreground">Restore your library from a backup JSON file.</p>
                                             </div>
                                             <Button variant="outline" onClick={handleImportClick}>
-                                                <Upload className="mr-2 h-4 w-4" /> Import JSON
+                                                <Upload className="mr-2 h-4 w-4" /> Import Backup
                                             </Button>
                                             <input type="file" ref={fileInputRef} className="hidden" accept=".json,application/json" onChange={handleFileImport} />
                                         </div>
@@ -601,6 +627,7 @@ export default function ProfilePage() {
             onConfirm={handleImportConfirm}
             conflictsCount={importData?.conflictingMovies.length || 0}
             newCount={importData?.newMovies.length || 0}
+            isFullBackup={isFullBackupImport}
         />
         </>
     );

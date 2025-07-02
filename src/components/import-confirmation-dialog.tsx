@@ -11,26 +11,60 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertCircle, FileUp, DatabaseZap, XCircle } from "lucide-react";
+import { AlertCircle, FileUp, DatabaseZap, ShieldAlert } from "lucide-react";
 
-type ImportResolution = 'skip' | 'overwrite' | 'cancel';
+type ImportResolution = 'skip' | 'overwrite' | 'cancel' | 'overwrite-all';
 
 type ImportConfirmationDialogProps = {
   isOpen: boolean;
-  conflictsCount: number;
-  newCount: number;
   onConfirm: (resolution: ImportResolution) => void;
+  conflictsCount?: number;
+  newCount?: number;
+  isFullBackup?: boolean;
 };
 
 export const ImportConfirmationDialog = ({ 
   isOpen, 
-  conflictsCount, 
-  newCount,
-  onConfirm 
+  onConfirm,
+  conflictsCount = 0,
+  newCount = 0,
+  isFullBackup = false
 }: ImportConfirmationDialogProps) => {
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onConfirm('cancel');
+    }
+  };
+
+  if (isFullBackup) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="text-destructive" />
+              Restore from Backup?
+            </DialogTitle>
+            <DialogDescription>
+              This action will completely <strong>overwrite your current library</strong> with the data from the backup file. This cannot be undone. Are you sure you want to proceed?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+              <Button variant="outline" onClick={() => onConfirm('cancel')}>
+                  Cancel
+              </Button>
+              <Button variant="destructive" onClick={() => onConfirm('overwrite-all')}>
+                  <DatabaseZap className="mr-2" /> Yes, Overwrite All
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onConfirm('cancel')}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -43,7 +77,7 @@ export const ImportConfirmationDialog = ({
         </DialogHeader>
         <div className="py-4 space-y-4">
             <p className="text-sm text-muted-foreground">
-                Overwriting will replace your existing data for conflicting titles with the data from the import file.
+                Overwriting will replace your existing data for conflicting titles with the data from the import file. Skipping will only add new, non-conflicting titles.
             </p>
         </div>
         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">

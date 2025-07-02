@@ -1,3 +1,4 @@
+
 import { db } from './database';
 import type { Movie, UserCollection, Soundtrack, Setting, CanvasBoard } from './types';
 
@@ -98,7 +99,7 @@ export class MovieService {
     return await db.soundtracks.where({ movieId }).first();
   }
 
-  // Poster Caching
+  // Poster Caching - This seems unused, might remove later.
   static async cachePoster(movieId: string, imageUrl: string): Promise<string> {
     try {
       const response = await fetch(imageUrl);
@@ -135,5 +136,21 @@ export class MovieService {
 
   static async getAllSettings(): Promise<Setting[]> {
       return await db.settings.toArray();
+  }
+  
+  // Backup/Export Methods
+  static async exportAllData(): Promise<{
+    movies: Movie[];
+    collections: UserCollection[];
+    canvases: CanvasBoard[];
+    settings: Setting[];
+  }> {
+    const [movies, collections, canvases, settings] = await Promise.all([
+      this.getMovies(),
+      this.getCollections(),
+      this.getCanvases(),
+      this.getAllSettings(),
+    ]);
+    return { movies, collections, canvases, settings };
   }
 }
