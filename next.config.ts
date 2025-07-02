@@ -9,7 +9,7 @@ const withPWA = require('next-pwa')({
   runtimeCaching: [
     {
       urlPattern: /^\/_next\/image\/.*/i,
-      handler: 'CacheFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'next-image-cache',
         expiration: {
