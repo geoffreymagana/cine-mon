@@ -336,7 +336,7 @@ export default function AnalyticsPage() {
                                     >
                                         {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                     <Legend iconSize={8} verticalAlign="bottom" />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
@@ -357,7 +357,7 @@ export default function AnalyticsPage() {
                                         >
                                             {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
-                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                         <Legend iconSize={8} verticalAlign="bottom" />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
@@ -383,7 +383,7 @@ export default function AnalyticsPage() {
                                     >
                                         {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                     <Legend iconSize={8} verticalAlign="bottom" />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
@@ -396,7 +396,7 @@ export default function AnalyticsPage() {
                                         <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
                                         <XAxis type="number" hide />
                                         <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={5} width={100} />
-                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                         <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -416,7 +416,7 @@ export default function AnalyticsPage() {
                                         >
                                         {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
-                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                         <Legend iconSize={8} verticalAlign="bottom" />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
@@ -429,7 +429,7 @@ export default function AnalyticsPage() {
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -465,7 +465,7 @@ export default function AnalyticsPage() {
                                      </defs>
                                      <Area type="monotone" dataKey="titles" stroke="hsl(var(--primary))" fill="url(#nightOwlFill)" />
                                      <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
-                                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} itemStyle={{ color: 'hsl(var(--foreground))' }}/>
                                  </AreaChart>
                              </ResponsiveContainer>
                          </div>
@@ -567,5 +567,3 @@ export default function AnalyticsPage() {
         </>
     )
 }
-
-    
