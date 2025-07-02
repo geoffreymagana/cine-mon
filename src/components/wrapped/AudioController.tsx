@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
@@ -39,7 +38,10 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     // 3. Load and fade in the new sound
     try {
       const response = await fetch(newSrc);
-      if (!response.ok) throw new Error('Failed to fetch audio');
+      if (!response.ok) {
+        console.error(`Failed to fetch audio: ${newSrc}. Status: ${response.status}`);
+        return; // Exit gracefully
+      }
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
@@ -59,7 +61,7 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
       
       sourceRef.current = { source: sourceNode, gainNode, src: newSrc };
     } catch (error) {
-      console.error('Error changing sound:', error);
+      console.error('Error processing audio:', error);
     }
   }, [isPlaying]);
 
