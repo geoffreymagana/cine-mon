@@ -7,6 +7,17 @@ const withPWA = require('next-pwa')({
   skipWaiting: true,
   runtimeCaching: [
     {
+      urlPattern: /^\/_next\/image\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-image-cache',
+        expiration: {
+          maxEntries: 1000,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
       urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
       handler: 'CacheFirst',
       options: {
