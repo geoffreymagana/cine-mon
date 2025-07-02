@@ -94,7 +94,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
 );
 
 const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
-    <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden">
+    <div className="bg-card rounded-lg border px-6 pt-6 pb-8 shadow-sm h-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6 text-muted-foreground" />
@@ -357,7 +357,7 @@ export default function AnalyticsPage() {
         topGenres: <StatCard icon={PieChart} title="Top Genres" description="Your most-watched genres">
                         <div className="w-full h-64">
                             <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
+                                <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                                     <Pie 
                                         data={topGenres} 
                                         dataKey="value" 
@@ -379,7 +379,7 @@ export default function AnalyticsPage() {
         curatedCollections: <StatCard icon={Sparkles} title="Curated Collections" description="Vaults vs. Spotlights">
                             <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart>
+                                    <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                                         <Pie 
                                             data={collectionsData} 
                                             dataKey="value" 
@@ -404,7 +404,7 @@ export default function AnalyticsPage() {
         mostActors: <StatCard icon={Users} title="Most Watched Actors" description="Actors appearing most in your collection">
                         <div className="w-full h-64">
                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
+                                <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                                     <Pie 
                                         data={topActors} 
                                         dataKey="value" 
@@ -443,7 +443,7 @@ export default function AnalyticsPage() {
         topFranchises: <StatCard icon={Layers} title="Top Franchises" description="Your most-watched movie franchises">
                             <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart>
+                                    <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                                         <Pie 
                                             data={topFranchises} 
                                             dataKey="value" 
@@ -569,24 +569,24 @@ export default function AnalyticsPage() {
         { id: 'timeWatched', className: 'lg:col-span-1'},
         { id: 'episodesWatched', className: 'lg:col-span-1'},
         { id: 'onWatchlist', className: 'lg:col-span-1'},
-        { id: 'watchGoal', className: 'lg:col-span-2'},
-        { id: 'topGenres', className: 'lg:col-span-2'},
-        { id: 'curatedCollections', className: 'lg:col-span-2'},
-        { id: 'lastWatched', className: 'lg:col-span-1'},
+        { id: 'watchGoal', className: 'lg:col-span-2 row-span-2'},
+        { id: 'topGenres', className: 'lg:col-span-2 row-span-2'},
+        { id: 'curatedCollections', className: 'lg:col-span-2 row-span-2'},
+        { id: 'lastWatched', className: 'lg:col-span-2'},
         { id: 'averageRating', className: 'lg:col-span-1'},
         { id: 'totalRewatches', className: 'lg:col-span-1'},
     ];
 
     const geekLayout = [
-        { id: 'collectionTimeline', className: 'lg:col-span-2' },
-        { id: 'mostDirectors', className: 'lg:col-span-2' },
-        { id: 'seriesCompletion', className: 'lg:col-span-2' },
+        { id: 'collectionTimeline', className: 'lg:col-span-4' },
+        { id: 'mostDirectors', className: 'lg:col-span-4' },
+        { id: 'seriesCompletion', className: 'lg:col-span-2 row-span-2' },
         { id: 'rewatchRatio', className: 'lg:col-span-1' },
         { id: 'storageUsage', className: 'lg:col-span-1' },
         { id: 'mostActors', className: 'lg:col-span-2' },
         { id: 'topFranchises', className: 'lg:col-span-2' },
         { id: 'nightOwlScore', className: 'lg:col-span-2' },
-        { id: 'posterPalette', className: 'lg:col-span-2' },
+        { id: 'posterPalette', className: 'lg:col-span-2 row-span-2' },
     ];
 
     if (!isClient) {
