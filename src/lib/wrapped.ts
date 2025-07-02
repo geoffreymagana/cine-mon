@@ -228,8 +228,8 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
     title: 'Time Well Spent',
     subtitle: timeComment,
     stats: `${totalHours.toLocaleString()} hours`,
-    visualTheme: 'sci-fi',
-    soundscape: soundscapes['sci-fi'],
+    visualTheme: 'nostalgic',
+    soundscape: soundscapes['nostalgic'],
   });
 
   if (longestMovie && longestMovie.runtime) {

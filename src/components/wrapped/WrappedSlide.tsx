@@ -98,7 +98,9 @@ const SlideContent = ({ data }: { data: WrappedSlide }) => {
 }
 
 export const WrappedSlideComponent = ({ data }: WrappedSlideProps) => {
+  const isColorPaletteSlide = data.component === 'colorPalette' && data.componentData;
   const themeClass = `theme-wrapped-${data.visualTheme}`;
+  const color = isColorPaletteSlide ? data.componentData.color : null;
   
   const statsLength = data.stats?.length || 0;
   const titleLength = data.title?.length || 0;
@@ -121,12 +123,26 @@ export const WrappedSlideComponent = ({ data }: WrappedSlideProps) => {
   );
 
   return (
-    <div className={cn("w-full h-screen flex flex-col items-center justify-center p-8 text-center text-white transition-colors duration-1000", themeClass)}>
+    <div className={cn("w-full h-screen flex flex-col items-center justify-center p-8 text-center text-white transition-colors duration-1000 relative", !isColorPaletteSlide && themeClass)}>
+        
+        {isColorPaletteSlide && (
+          <>
+            <div className={cn("absolute inset-0", themeClass)} />
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.5, delay: 1.2 }}
+              style={{ backgroundColor: color! }}
+            />
+          </>
+        )}
+        
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col items-center justify-center max-w-4xl mx-auto"
+            className="relative z-10 flex flex-col items-center justify-center max-w-4xl mx-auto"
         >
             <h2 className="text-2xl md:text-3xl font-light opacity-80">{data.subtitle}</h2>
             
