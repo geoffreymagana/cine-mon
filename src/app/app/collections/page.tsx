@@ -312,7 +312,7 @@ export default function CollectionsPage() {
                 <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 sm:gap-4 border-b bg-secondary px-4 md:px-8">
                     <div className="flex items-center gap-2 sm:gap-4">
                         <Button variant="ghost" size="icon" onClick={handleClearSelection}><X className="h-5 w-5"/></Button>
-                        <span className="font-semibold text-base sm:text-lg">{selectedIds.size} Selected</span>
+                        <span className="font-semibold text-base sm:text-lg">{selectedIds.size}</span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4">
                         <div className="flex items-center space-x-2">
@@ -326,6 +326,14 @@ export default function CollectionsPage() {
                             />
                             <label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer hidden sm:inline">Select all</label>
                         </div>
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={true}
+                            title="Share selected items (coming soon)"
+                        >
+                            <Share2 />
+                        </Button>
                         <Button
                             variant="destructive"
                             size="icon"
@@ -346,7 +354,7 @@ export default function CollectionsPage() {
                     </Link>
 
                     <div className="text-left mb-8">
-                        <h1 className="text-5xl font-bold font-headline">My Vaults & Spotlights</h1>
+                        <h1 className="text-3xl sm:text-5xl font-bold font-headline">My Vaults & Spotlights</h1>
                         <p className="text-muted-foreground mt-2">Curate personal collections of your favorite and must-watch titles.</p>
                     </div>
                     
