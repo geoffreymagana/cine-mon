@@ -1,8 +1,9 @@
+
 "use client";
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, LayoutDashboard } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, LayoutDashboard, BarChart3 } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -110,12 +111,20 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 {!isMobile && (
-                                     <SidebarMenuItem>
-                                        <SidebarMenuButton onClick={() => router.push('/app/canvas')} tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
-                                            <LayoutDashboard />
-                                            <span>Canvas</span>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
+                                    <>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton onClick={() => router.push('/app/canvas')} tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
+                                                <LayoutDashboard />
+                                                <span>Canvas</span>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton onClick={() => router.push('/app/analytics')} tooltip="Stats" isActive={pathname.startsWith('/app/analytics')}>
+                                                <BarChart3 />
+                                                <span>Stats</span>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    </>
                                 )}
                             </SidebarMenu>
                         </SidebarGroup>
