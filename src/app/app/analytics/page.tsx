@@ -60,7 +60,7 @@ const CHART_COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, cardHeight }: {
+const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, cardHeight }: {
     icon?: React.ElementType;
     title: string;
     value?: string | number;
@@ -651,3 +651,5 @@ export default function AnalyticsPage() {
         </>
     )
 }
+
+    
