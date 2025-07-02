@@ -94,7 +94,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
 );
 
 const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
-    <div className="bg-card rounded-lg border p-6 shadow-sm h-full">
+    <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                 <Calendar className="h-6 w-6 text-muted-foreground" />
