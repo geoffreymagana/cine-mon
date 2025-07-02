@@ -50,7 +50,6 @@ import { MovieService } from '@/lib/movie-service';
 import { Button } from '@/components/ui/button';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import type { Movie, UserCollection } from '@/lib/types';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 
 const CHART_COLORS = [
@@ -155,7 +154,6 @@ export default function AnalyticsPage() {
     const [isClient, setIsClient] = React.useState(false);
     
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
-    const isMobile = useIsMobile();
 
     const loadData = React.useCallback(async () => {
         const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunId] = await Promise.all([
@@ -340,12 +338,12 @@ export default function AnalyticsPage() {
                                >
                                     <defs>
                                         <linearGradient id="goalGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="hsl(var(--primary))" />
-                                            <stop offset="100%" stopColor="hsl(var(--primary) / 0.5)" />
+                                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
                                         </linearGradient>
                                     </defs>
                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                   <RadialBar background={{fill: 'hsl(var(--muted))'}} dataKey="value" cornerRadius={6} fill="url(#goalGradient)"/>
+                                   <RadialBar background={{fill: 'transparent'}} dataKey="value" cornerRadius={6} fill="url(#goalGradient)"/>
                                </RadialBarChart>
                            </ResponsiveContainer>
                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -371,7 +369,7 @@ export default function AnalyticsPage() {
                                         {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip content={<CustomTooltipContent />} />
-                                    {!isMobile && <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />}
+                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
@@ -392,7 +390,7 @@ export default function AnalyticsPage() {
                                             {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip content={<CustomTooltipContent />} />
-                                        {!isMobile && <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />}
+                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -418,7 +416,7 @@ export default function AnalyticsPage() {
                                         {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip content={<CustomTooltipContent />} />
-                                    {!isMobile && <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />}
+                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
@@ -455,7 +453,7 @@ export default function AnalyticsPage() {
                                         {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip content={<CustomTooltipContent />} />
-                                        {!isMobile && <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />}
+                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -523,12 +521,12 @@ export default function AnalyticsPage() {
                                         <defs>
                                             {posterPaletteData.map((entry, index) => (
                                                 <radialGradient key={`gradient-${index}`} id={`paletteGradient${index}`}>
-                                                    <stop offset="0%" stopColor={entry.baseColor} stopOpacity={0.7} />
-                                                    <stop offset="100%" stopColor={entry.baseColor} stopOpacity={1} />
+                                                    <stop offset="0%" stopColor={entry.baseColor} stopOpacity={1} />
+                                                    <stop offset="100%" stopColor={entry.baseColor} stopOpacity={0.4} />
                                                 </radialGradient>
                                             ))}
                                         </defs>
-                                        <RadialBar dataKey='count' background>
+                                        <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
                                             {posterPaletteData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.fill} className="stroke-background stroke-2" />
                                             ))}
@@ -548,16 +546,14 @@ export default function AnalyticsPage() {
                                             }
                                             return null;
                                         }} />
-                                        {!isMobile && (
-                                             <Legend
-                                                layout="vertical"
-                                                align="right"
-                                                verticalAlign="middle"
-                                                iconSize={8}
-                                                wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
-                                                payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
-                                            />
-                                        )}
+                                        <Legend
+                                            layout="vertical"
+                                            align="right"
+                                            verticalAlign="middle"
+                                            iconSize={8}
+                                            wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
+                                            payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
+                                        />
                                     </RadialBarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -651,3 +647,5 @@ export default function AnalyticsPage() {
 }
 
     
+
+  
