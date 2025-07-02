@@ -20,6 +20,7 @@ import {
     RadialBar,
     RadialBarChart,
     ResponsiveContainer,
+    Tooltip,
     XAxis, 
     YAxis 
 } from 'recharts';
@@ -52,7 +53,6 @@ import { ResizableBox } from 'react-resizable';
 import type { Movie, UserCollection } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import { format } from 'date-fns';
@@ -351,12 +351,6 @@ export default function AnalyticsPage() {
             { name: 'Watched Once', value: watchedOnceCount, fill: 'hsl(var(--chart-2))' },
         ];
     }, [watchedMovies]);
-    
-    const rewatchConfig = {
-      value: { label: 'Titles' },
-      Rewatched: { label: 'Rewatched' },
-      'Watched Once': { label: 'Watched Once' },
-    } satisfies ChartConfig
 
     const topGenres = React.useMemo(() => {
         const genreCounts = watchedMovies
@@ -368,14 +362,6 @@ export default function AnalyticsPage() {
         return Object.entries(genreCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
-    const genresConfig = {
-      value: { label: 'Titles' },
-      ...topGenres.reduce((acc, genre) => {
-        acc[genre.name] = { label: genre.name, color: genre.fill };
-        return acc;
-      }, {} as ChartConfig),
-    } satisfies ChartConfig;
-
     const collectionsData = React.useMemo(() => {
         const vaultCount = collections.filter(c => c.type === 'Vault').length;
         const spotlightCount = collections.filter(c => c.type === 'Spotlight').length;
@@ -385,12 +371,6 @@ export default function AnalyticsPage() {
         ];
     }, [collections]);
 
-    const collectionsConfig = {
-      value: { label: 'Count' },
-      Vaults: { label: 'Vaults' },
-      Spotlights: { label: 'Spotlights' },
-    } satisfies ChartConfig;
-    
     const goalProgress = watchGoal > 0 ? (totalTitlesWatched / watchGoal) * 100 : 0;
     const gaugeValue = Math.min(goalProgress, 100);
     const goalGaugeData = [{ value: gaugeValue, fill: "hsl(var(--primary))" }];
@@ -407,14 +387,6 @@ export default function AnalyticsPage() {
         return Object.entries(actorCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
-    const actorsConfig = {
-      value: { label: "Appearances" },
-      ...topActors.reduce((acc, actor) => {
-        acc[actor.name] = { label: actor.name, color: actor.fill };
-        return acc;
-      }, {} as ChartConfig),
-    } satisfies ChartConfig;
-
     const topDirectors = React.useMemo(() => {
         const directorCounts = watchedMovies
             .map(m => m.director)
@@ -425,10 +397,6 @@ export default function AnalyticsPage() {
             }, {} as Record<string, number>);
         return Object.entries(directorCounts).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([label, count]) => ({label, count})).reverse();
     }, [watchedMovies]);
-    
-    const directorsConfig = {
-      count: { label: "Titles Directed", color: "hsl(var(--primary))" },
-    } satisfies ChartConfig;
 
     const topFranchises = React.useMemo(() => {
         const franchiseCounts = watchedMovies
@@ -441,34 +409,17 @@ export default function AnalyticsPage() {
         return Object.entries(franchiseCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
-    const franchisesConfig = {
-      value: { label: "Titles" },
-      ...topFranchises.reduce((acc, franchise) => {
-        acc[franchise.name] = { label: franchise.name, color: franchise.fill };
-        return acc;
-      }, {} as ChartConfig),
-    } satisfies ChartConfig;
-    
     const nightOwlData = [
         { hour: '6 PM', titles: 2 }, { hour: '7 PM', titles: 3 }, { hour: '8 PM', titles: 5 }, 
         { hour: '9 PM', titles: 8 }, { hour: '10 PM', titles: 12 }, { hour: '11 PM', titles: 7 }, 
         { hour: '12 AM', titles: 4 }, { hour: '1 AM', titles: 2 }
     ];
     
-    const nightOwlConfig = {
-      titles: { label: "Titles Watched", color: "hsl(var(--primary))" },
-    } satisfies ChartConfig;
-
     const obscurityData = [
         { month: 'Jan', YourTaste: 40, Popular: 65 }, { month: 'Feb', YourTaste: 30, Popular: 59 },
         { month: 'Mar', YourTaste: 50, Popular: 80 }, { month: 'Apr', YourTaste: 48, Popular: 71 },
         { month: 'May', YourTaste: 60, Popular: 80 }, { month: 'Jun', YourTaste: 73, Popular: 85 },
     ];
-    
-    const obscurityConfig = {
-      YourTaste: { label: "Your Taste", color: "hsl(var(--chart-1))" },
-      Popular: { label: "Popular", color: "hsl(var(--muted-foreground))" },
-    } satisfies ChartConfig;
     
     const allBasicCards: Record<string, React.ReactNode> = {
         totalTitles: <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} />,
@@ -476,30 +427,34 @@ export default function AnalyticsPage() {
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
         onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
         topGenres: <StatCard icon={PieChart} title="Top Genres">
-                        <ChartContainer config={genresConfig} className="h-full w-full">
+                        <ResponsiveContainer width="100%" height="100%">
                             <RechartsPieChart>
-                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                <Pie data={topGenres} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
+                                <Pie data={topGenres} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
                                     {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                 </Pie>
-                                <Legend />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                />
+                                <Legend iconSize={8} />
                             </RechartsPieChart>
-                        </ChartContainer>
+                        </ResponsiveContainer>
                    </StatCard>,
         curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
-                            <ChartContainer config={collectionsConfig} className="h-full w-full">
+                            <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                    <Pie data={collectionsData} dataKey="value" nameKey="name" innerRadius={50} paddingAngle={2}>
+                                    <Pie data={collectionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
                                         {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Legend />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Legend iconSize={8} />
                                 </RechartsPieChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                         </StatCard>,
         watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
                        <div className="w-full h-full relative">
-                           <ChartContainer config={{}} className="w-full h-full">
+                           <ResponsiveContainer width="100%" height="100%">
                                <RadialBarChart
                                    data={goalGaugeData}
                                    startAngle={180}
@@ -509,9 +464,9 @@ export default function AnalyticsPage() {
                                    barSize={12}
                                >
                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                   <RadialBar background dataKey="value" cornerRadius={6} />
+                                   <RadialBar background={{fill: 'hsl(var(--muted))'}} dataKey="value" cornerRadius={6} />
                                </RadialBarChart>
-                           </ChartContainer>
+                           </ResponsiveContainer>
                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                <span className="text-3xl font-bold">{totalTitlesWatched}</span>
                                <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
@@ -524,70 +479,81 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>,
         totalRewatches: <StatCard icon={Repeat} title="Total Rewatches">
-                            <ChartContainer config={rewatchConfig} className="h-full w-full">
+                            <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                                    <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} cx="50%" cy="50%" paddingAngle={5}>
                                        {rewatchData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.fill} />
                                         ))}
                                     </Pie>
-                                    <Legend />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Legend iconSize={8} />
                                 </RechartsPieChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                         </StatCard>,
         lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
     };
 
     const allGeekCards: Record<string, React.ReactNode> = {
         mostActors: <StatCard icon={Users} title="Most Watched Actors">
-                        <ChartContainer config={actorsConfig} className="h-full w-full">
+                        <ResponsiveContainer width="100%" height="100%">
                              <RechartsPieChart>
-                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                <Pie data={topActors} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                                <Pie data={topActors} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
                                     {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                 </Pie>
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                />
                                 <Legend iconSize={8} />
                             </RechartsPieChart>
-                        </ChartContainer>
+                        </ResponsiveContainer>
                     </StatCard>,
         mostDirectors: <StatCard icon={Video} title="Most Watched Directors">
-                            <ChartContainer config={directorsConfig} className="h-full w-full">
-                                <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
                                     <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
                                     <XAxis type="number" hide />
                                     <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={20} />
+                                    <Tooltip
+                                        cursor={{ fill: 'hsl(var(--muted))' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
                                 </BarChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                         </StatCard>,
         topFranchises: <StatCard icon={Layers} title="Top Franchises">
-                            <ChartContainer config={franchisesConfig} className="h-full w-full">
+                            <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                    <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
+                                    <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
                                        {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Legend wrapperStyle={{fontSize: '12px'}} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
+                                    <Legend wrapperStyle={{fontSize: '12px'}} iconSize={8} />
                                 </RechartsPieChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                         </StatCard>,
         bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
         nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Titles watched after 9 PM">
-                            <ChartContainer config={nightOwlConfig} className="h-full w-full">
-                                <LineChart data={nightOwlData}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={nightOwlData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="hour" fontSize={12} />
                                     <YAxis fontSize={12} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
                                     <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                                 </LineChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                         </StatCard>,
         obscurityIndex: <StatCard icon={FlaskConical} title="Obscurity Index" description="Your taste vs. popular taste">
-                             <ChartContainer config={obscurityConfig} className="h-full w-full">
-                                <AreaChart data={obscurityData}>
+                             <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={obscurityData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
@@ -601,11 +567,13 @@ export default function AnalyticsPage() {
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="month" fontSize={12} />
                                     <YAxis fontSize={12} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                    />
                                     <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
                                     <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
                                 </AreaChart>
-                            </ChartContainer>
+                            </ResponsiveContainer>
                          </StatCard>,
     };
 
