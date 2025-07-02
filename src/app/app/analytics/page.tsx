@@ -174,7 +174,7 @@ const CustomTooltipContent = ({ active, payload, label }: { active?: boolean, pa
                             <div key={index} className="flex items-center gap-2">
                                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
                                 <p className="text-muted-foreground">{name}:</p>
-                                <p className="font-semibold">{value?.toLocaleString?.() || value}</p>
+                                <p className="font-medium text-foreground">{value?.toLocaleString?.() || value}</p>
                             </div>
                         )
                     })}
