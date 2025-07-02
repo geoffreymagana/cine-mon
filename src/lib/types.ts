@@ -117,13 +117,13 @@ export interface WrappedSlide {
   title: string;
   subtitle: string;
   stats: string;
-  visualTheme: 'sci-fi' | 'horror' | 'romance' | 'action' | 'drama' | 'default';
+  visualTheme: 'sci-fi' | 'horror' | 'romance' | 'action' | 'drama' | 'mystery' | 'nostalgic' | 'epic' | 'default';
   soundscape?: string;
   musicSuggestion?: {
     title: string;
     artist: string;
     searchQuery: string;
   };
-  component?: 'decadeChart';
+  component?: 'decadeChart' | 'topActorsList' | 'colorPalette';
   componentData?: any;
 }

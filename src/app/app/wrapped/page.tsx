@@ -17,8 +17,11 @@ export default function WrappedPage() {
   React.useEffect(() => {
     const fetchMoviesAndGenerateSlides = async () => {
         try {
-            const movies: Movie[] = await MovieService.getMovies();
-            const generatedSlides = generateWrappedSlides(movies);
+            const [movies, watchGoal] = await Promise.all([
+                MovieService.getMovies(),
+                MovieService.getSetting('watchGoal')
+            ]);
+            const generatedSlides = generateWrappedSlides(movies, watchGoal || 200);
             setSlides(generatedSlides);
         } catch (e) {
             console.error("Error generating Wrapped slides:", e);

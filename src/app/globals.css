@@ -392,6 +392,15 @@ body {
 .theme-wrapped-drama {
   background: linear-gradient(45deg, #4b6cb7, #182848, #2c3e50);
 }
+.theme-wrapped-mystery {
+  background: linear-gradient(45deg, #141e30, #243b55, #16222A);
+}
+.theme-wrapped-nostalgic {
+  background: linear-gradient(45deg, #7474BF, #348AC7, #5f2c82);
+}
+.theme-wrapped-epic {
+    background: linear-gradient(45deg, #DAA520, #B8860B, #FFD700, #F0E68C);
+}
 .theme-wrapped-default {
   background: linear-gradient(45deg, #1e1e1e, #3a3a3a, #121212);
 }
