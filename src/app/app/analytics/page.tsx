@@ -49,6 +49,7 @@ import type { Movie, UserCollection } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getDominantColor, destroyColorSampler } from '@/lib/tmdb';
 import { RatingProgressBar } from '@/components/rating-progress-bar';
 import { Progress } from '@/components/ui/progress';
@@ -141,15 +142,15 @@ const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
         </div>
         <div className="flex-grow flex items-center justify-center">
             {movie ? (
-                <div className="flex items-center gap-4 group cursor-pointer">
+                <Link href={`/app/movie/${movie.id}`} className="flex items-center gap-4 group w-full">
                     <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden">
                         <Image src={movie.posterUrl} alt={movie.title} width={64} height={96} className="object-cover w-full h-full transition-transform group-hover:scale-105" data-ai-hint="movie poster" />
                     </div>
                     <div className="flex-grow min-w-0">
-                        <p className="font-bold truncate group-hover:text-primary transition-colors">{movie.title}</p>
+                        <p className="font-bold line-clamp-2 group-hover:text-primary transition-colors" title={movie.title}>{movie.title}</p>
                         <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
                     </div>
-                </div>
+                </Link>
             ) : (
                 <div className="text-muted-foreground text-sm">
                     No spin history yet.
