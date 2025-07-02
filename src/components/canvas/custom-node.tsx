@@ -101,8 +101,10 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
     if (data.isReadOnly) return;
     if (isMovieNode && data.movieData) {
         router.push(`/app/movie/${data.movieData.id}`);
-    } else if (isWebNode) {
-        handleUrlDoubleClick();
+    } else if (isWebNode && data.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+    } else if (isWebNode && !data.url) {
+        setIsUrlEditing(true);
     } else {
         setIsEditing(true);
     }
@@ -209,21 +211,17 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
                     />
                 </div>
               ) : (
-                <a 
-                  href={data.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <div
                   className="block w-full h-full text-foreground no-underline"
-                  onDoubleClick={handleUrlDoubleClick}
                 >
                     <div className="w-full h-2/3 bg-muted/50 flex items-center justify-center overflow-hidden">
                         <Globe className="w-1/3 h-1/3 text-muted-foreground/70" />
                     </div>
-                    <div className="p-3">
+                    <div className="p-3" onDoubleClick={(e) => { e.stopPropagation(); handleUrlDoubleClick(); }}>
                         <p className="text-sm font-bold truncate">{data.title || data.url}</p>
                         <p className="text-xs text-muted-foreground truncate">{getDomainFromUrl(data.url)}</p>
                     </div>
-                </a>
+                </div>
               )}
             </div>
           ) : isMovieNode ? (
