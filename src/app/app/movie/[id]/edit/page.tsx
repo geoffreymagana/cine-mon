@@ -68,9 +68,9 @@ export default function MovieEditPage() {
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
   const backdropFileInputRef = React.useRef<HTMLInputElement>(null);
   const alternatePosterFileInputRef = React.useRef<HTMLInputElement>(null);
+  const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [scriptFileName, setScriptFileName] = React.useState<string | null>(null);
-  scriptFileInputRef.current;
   const [isCastOpen, setIsCastOpen] = React.useState(false);
 
 
