@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Plus, Lock, Projector, Share2, MoreVertical, X, Trash2, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Lock, Projector, Share2, MoreVertical, X, Trash2, Check, Folder } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import type { UserCollection } from '@/lib/types';
