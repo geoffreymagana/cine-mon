@@ -43,6 +43,7 @@ import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortable
 import { ResizableBox } from 'react-resizable';
 
 import type { Movie, UserCollection } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -673,5 +674,3 @@ export default function AnalyticsPage() {
         </>
     );
 }
-
-    
