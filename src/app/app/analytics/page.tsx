@@ -81,7 +81,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
                  Icon && <Icon className="h-4 w-4 text-muted-foreground" />
             )}
         </CardHeader>
-        <CardContent className="flex-grow">
+        <CardContent className="flex-grow min-h-0">
             {value && <div className="text-2xl font-bold">{value}</div>}
             {children}
         </CardContent>
@@ -124,7 +124,7 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
     </Card>
 );
 
-const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number, height: number }) => void, minConstraints: [number, number] }) => {
+const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number; height: number }) => void, minConstraints: [number, number] }) => {
     const {
         attributes,
         listeners,
@@ -429,7 +429,7 @@ export default function AnalyticsPage() {
                         <Progress value={(totalTitlesWatched/watchGoal)*100} className="mt-2" />
                     </StatCard>,
         totalRewatches: <StatCard title="Total Rewatches">
-                            <ChartContainer config={rewatchConfig} className="mx-auto aspect-square h-full">
+                            <ChartContainer config={rewatchConfig} className="h-full w-full">
                                 <PieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} paddingAngle={5}>
