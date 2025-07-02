@@ -36,6 +36,7 @@ import type { Movie, UserCollection, CanvasBoard, Setting } from '@/lib/types';
 import { MovieService } from '@/lib/movie-service';
 import { db } from '@/lib/database';
 import { ImportConfirmationDialog } from '@/components/import-confirmation-dialog';
+import { version } from '../../../../package.json';
 
 const themes = [
     { name: 'purple', displayColor: 'hsl(275, 76%, 58%)' },
@@ -653,6 +654,9 @@ export default function ProfilePage() {
                                     </CardContent>
                                 </Card>
                             </div>
+                        </div>
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                            Cine-Mon v{version}
                         </div>
                     </ScrollArea>
                 </main>

@@ -17,6 +17,7 @@ import type { Movie } from "@/lib/types";
 import { Suspense } from "react";
 import { migrateFromLocalStorage } from "@/lib/migrate-storage";
 import { MovieService } from "@/lib/movie-service";
+import { version } from '../../../package.json';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -167,6 +168,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                 </Button>
                             </Link>
                         </div>
+                        <p className="px-4 py-2 text-center text-xs text-muted-foreground">v{version}</p>
                     </SidebarFooter>
                 )}
             </Sidebar>
