@@ -1,78 +1,38 @@
-<<<<<<< Updated upstream
-# [1.3.0](https://github.com/geoffreymagana/cine-mon/compare/v1.2.0...v1.3.0) (2025-07-01)
-=======
 # Changelog
->>>>>>> Stashed changes
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] (2025-06-30)
+## [1.5.0] (2025-07-03)
 
 ### Features
 
-#### TV Show & Anime Tracking
+#### Canvas Enhancements & Productivity
+-   **Keyboard-First Workflow**: Added extensive keyboard shortcuts for a faster canvas experience, including `Copy (Cmd+C)`, `Cut (Cmd+X)`, `Paste (Cmd+V)`, `Select All (Cmd+A)`, and creation shortcuts (`Cmd+N` for cards, `Cmd+Shift+N` for sticky notes).
+-   **Web Bookmarks**: Users can now add "Web Page" nodes to the canvas by pasting a URL, creating a clean link preview card. Double-clicking a bookmark opens the link in a new tab.
+-   **Read-Only Mode**: A new "Read-Only" mode can be toggled to lock the canvas and prevent accidental edits while still allowing navigation.
+-   **Performance View**: When zoomed out, the canvas now intelligently simplifies its view: text becomes abstract blocks and movie posters switch to lightweight placeholders to maintain performance.
 
-- **Season and Episode Tracking:**  
-  - Added the ability to track individual seasons and episodes for TV shows and anime.
-  - Automatically fetches full season and episode data from TMDB when a series is added.
-  - Introduced a new "Seasons" tab in the TV show detail view.
-  - Each season features an accordion UI with individual episode checkboxes for tracking.
-  - Season-level progress bars and overall series completion percentages are now automatically calculated.
+#### Data Portability & Safety
+-   **Full Backup & Restore**: The export feature now creates a comprehensive JSON backup of the entire library, including all titles, collections, canvases, and settings.
+-   **Intelligent Import**: The import process is now much safer and more powerful. It intelligently detects conflicts and allows users to either **overwrite** existing data or **skip** duplicates, giving them full control.
 
-- **UI Refactor for Episode Tracking:**  
-  - Removed manual episode count fields from the TV show edit page.
-  - Episode progress is now fully automated based on tracked episodes.
-
-#### PWA and Mobile Experience
-
-- **PWA Manifest:**  
-  - Added `manifest.webmanifest` configured for a standalone, app-like experience.
-  - Linked the manifest in the root layout for installability.
-
-- **Mobile UI Enhancements:**  
-  - Disabled pinch-to-zoom on mobile to create a more native feel.
-  - Implemented long-press gesture to initiate drag-and-drop on touch devices.
-  - Replaced sidebar toggle with a profile avatar link in the header.
-  - Shifted primary navigation to bottom nav on mobile.
-  - Updated the landing page's install button text to "Launch App" for improved clarity.
-
-#### Changelog and UI Layout
-
-- **Public Changelog:**  
-  - Added a new public-facing changelog page that parses and renders the `CHANGELOG.md` file.
-  - Updated all site navigation links to include the changelog.
-
-- **Layout Improvements:**  
-  - Made the main sidebar conditional to allow immersive, full-screen views for movie detail and edit pages.
-  - On smaller screens, converted the "Play Trailer" and "Edit" buttons to icon-only for improved spacing and clarity.
-
----
+#### Analytics
+-   **Decade Distribution Chart**: A new chart on the analytics page visualizes which movie release decades the user watches most, replacing the old "Collection Timeline" placeholder.
 
 ### Fixes
 
-- **Routing Fix:**  
-  - Corrected the movie detail page link in `MovieCard` to resolve a 404 error.
+#### Core Functionality
+-   **Data Export**: Fixed a critical bug where the export function was reading from the wrong data source (`localStorage`), causing it to fail for users with existing collections.
+-   **Data Import**: Resolved a `TypeError` that could crash the profile page when importing certain files.
 
-- **UI Bug Fixes:**  
-  - Ensured that the "More options" menu on movie detail pages remains visible and correctly positioned on mobile devices.
+#### Canvas Stability
+-   **Edge Intersection**: Corrected a `ReferenceError` that occurred when dragging a node over an edge, making the edge-splitting feature reliable.
+-   **UI Crash**: Fixed a bug where the canvas page would crash due to a missing `Badge` component import when entering read-only mode.
+
+#### UI Polish
+-   **Analytics Tooltip**: Corrected the font weight on the analytics color palette tooltip, ensuring text is no longer incorrectly bold.
 
 ---
-
-### Chores
-
-- **Landing Page Content Update:**  
-  - Replaced placeholder screenshots on the landing page with finalised application visuals.
- ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
-
-## [1.1.0] (2025-06-29)
-
-### Features
-
-* **ui:** Implement bulk "Add to Collection" and fix UI issues ([1faea42](https://github.com/geoffreymagana/cine-mon/commit/1faea421e60039946b1875b5e88b8a2daa43e24a))
-
-# Changelog
-
-All notable changes to this project will be documented in this file.
 
 ## [1.4.0] (2025-07-02)
 

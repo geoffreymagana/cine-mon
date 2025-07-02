@@ -18,13 +18,8 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
     return (
         <>
             <div className="text-center mb-16">
-<<<<<<< Updated upstream
                 <h1 className="text-5xl font-bold font-headline text-white">Changelog</h1>
                 <p className="text-neutral-400 mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
-=======
-                <h1 className="text-5xl font-bold font-headline">Changelog</h1>
-                <p className="text-muted-foreground mt-2">Discover what's new, improved, and fixed in Cine-Mon.</p>
->>>>>>> Stashed changes
             </div>
             
             {versions.length > 0 ? (
@@ -33,25 +28,15 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                     <div className="absolute left-2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-transparent via-border to-transparent -z-10" />
 
                     {versions.map((versionInfo, v_idx) => (
-<<<<<<< Updated upstream
                         <div key={`${versionInfo.version}-${v_idx}`} className="flex items-baseline gap-x-6 mb-16">
-=======
-                        <div key={`${versionInfo.version}-${v_idx}`} className="flex items-start gap-x-6 mb-16">
->>>>>>> Stashed changes
                             {/* Dot */}
                             <div className="w-4 h-4 bg-background rounded-full border-2 border-primary ring-4 ring-background flex-shrink-0" />
                             
                             {/* Content */}
                             <div className="flex-1">
-<<<<<<< Updated upstream
                                 <div className="flex items-baseline gap-4 mb-4">
                                     <Badge variant="outline" className="text-lg py-1 px-3">v{versionInfo.version}</Badge>
                                     <p className="text-sm text-neutral-400">{versionInfo.date}</p>
-=======
-                                <div className="flex items-center gap-4 mb-4">
-                                    <Badge variant="outline" className="text-lg py-1 px-3">v{versionInfo.version}</Badge>
-                                    <p className="text-sm text-muted-foreground">{versionInfo.date}</p>
->>>>>>> Stashed changes
                                 </div>
                                 <div className="space-y-6">
                                     {versionInfo.sections.map((section, s_idx) => {
@@ -61,16 +46,11 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                                                 {badgeInfo && (
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <Badge variant="outline" className={cn("font-semibold", badgeInfo.className)}>{badgeInfo.text}</Badge>
-<<<<<<< Updated upstream
                                                         <h3 className="text-xl font-semibold !m-0 text-white">{section.type}</h3>
-=======
-                                                        <h3 className="text-xl font-semibold !m-0">{section.type}</h3>
->>>>>>> Stashed changes
                                                     </div>
                                                 )}
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
-<<<<<<< Updated upstream
                                                     className="text-neutral-300 space-y-4"
                                                     components={{
                                                         a: ({node, ...props}) => <span className="text-primary hover:underline" {...props} />,
@@ -81,17 +61,6 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                                                         img: ({node, ...props}) => <img className="max-w-full md:max-w-md rounded-md border my-4 shadow-md" alt="" {...props} />,
                                                         code: ({node, ...props}) => <code className="bg-muted text-muted-foreground px-1 py-0.5 rounded-sm font-mono text-xs" {...props} />,
                                                         p: ({node, ...props}) => <p className="leading-relaxed" {...props} />
-=======
-                                                    className="prose prose-lg dark:prose-invert max-w-none"
-                                                    components={{
-                                                        a: ({node, ...props}) => <span {...props} />, // Disable links
-                                                        h3: () => null, // Already rendered manually
-                                                        h4: ({node, ...props}) => <h4 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-                                                        ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2 space-y-2" {...props} />,
-                                                        li: ({node, ...props}) => <li className="pl-2" {...props} />,
-                                                        img: ({node, ...props}) => <img className="max-w-full md:max-w-md rounded-md border my-4 shadow-md" alt="" {...props} />,
-                                                        code: ({node, ...props}) => <code className="bg-muted text-muted-foreground px-1 py-0.5 rounded-sm font-mono text-xs" {...props} />,
->>>>>>> Stashed changes
                                                     }}
                                                 >
                                                     {section.content}
@@ -105,11 +74,7 @@ export const ChangelogDisplay = ({ versions }: { versions: VersionInfo[] }) => {
                     ))}
                 </div>
             ) : (
-<<<<<<< Updated upstream
                  <div className="text-center text-neutral-400 py-16">
-=======
-                 <div className="text-center text-muted-foreground py-16">
->>>>>>> Stashed changes
                     <p>No changelog entries found.</p>
                 </div>
             )}
