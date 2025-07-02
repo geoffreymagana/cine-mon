@@ -108,7 +108,7 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
                     </div>
                 )}
                 <div>
-                    <CardTitle className="text-sm font-medium">Last Suggestion</CardTitle>
+                    <CardTitle className="text-sm font-medium">Last Watched</CardTitle>
                     <p className="text-xs text-muted-foreground pt-1">From "Surprise Me"</p>
                 </div>
             </div>
@@ -173,7 +173,7 @@ const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: {
 };
 
 const defaultCardOrder = {
-    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'watchGoal', 'onWatchlist', 'topGenres', 'collectionTypes', 'averageRating', 'totalRewatches', 'lastWatched'],
+    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'watchGoal', 'onWatchlist', 'topGenres', 'curatedCollections', 'averageRating', 'totalRewatches', 'lastWatched'],
     geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
 };
 
@@ -185,7 +185,7 @@ const defaultCardSizes: Record<string, { width: number; height: number }> = {
     watchGoal: { width: 350, height: 250 },
     onWatchlist: { width: 250, height: 150 },
     topGenres: { width: 350, height: 280 },
-    collectionTypes: { width: 350, height: 280 },
+    curatedCollections: { width: 350, height: 280 },
     totalRewatches: { width: 350, height: 200 },
     lastWatched: { width: 350, height: 160 },
     mostActors: { width: 400, height: 380 },
@@ -204,7 +204,7 @@ const cardMinSizes: Record<string, [number, number]> = {
     watchGoal: [250, 240],
     onWatchlist: [200, 140],
     topGenres: [300, 250],
-    collectionTypes: [300, 250],
+    curatedCollections: [300, 250],
     totalRewatches: [250, 200],
     lastWatched: [300, 160],
     mostActors: [300, 300],
@@ -486,7 +486,7 @@ export default function AnalyticsPage() {
                             </RechartsPieChart>
                         </ChartContainer>
                    </StatCard>,
-        collectionTypes: <StatCard icon={Sparkles} title="Curated Collections">
+        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
                             <ChartContainer config={collectionsConfig} className="h-full w-full">
                                 <RechartsPieChart>
                                     <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
