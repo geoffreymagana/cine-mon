@@ -12,11 +12,9 @@ import {
     Legend,
     Pie, 
     PieChart as RechartsPieChart,
-    PolarAngleAxis,
-    RadialBar,
-    RadialBarChart,
     ResponsiveContainer,
     Tooltip,
+    Treemap,
     XAxis, 
     YAxis 
 } from 'recharts';
@@ -128,13 +126,21 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
             <div className="rounded-lg border bg-card p-2.5 shadow-sm text-card-foreground">
                 <div className="grid gap-1.5">
                     {label && <p className="font-medium">{label}</p>}
-                    {payload.map((pld: any, index: number) => (
-                        <div key={index} className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: pld.payload.fill || pld.color }} />
-                            <p className="text-muted-foreground">{pld.name}:</p>
-                            <p className="font-semibold">{pld.value.toLocaleString()}</p>
-                        </div>
-                    ))}
+                    {payload.map((pld: any, index: number) => {
+                        const name = pld.payload.name || pld.name;
+                        const value = pld.value;
+                        const color = pld.payload.fill || pld.color || pld.payload.baseColor;
+                        
+                        if (!name) return null;
+
+                        return (
+                            <div key={index} className="flex items-center gap-2">
+                                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                <p className="text-muted-foreground">{name}:</p>
+                                <p className="font-semibold">{value.toLocaleString()}</p>
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         );
@@ -172,6 +178,7 @@ export default function AnalyticsPage() {
                     try {
                         const color = await getDominantColor(movie.posterUrl);
                         await MovieService.updateMovie(movie.id, { dominantColor: color });
+                        // Update state in a way that triggers re-render for the chart
                         setMovies(prevMovies => prevMovies.map(m => 
                             m.id === movie.id ? { ...m, dominantColor: color } : m
                         ));
@@ -234,7 +241,6 @@ export default function AnalyticsPage() {
     }, [collections]);
 
     const goalProgress = watchGoal > 0 ? (totalTitlesWatched / watchGoal) * 100 : 0;
-    const goalGaugeData = [{ value: Math.min(goalProgress, 100) }];
 
     // Geek Stats
     const rewatchRatio = React.useMemo(() => {
@@ -349,12 +355,13 @@ export default function AnalyticsPage() {
             'Pink': '#ec4899',
         };
 
-        return Object.entries(colorCounts).map(([name, count]) => ({
-            name,
-            count,
-            baseColor: colorMap[name] || '#6b7280'
-        })).sort((a, b) => b.count - a.count).slice(0, 5)
-           .map((item, index) => ({ ...item, fill: `url(#paletteGradient${index})` }));
+        return Object.entries(colorCounts)
+            .map(([name, count]) => ({
+                name,
+                size: count,
+                fill: colorMap[name] || '#6b7280'
+            }))
+            .sort((a, b) => b.size - a.size);
     }, [watchedMovies]);
     
     const [activeTab, setActiveTab] = React.useState('basic');
@@ -390,31 +397,49 @@ export default function AnalyticsPage() {
 
                     {activeTab === 'basic' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" className="lg:col-span-1" cardHeight="180px" />
-                            <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" className="lg:col-span-1" cardHeight="180px"/>
-                            <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} description="Across all tracked series" className="lg:col-span-1" cardHeight="180px"/>
-                            <StatCard icon={Bookmark} title="On Watchlist" value={onWatchlistCount} description="Titles you plan to watch" className="lg:col-span-1" cardHeight="180px"/>
+                            <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" cardHeight="180px" />
+                            <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" cardHeight="180px"/>
+                            <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} description="Across all tracked series" cardHeight="180px"/>
+                            <StatCard icon={Bookmark} title="On Watchlist" value={onWatchlistCount} description="Titles you plan to watch" cardHeight="180px"/>
                             
-                            <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)} className="lg:col-span-2 row-span-2">
+                           <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)} className="lg:col-span-2 row-span-2">
                                <div className="w-full h-full relative">
                                    <ResponsiveContainer width="100%" height="100%">
-                                       <RadialBarChart
-                                           data={goalGaugeData}
-                                           startAngle={180}
-                                           endAngle={-180}
-                                           innerRadius="70%"
-                                           outerRadius="100%"
-                                           barSize={12}
-                                       >
+                                        <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                                             <defs>
                                                 <linearGradient id="goalGradient" x1="0" y1="0" x2="1" y2="0">
                                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={1} />
                                                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
                                                 </linearGradient>
                                             </defs>
-                                           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                           <RadialBar background={{fill: 'transparent'}} dataKey="value" cornerRadius={6} fill="url(#goalGradient)"/>
-                                       </RadialBarChart>
+                                            <Pie
+                                                data={[{ value: 100 }]}
+                                                dataKey="value"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius="70%"
+                                                outerRadius="80%"
+                                                fill="hsl(var(--muted))"
+                                                startAngle={180}
+                                                endAngle={-180}
+                                                paddingAngle={0}
+                                                stroke="none"
+                                            />
+                                            <Pie
+                                                data={[{ value: Math.min(goalProgress, 100) }]}
+                                                dataKey="value"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius="70%"
+                                                outerRadius="80%"
+                                                fill="url(#goalGradient)"
+                                                startAngle={180}
+                                                endAngle={180 - (goalProgress / 100) * 360}
+                                                paddingAngle={0}
+                                                cornerRadius={6}
+                                                stroke="none"
+                                            />
+                                        </RechartsPieChart>
                                    </ResponsiveContainer>
                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                        <span className="text-3xl font-bold">{totalTitlesWatched}</span>
@@ -577,7 +602,7 @@ export default function AnalyticsPage() {
                                      </ResponsiveContainer>
                                  </div>
                                </StatCard>
-                            <StatCard icon={Palette} title="Poster Palette" description={isProcessingColors ? "Analyzing poster colors..." : "Most common poster colors"} className="lg:col-span-2 row-span-2">
+                             <StatCard icon={Palette} title="Poster Palette" description={isProcessingColors ? "Analyzing poster colors..." : "A mosaic of your collection's dominant colors"} className="lg:col-span-2 row-span-2">
                                    {posterPaletteData.length === 0 ? (
                                         <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                                             {isProcessingColors ? <Loader2 className="h-5 w-5 animate-spin"/> : 'No color data yet.'}
@@ -585,52 +610,16 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="w-full h-full">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <RadialBarChart 
-                                                    data={posterPaletteData} 
-                                                    innerRadius="10%" 
-                                                    outerRadius="80%" 
-                                                    barSize={10} 
-                                                    startAngle={90}
-                                                    endAngle={-270}
-                                                    cx="40%"
+                                                <Treemap
+                                                    data={posterPaletteData}
+                                                    dataKey="size"
+                                                    ratio={4 / 3}
+                                                    stroke="hsl(var(--background))"
+                                                    fill="hsl(var(--card-foreground))"
+                                                    isAnimationActive={true}
                                                 >
-                                                    <defs>
-                                                        {posterPaletteData.map((entry, index) => (
-                                                            <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
-                                                                <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
-                                                                <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
-                                                            </linearGradient>
-                                                        ))}
-                                                    </defs>
-                                                    <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
-                                                        {posterPaletteData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
-                                                        ))}
-                                                    </RadialBar>
-                                                    <Tooltip content={({ active, payload }) => {
-                                                        if (active && payload && payload.length) {
-                                                            const data = payload[0];
-                                                            const itemPayload = data.payload as any;
-                                                            return (
-                                                                <div className="rounded-lg border bg-card p-2.5 shadow-sm text-card-foreground">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="w-3 h-3 rounded-full" style={{backgroundColor: itemPayload.baseColor}} />
-                                                                        <p className="font-semibold">{itemPayload.name}: {data.value}</p>
-                                                                    </div>
-                                                                </div>
-                                                            );
-                                                        }
-                                                        return null;
-                                                    }} />
-                                                    <Legend
-                                                        layout="vertical"
-                                                        align="right"
-                                                        verticalAlign="middle"
-                                                        iconSize={8}
-                                                        wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
-                                                        payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
-                                                    />
-                                                </RadialBarChart>
+                                                    <Tooltip content={<CustomTooltipContent />} />
+                                                </Treemap>
                                             </ResponsiveContainer>
                                         </div>
                                    )}
@@ -651,5 +640,7 @@ export default function AnalyticsPage() {
         </>
     )
 }
+
+    
 
     
