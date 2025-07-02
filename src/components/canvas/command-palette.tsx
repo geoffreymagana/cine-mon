@@ -9,6 +9,7 @@ import {
   Minimize,
   ArrowDownUp,
   ArrowRightLeft,
+  Link2,
   Lock
 } from 'lucide-react';
 import {
@@ -26,6 +27,7 @@ type CommandPaletteProps = {
   setIsOpen: (open: boolean) => void;
   onAddNode: () => void;
   onAddMovieNode: () => void;
+  onAddWebPageNode: () => void;
   onSave: () => void;
   onZoomToFit: () => void;
   onAutoLayoutTB: () => void;
@@ -39,6 +41,7 @@ export function CommandPalette({
   setIsOpen,
   onAddNode,
   onAddMovieNode,
+  onAddWebPageNode,
   onSave,
   onZoomToFit,
   onAutoLayoutTB,
@@ -64,6 +67,10 @@ export function CommandPalette({
           <CommandItem onSelect={() => runCommand(onAddMovieNode)} disabled={isReadOnly}>
             <Clapperboard className="mr-2 h-4 w-4" />
             <span>Add Movie from Collection</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(onAddWebPageNode)} disabled={isReadOnly}>
+            <Link2 className="mr-2 h-4 w-4" />
+            <span>Add Web Page</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(onSave)} disabled={isReadOnly}>
             <Save className="mr-2 h-4 w-4" />

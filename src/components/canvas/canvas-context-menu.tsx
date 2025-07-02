@@ -36,7 +36,7 @@ type CanvasContextMenuProps = {
     top: number;
     left: number;
     onClose: () => void;
-    onAddNode: (type: 'custom' | 'sticky' | 'movie') => void;
+    onAddNode: (type: 'custom' | 'sticky' | 'movie' | 'web') => void;
     isSnapToGrid: boolean;
     setIsSnapToGrid: (value: boolean) => void;
     isReadOnly: boolean;
@@ -86,9 +86,8 @@ export function CanvasContextMenu({
         >
             <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))} disabled={isReadOnly}>Add card</MenuItem>
             <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))} disabled={isReadOnly}>Add sticky note</MenuItem>
-            <MenuItem icon={BookText} disabled>Add note from vault</MenuItem>
-            <MenuItem icon={Clapperboard} disabled={isReadOnly}>Add media from vault</MenuItem>
-            <MenuItem icon={Link2} disabled>Add web page</MenuItem>
+            <MenuItem icon={Clapperboard} onClick={() => handleAction(() => onAddNode('movie'))} disabled={isReadOnly}>Add media from vault</MenuItem>
+            <MenuItem icon={Link2} onClick={() => handleAction(() => onAddNode('web'))} disabled={isReadOnly}>Add web page</MenuItem>
             <MenuItem icon={BoxSelect} disabled>Create group</MenuItem>
             <Separator className="my-1" />
             <MenuItem icon={Undo2} disabled={!canUndo || isReadOnly}>Undo</MenuItem>

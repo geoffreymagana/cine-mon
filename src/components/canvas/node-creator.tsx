@@ -1,13 +1,14 @@
+
 'use client';
 
 import * as React from 'react';
-import { FileText, Clapperboard, FileImage, StickyNote } from 'lucide-react';
+import { FileText, Clapperboard, Link2, StickyNote } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type NodeCreatorProps = {
-  onAddNode: (type: 'custom' | 'sticky') => void;
+  onAddNode: (type: 'custom' | 'sticky' | 'web') => void;
   onAddMovieClick: () => void;
 };
 
@@ -65,14 +66,14 @@ export function NodeCreator({ onAddNode, onAddMovieClick }: NodeCreatorProps) {
           <Button 
             variant="ghost" 
             size="icon" 
-            disabled 
+            onClick={() => onAddNode('web')} 
             className="transition-all hover:-translate-y-1 hover:bg-primary/20"
           >
-            <FileImage className="w-5 h-5" />
+            <Link2 className="w-5 h-5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Add Media (Coming Soon)</p>
+          <p>Add Web Page</p>
         </TooltipContent>
       </Tooltip>
     </Card>

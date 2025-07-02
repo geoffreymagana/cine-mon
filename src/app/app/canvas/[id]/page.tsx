@@ -22,7 +22,7 @@ import ReactFlow, {
   Position,
 } from 'reactflow';
 import Link from 'next/link';
-import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote, Lock } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Save, Image as ImageIcon, Command, StickyNote, Link2, Lock } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 import CustomNode from '@/components/canvas/custom-node';
@@ -192,6 +192,19 @@ function CanvasFlow() {
     );
   }, [setNodes]);
 
+  const onUrlChange = useCallback((nodeId: string, url: string) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          // You could add logic here to fetch metadata in the future
+          const title = url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+          node.data = { ...node.data, url, title: title || 'Web Page' };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
+
   useEffect(() => {
     if (!canvasId) return;
 
@@ -209,6 +222,7 @@ function CanvasFlow() {
                         onTitleChange,
                         onColorChange,
                         onChange: onNodeTextChange,
+                        onUrlChange,
                         isReadOnly: false,
                     },
                 }));
@@ -230,7 +244,7 @@ function CanvasFlow() {
     
     loadCanvasData();
 
-  }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange, onNodeTextChange]);
+  }, [canvasId, router, setNodes, setEdges, toast, onLabelChange, onTitleChange, onColorChange, onNodeTextChange, onUrlChange]);
   
   useEffect(() => {
     setNodes((nds) =>
@@ -245,7 +259,7 @@ function CanvasFlow() {
     if (!canvasId) return;
 
     const nodesToSave = getNodes().map(n => {
-      const { onLabelChange, onTitleChange, onColorChange, onChange, isReadOnly, ...restData } = n.data;
+      const { onLabelChange, onTitleChange, onColorChange, onChange, onUrlChange, isReadOnly, ...restData } = n.data;
       return { ...n, data: restData };
     });
 
@@ -316,7 +330,7 @@ function CanvasFlow() {
     [setEdges, isReadOnly]
   );
   
-  const addNode = useCallback((type: 'custom' | 'movie' | 'sticky', position?: XYPosition) => {
+  const addNode = useCallback((type: 'custom' | 'movie' | 'sticky' | 'web', position?: XYPosition) => {
     if (isReadOnly) return;
 
     if (type === 'movie') {
@@ -331,7 +345,28 @@ function CanvasFlow() {
     
     let newNode: Node;
 
-    if (type === 'sticky') {
+    if (type === 'web') {
+      newNode = {
+        id: `node-${crypto.randomUUID()}`,
+        type: 'custom', // Still uses custom node component
+        position: targetPosition,
+        data: {
+          label: '',
+          title: 'Web Page',
+          color: 'hsl(var(--card))',
+          textColor: 'hsl(var(--card-foreground))',
+          onLabelChange,
+          onTitleChange,
+          onColorChange,
+          onUrlChange,
+          nodeType: 'web',
+          url: '',
+          isReadOnly,
+        },
+        width: 250,
+        height: 200,
+      };
+    } else if (type === 'sticky') {
       newNode = {
         id: `node-${crypto.randomUUID()}`,
         type: 'sticky',
@@ -369,7 +404,7 @@ function CanvasFlow() {
     }
 
     setNodes((nds) => nds.concat(newNode));
-  }, [onLabelChange, onTitleChange, onColorChange, screenToFlowPosition, setNodes, onNodeTextChange, isReadOnly]);
+  }, [onLabelChange, onTitleChange, onColorChange, onUrlChange, screenToFlowPosition, setNodes, onNodeTextChange, isReadOnly]);
 
   const addMovieNode = useCallback((movie: Movie) => {
     if (isReadOnly) return;
@@ -827,6 +862,7 @@ function CanvasFlow() {
         setIsOpen={setIsCommandPaletteOpen}
         onAddNode={() => runCommand(() => addNode('custom'))}
         onAddMovieNode={() => runCommand(() => addNode('movie'))}
+        onAddWebPageNode={() => runCommand(() => addNode('web'))}
         onSave={() => runCommand(handleSave)}
         onZoomToFit={() => runCommand(() => reactFlowInstance.fitView({ duration: 300 }))}
         onAutoLayoutTB={() => runCommand(() => onLayout('TB'))}

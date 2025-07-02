@@ -6,7 +6,7 @@ import { Handle, Position, NodeResizer, type NodeProps, useViewport } from 'reac
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
-import { FileImage } from 'lucide-react';
+import { FileImage, Globe, Link2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
@@ -19,8 +19,10 @@ type CustomNodeData = {
   onLabelChange: (id: string, label: string) => void;
   onTitleChange: (id: string, title: string) => void;
   onColorChange: (id: string, color: string) => void;
-  nodeType?: 'movie' | 'standard';
+  nodeType?: 'movie' | 'standard' | 'web';
   movieData?: Movie;
+  url?: string;
+  onUrlChange?: (id: string, url: string) => void;
   isReadOnly?: boolean;
 };
 
@@ -35,10 +37,15 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
   const [title, setTitle] = useState(data.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   
+  const [isUrlEditing, setIsUrlEditing] = useState(!data.url);
+  const [url, setUrl] = useState(data.url || '');
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  
   const { zoom } = useViewport();
   const ZOOM_THRESHOLD = 0.5;
 
   const isMovieNode = data.nodeType === 'movie' && data.movieData;
+  const isWebNode = data.nodeType === 'web';
 
   useEffect(() => {
     setLabel(data.label);
@@ -60,11 +67,42 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
       titleInputRef.current.select();
     }
   }, [isTitleEditing]);
+
+  useEffect(() => {
+    if (isUrlEditing && urlInputRef.current) {
+      urlInputRef.current.focus();
+      urlInputRef.current.select();
+    }
+  }, [isUrlEditing]);
+
+  const handleUrlBlur = () => {
+    setIsUrlEditing(false);
+    if (data.onUrlChange) {
+      data.onUrlChange(id, url);
+    }
+  };
+  
+  const handleUrlDoubleClick = () => {
+    if (data.isReadOnly) return;
+    setIsUrlEditing(true);
+  }
+
+  const getDomainFromUrl = (urlString: string | undefined): string => {
+    if (!urlString) return '';
+    try {
+      const url = new URL(urlString);
+      return url.hostname;
+    } catch (e) {
+      return '';
+    }
+  }
   
   const handleNodeDoubleClick = () => {
     if (data.isReadOnly) return;
     if (isMovieNode && data.movieData) {
         router.push(`/app/movie/${data.movieData.id}`);
+    } else if (isWebNode) {
+        handleUrlDoubleClick();
     } else {
         setIsEditing(true);
     }
@@ -154,7 +192,41 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
                 isMovieNode && "p-0 rounded-lg"
             )} 
         >
-          {isMovieNode ? (
+          {isWebNode ? (
+            <div className="w-full h-full flex flex-col text-left">
+              {isUrlEditing ? (
+                <div className="p-4 flex flex-col justify-center items-center h-full">
+                    <Link2 className="w-8 h-8 text-muted-foreground mb-2" />
+                    <h4 className="font-bold">Web Bookmark</h4>
+                    <input
+                        ref={urlInputRef}
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        onBlur={handleUrlBlur}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleUrlBlur(); }}
+                        placeholder="Paste a URL..."
+                        className="mt-2 w-full bg-background/50 border border-input rounded-md p-2 text-xs text-center outline-none nodrag"
+                    />
+                </div>
+              ) : (
+                <a 
+                  href={data.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="block w-full h-full text-foreground no-underline"
+                  onDoubleClick={handleUrlDoubleClick}
+                >
+                    <div className="w-full h-2/3 bg-muted/50 flex items-center justify-center overflow-hidden">
+                        <Globe className="w-1/3 h-1/3 text-muted-foreground/70" />
+                    </div>
+                    <div className="p-3">
+                        <p className="text-sm font-bold truncate">{data.title || data.url}</p>
+                        <p className="text-xs text-muted-foreground truncate">{getDomainFromUrl(data.url)}</p>
+                    </div>
+                </a>
+              )}
+            </div>
+          ) : isMovieNode ? (
             zoom < ZOOM_THRESHOLD ? (
                 <div className="w-full h-full bg-muted/50 flex items-center justify-center">
                     <FileImage className="w-1/3 h-1/3 text-muted-foreground/70" />
