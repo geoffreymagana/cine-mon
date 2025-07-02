@@ -265,6 +265,13 @@ const getColorSampler = () => {
     return colorSamplerInstance;
 }
 
+export const destroyColorSampler = () => {
+    if (colorSamplerInstance) {
+        colorSamplerInstance.destroy();
+        colorSamplerInstance = null;
+    }
+};
+
 export const getDominantColor = async (imageUrl: string): Promise<string> => {
     try {
         const sampler = getColorSampler();
