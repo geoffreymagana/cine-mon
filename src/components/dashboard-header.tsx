@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles } from "lucide-react";
+import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -80,9 +80,9 @@ export const DashboardHeader = ({
           <Button variant="ghost" size="icon" onClick={onClearSelection}>
             <X className="h-5 w-5" />
           </Button>
-          <span className="font-semibold text-lg">{selectedCount} Selected</span>
+          <span className="font-semibold text-lg">{selectedCount}</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center space-x-2">
                 <Checkbox
                     id="select-all"
@@ -93,6 +93,14 @@ export const DashboardHeader = ({
                     Select all
                 </Label>
             </div>
+             <Button
+                variant="ghost"
+                size="icon"
+                disabled={true}
+                title="Share selected items (coming soon)"
+            >
+                <Share2 />
+            </Button>
             <Button variant="ghost" size="icon" onClick={onAddToCollection} title="Add to Collection"><PlusCircle /></Button>
             <Button variant="destructive" size="icon" onClick={onDeleteSelected} title="Delete Selected"><Trash2 /></Button>
         </div>
