@@ -2,8 +2,6 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { 
     Area,
     AreaChart,
@@ -48,45 +46,46 @@ import {
     Users,
     Video,
     Zap,
+    Palette,
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { ResizableBox } from 'react-resizable';
-
-import type { Movie, UserCollection } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { EditGoalDialog } from '@/components/edit-goal-dialog';
-import { format } from 'date-fns';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { MovieService } from '@/lib/movie-service';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { EditGoalDialog } from '@/components/edit-goal-dialog';
+import type { Movie, UserCollection } from '@/lib/types';
 
 
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
+  'hsl(var(--chart-2))', 
   'hsl(var(--chart-3))',
   'hsl(var(--chart-4))',
   'hsl(var(--chart-5))',
 ];
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, dragHandleProps }: { icon?: React.ElementType, title: string, value?: React.ReactNode, description?: string, children?: React.ReactNode, className?: string, onEdit?: () => void, dragHandleProps?: any }) => (
-    <Card className={cn("flex flex-col", className)}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, dragHandleProps }: {
+    icon?: React.ElementType;
+    title: string;
+    value?: string | number;
+    description?: string;
+    children?: React.ReactNode;
+    className?: string;
+    onEdit?: () => void;
+    dragHandleProps?: any;
+}) => (
+    <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col ${className || ''}`}>
+        <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
                 {dragHandleProps && (
                     <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
                         <GripVertical className="h-5 w-5" />
                     </div>
                 )}
-                 <div>
-                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
-                    {description && <p className="text-xs text-muted-foreground pt-1">{description}</p>}
+                <div className="min-w-0">
+                    <h3 className="text-sm font-medium text-foreground truncate">{title}</h3>
+                    {description && <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>}
                 </div>
             </div>
             {onEdit ? (
@@ -94,51 +93,53 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
             ) : (
                  Icon && <Icon className="h-4 w-4 text-muted-foreground" />
             )}
-        </CardHeader>
-        <CardContent className="flex-grow min-h-0">
-            {value && <div className="text-2xl font-bold">{value}</div>}
+        </div>
+        <div className="flex-grow min-h-0">
+            {value && <div className="text-2xl font-bold text-foreground mb-2">{value}</div>}
             {children}
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 );
 
-const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleProps?: any }) => (
-    <Card className="overflow-hidden h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <div className="flex items-center gap-2">
+const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie | null, dragHandleProps: any }) => (
+    <div className="bg-card rounded-lg border p-6 shadow-sm h-full">
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
                 {dragHandleProps && (
                     <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
                         <GripVertical className="h-5 w-5" />
                     </div>
                 )}
                 <div>
-                    <CardTitle className="text-sm font-medium">Last Watched</CardTitle>
-                    <p className="text-xs text-muted-foreground pt-1">From "Surprise Me"</p>
+                    <h3 className="text-sm font-medium text-foreground">Last Watched</h3>
+                    <p className="text-xs text-muted-foreground mt-1">From "Surprise Me"</p>
                 </div>
             </div>
-             <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent className="flex-grow flex items-center">
-            <Link href={`/app/movie/${movie.id}`} className="flex items-center gap-4 group w-full">
-                <Image
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+        </div>
+        {movie ? (
+            <div className="flex items-center gap-4">
+                <img
                     src={movie.posterUrl}
                     alt={movie.title}
-                    width={60}
-                    height={90}
-                    className="w-[60px] h-[90px] object-cover rounded-md transition-transform group-hover:scale-105"
+                    className="w-16 h-24 object-cover rounded-md"
                     data-ai-hint="movie poster"
                 />
-                <div className="flex-grow">
-                    <p className="font-bold group-hover:text-primary transition-colors">{movie.title}</p>
-                    <p className="text-sm text-muted-foreground">{format(new Date(`${movie.releaseDate}T00:00:00`), 'yyyy')}</p>
+                <div className="flex-grow min-w-0">
+                    <p className="font-bold text-foreground truncate">{movie.title}</p>
+                    <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
                 </div>
-                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Link>
-        </CardContent>
-    </Card>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+        ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                No spin history yet.
+            </div>
+        )}
+    </div>
 );
 
-const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string; children: React.ReactNode; size: { width: number; height: number; }; onResize: (size: { width: number; height: number; }) => void; minConstraints: [number, number]; }) => {
+const SortableCardWrapper = ({ id, children }: { id: string, children: React.ReactNode }) => {
     const {
         attributes,
         listeners,
@@ -148,7 +149,7 @@ const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: {
         isDragging,
     } = useSortable({ id });
 
-    const style: React.CSSProperties = {
+    const style = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         transition,
         zIndex: isDragging ? 10 : 'auto',
@@ -157,106 +158,54 @@ const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: {
 
     return (
         <div ref={setNodeRef} style={style} {...attributes}>
-            <ResizableBox
-                width={size.width}
-                height={size.height}
-                onResizeStop={(_e, data) => onResize({ width: data.size.width, height: data.size.height })}
-                minConstraints={minConstraints}
-                maxConstraints={[800, 800]}
-                className="relative"
-            >
-                <div className="w-full h-full">
-                    {React.cloneElement(children as React.ReactElement, { 
-                        dragHandleProps: listeners,
-                        className: "h-full w-full"
-                    })}
-                </div>
-            </ResizableBox>
+            <div className="w-full h-full">
+                {React.cloneElement(children as React.ReactElement, { 
+                    dragHandleProps: listeners,
+                })}
+            </div>
         </div>
     );
 };
 
 const defaultCardOrder = {
-    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'watchGoal', 'onWatchlist', 'topGenres', 'curatedCollections', 'averageRating', 'totalRewatches', 'lastWatched'],
-    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'collectionTimeline', 'rewatchRatio', 'storageUsage', 'seriesCompletion', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
+    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'averageRating', 'watchGoal', 'totalRewatches', 'onWatchlist', 'topGenres', 'curatedCollections', 'lastWatched'],
+    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'collectionTimeline', 'rewatchRatio', 'storageUsage', 'seriesCompletion', 'bingeRating', 'nightOwlScore', 'posterPalette']
 };
-
-const defaultCardSizes: Record<string, { width: number; height: number }> = {
-    totalTitles: { width: 250, height: 150 },
-    episodesWatched: { width: 250, height: 150 },
-    timeWatched: { width: 250, height: 150 },
-    averageRating: { width: 350, height: 150 },
-    watchGoal: { width: 350, height: 250 },
-    onWatchlist: { width: 250, height: 150 },
-    topGenres: { width: 350, height: 280 },
-    curatedCollections: { width: 350, height: 280 },
-    totalRewatches: { width: 350, height: 200 },
-    lastWatched: { width: 350, height: 160 },
-    mostActors: { width: 400, height: 380 },
-    mostDirectors: { width: 400, height: 380 },
-    topFranchises: { width: 400, height: 380 },
-    bingeRating: { width: 350, height: 150 },
-    nightOwlScore: { width: 400, height: 280 },
-    obscurityIndex: { width: 400, height: 280 },
-    collectionTimeline: { width: 400, height: 280 },
-    rewatchRatio: { width: 250, height: 150 },
-    storageUsage: { width: 250, height: 150 },
-    seriesCompletion: { width: 400, height: 380 },
-};
-
-const cardMinSizes: Record<string, [number, number]> = {
-    totalTitles: [200, 140],
-    episodesWatched: [200, 140],
-    timeWatched: [200, 140],
-    averageRating: [250, 140],
-    watchGoal: [250, 240],
-    onWatchlist: [200, 140],
-    topGenres: [300, 250],
-    curatedCollections: [300, 250],
-    totalRewatches: [250, 200],
-    lastWatched: [300, 160],
-    mostActors: [300, 300],
-    mostDirectors: [350, 300],
-    topFranchises: [300, 300],
-    bingeRating: [200, 140],
-    nightOwlScore: [300, 250],
-    obscurityIndex: [300, 250],
-    collectionTimeline: [300, 250],
-    rewatchRatio: [200, 140],
-    storageUsage: [200, 140],
-    seriesCompletion: [300, 300],
-};
-
-const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
-    <div className="flex flex-wrap gap-6 items-start">
-        {items.map(id => (
-            <Card key={id} style={{ width: defaultCardSizes[id]?.width || 350, height: defaultCardSizes[id]?.height || 200 }}>
-                <CardHeader>
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-24 w-full" />
-                </CardContent>
-            </Card>
-        ))}
-    </div>
-);
-
 
 export default function AnalyticsPage() {
+    const isMobile = useIsMobile();
     const [movies, setMovies] = React.useState<Movie[]>([]);
     const [collections, setCollections] = React.useState<UserCollection[]>([]);
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
-    const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
-    const [hasMounted, setHasMounted] = React.useState(false);
-    const [cardSizes, setCardSizes] = React.useState<Record<string, { width: number; height: number }>>({});
+    const [isClient, setIsClient] = React.useState(false);
 
-    const [basicCardOrder, setBasicCardOrder] = React.useState<string[]>(defaultCardOrder.basic);
-    const [geekCardOrder, setGeekCardOrder] = React.useState<string[]>(defaultCardOrder.geek);
-    const isMobile = useIsMobile();
-    const { toast } = useToast();
+    const [basicCardOrder, setBasicCardOrder] = React.useState(defaultCardOrder.basic);
+    const [geekCardOrder, setGeekCardOrder] = React.useState(defaultCardOrder.geek);
+    
+    const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
+
+    const loadData = React.useCallback(async () => {
+        const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunId] = await Promise.all([
+            MovieService.getMovies(),
+            MovieService.getCollections(),
+            MovieService.getSetting('watchGoal'),
+            MovieService.getSetting('lastSpunMovieId')
+        ]);
+        setMovies(moviesFromDb);
+        setCollections(collectionsFromDb);
+        if (goalFromDb) setWatchGoal(goalFromDb);
+        if (lastSpunId) {
+            const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunId);
+            if (lastSpunMovie) setLastWatchedMovie(lastSpunMovie);
+        }
+    }, []);
+
+    React.useEffect(() => {
+        loadData();
+        setIsClient(true);
+    }, [loadData]);
+
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -268,45 +217,6 @@ export default function AnalyticsPage() {
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    React.useEffect(() => {
-        const loadData = async () => {
-            try {
-                const [moviesFromDb, collectionsFromDb, goalFromDb, lastSpunIdFromDb, storedBasicOrder, storedGeekOrder, storedCardSizes] = await Promise.all([
-                    MovieService.getMovies(),
-                    MovieService.getCollections(),
-                    MovieService.getSetting('watchGoal'),
-                    MovieService.getSetting('lastSpunMovieId'),
-                    MovieService.getSetting('analyticsBasicOrder'),
-                    MovieService.getSetting('analyticsGeekOrder'),
-                    MovieService.getSetting('analyticsCardSizes'),
-                ]);
-                
-                setMovies(moviesFromDb);
-                setCollections(collectionsFromDb);
-                if (goalFromDb) setWatchGoal(goalFromDb);
-                if (storedCardSizes) setCardSizes(storedCardSizes);
-                else setCardSizes(defaultCardSizes);
-
-                if (storedBasicOrder) setBasicCardOrder(storedBasicOrder);
-                if (storedGeekOrder) setGeekCardOrder(storedGeekOrder);
-                
-                if (lastSpunIdFromDb) {
-                    const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunIdFromDb);
-                    if (lastSpunMovie) setLastWatchedMovie(lastSpunMovie);
-                }
-
-            } catch (error) {
-                console.error("Failed to load data from DB:", error);
-                toast({ title: "Error", description: "Could not load analytics data.", variant: "destructive" });
-            }
-        };
-        loadData();
-    }, [toast]);
-    
-    React.useEffect(() => {
-        setHasMounted(true);
-    }, []);
-
     const handleDragEnd = (event: DragEndEvent, tab: 'basic' | 'geek') => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
@@ -314,30 +224,17 @@ export default function AnalyticsPage() {
                 setBasicCardOrder((items) => {
                     const oldIndex = items.indexOf(active.id as string);
                     const newIndex = items.indexOf(over.id as string);
-                    const newOrder = arrayMove(items, oldIndex, newIndex);
-                    MovieService.setSetting('analyticsBasicOrder', newOrder);
-                    return newOrder;
+                    return arrayMove(items, oldIndex, newIndex);
                 });
             } else {
                 setGeekCardOrder((items) => {
                     const oldIndex = items.indexOf(active.id as string);
                     const newIndex = items.indexOf(over.id as string);
-                    const newOrder = arrayMove(items, oldIndex, newIndex);
-                    MovieService.setSetting('analyticsGeekOrder', newOrder);
-                    return newOrder;
+                    return arrayMove(items, oldIndex, newIndex);
                 });
             }
         }
     };
-    
-    const handleResize = (id: string, size: { width: number; height: number; }) => {
-        setCardSizes(prev => {
-            const newSizes = { ...prev, [id]: size };
-            MovieService.setSetting('analyticsCardSizes', newSizes);
-            return newSizes;
-        });
-    };
-
 
     const watchedMovies = React.useMemo(() =>
         movies.filter(movie => movie.status === 'Completed' || movie.status === 'Watching')
@@ -355,22 +252,22 @@ export default function AnalyticsPage() {
     const onWatchlistCount = movies.filter(movie => movie.status === 'Plan to Watch').length;
     
     const rewatchData = React.useMemo(() => {
+        if (watchedMovies.length === 0) return [];
         const rewatchedCount = watchedMovies.filter(m => (m.rewatchCount || 0) > 0).length;
         const watchedOnceCount = watchedMovies.length - rewatchedCount;
-        if (watchedMovies.length === 0) return [];
         return [
-            { name: 'Rewatched', value: rewatchedCount, fill: 'hsl(var(--chart-1))' },
-            { name: 'Watched Once', value: watchedOnceCount, fill: 'hsl(var(--chart-2))' },
+            { name: 'Rewatched', value: rewatchedCount, fill: CHART_COLORS[0] },
+            { name: 'Watched Once', value: watchedOnceCount, fill: CHART_COLORS[1] },
         ];
     }, [watchedMovies]);
 
     const topGenres = React.useMemo(() => {
         const genreCounts = watchedMovies
             .flatMap(m => m.tags || [])
-            .reduce((acc, name) => {
+            .reduce((acc: {[key: string]: number}, name) => {
                 acc[name] = (acc[name] || 0) + 1;
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
         return Object.entries(genreCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
@@ -378,15 +275,13 @@ export default function AnalyticsPage() {
         const vaultCount = collections.filter(c => c.type === 'Vault').length;
         const spotlightCount = collections.filter(c => c.type === 'Spotlight').length;
         return [
-            { name: 'Vaults', value: vaultCount, fill: 'hsl(var(--chart-1))' },
-            { name: 'Spotlights', value: spotlightCount, fill: 'hsl(var(--chart-2))' },
+            { name: 'Vaults', value: vaultCount, fill: CHART_COLORS[0] },
+            { name: 'Spotlights', value: spotlightCount, fill: CHART_COLORS[1] },
         ];
     }, [collections]);
 
     const goalProgress = watchGoal > 0 ? (totalTitlesWatched / watchGoal) * 100 : 0;
-    const gaugeValue = Math.min(goalProgress, 100);
-    const goalGaugeData = [{ value: gaugeValue, fill: "hsl(var(--primary))" }];
-
+    const goalGaugeData = [{ value: Math.min(goalProgress, 100), fill: "hsl(var(--primary))" }];
 
     // Geek Stats
     const rewatchRatio = React.useMemo(() => {
@@ -407,7 +302,7 @@ export default function AnalyticsPage() {
     }, [movies, collections]);
 
     const collectionTimelineData = React.useMemo(() => {
-        const decadeCounts = watchedMovies.reduce((acc, movie) => {
+        const decadeCounts = watchedMovies.reduce((acc: {[key:string]: number}, movie) => {
             if (movie.releaseDate) {
                 const year = parseInt(movie.releaseDate.substring(0, 4), 10);
                 if (!isNaN(year)) {
@@ -417,7 +312,7 @@ export default function AnalyticsPage() {
                 }
             }
             return acc;
-        }, {} as Record<string, number>);
+        }, {});
     
         return Object.entries(decadeCounts)
             .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
@@ -431,19 +326,19 @@ export default function AnalyticsPage() {
                 id: m.id,
                 title: m.title,
                 posterUrl: m.posterUrl,
-                completion: Math.round((m.watchedEpisodes / m.totalEpisodes) * 100)
+                completion: Math.round(((m.watchedEpisodes || 0) / (m.totalEpisodes || 1)) * 100)
             }))
             .sort((a, b) => b.completion - a.completion)
-            .slice(0, 5); // Show top 5
+            .slice(0, 5);
     }, [watchedMovies]);
 
     const topActors = React.useMemo(() => {
         const actorCounts = watchedMovies
             .flatMap(m => m.cast?.map(c => c.name) || [])
-            .reduce((acc, name) => {
+            .reduce((acc: {[key:string]: number}, name) => {
                 acc[name] = (acc[name] || 0) + 1;
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
         return Object.entries(actorCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
@@ -451,10 +346,10 @@ export default function AnalyticsPage() {
         const directorCounts = watchedMovies
             .map(m => m.director)
             .filter(Boolean)
-            .reduce((acc, name) => {
+            .reduce((acc: {[key:string]: number}, name) => {
                 acc[name!] = (acc[name!] || 0) + 1;
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
         return Object.entries(directorCounts).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([label, count]) => ({label, count})).reverse();
     }, [watchedMovies]);
 
@@ -462,10 +357,10 @@ export default function AnalyticsPage() {
         const franchiseCounts = watchedMovies
             .map(m => m.collection)
             .filter(Boolean)
-            .reduce((acc, name) => {
+            .reduce((acc: {[key:string]: number}, name) => {
                 acc[name!] = (acc[name!] || 0) + 1;
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
         return Object.entries(franchiseCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({name, value, fill: CHART_COLORS[i % CHART_COLORS.length]}));
     }, [watchedMovies]);
     
@@ -475,49 +370,67 @@ export default function AnalyticsPage() {
         { hour: '12 AM', titles: 4 }, { hour: '1 AM', titles: 2 }
     ];
     
-    const obscurityData = [
-        { month: 'Jan', YourTaste: 40, Popular: 65 }, { month: 'Feb', YourTaste: 30, Popular: 59 },
-        { month: 'Mar', YourTaste: 50, Popular: 80 }, { month: 'Apr', YourTaste: 48, Popular: 71 },
-        { month: 'May', YourTaste: 60, Popular: 80 }, { month: 'Jun', YourTaste: 73, Popular: 85 },
+    const posterPaletteData = [
+        { color: 'Dark Blue', count: 15, fill: '#1e3a8a' },
+        { color: 'Black', count: 12, fill: '#000000' },
+        { color: 'Red', count: 8, fill: '#dc2626' },
+        { color: 'Green', count: 6, fill: '#16a34a' },
+        { color: 'Orange', count: 4, fill: '#ea580c' }
     ];
     
-    const allBasicCards: Record<string, React.ReactNode> = {
+    const [activeTab, setActiveTab] = React.useState('basic');
+
+    const allBasicCards = {
         totalTitles: <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} />,
         episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />,
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
         onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
         topGenres: <StatCard icon={PieChart} title="Top Genres">
-                        <div className="w-full h-full">
+                        <div className="w-full h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <Pie data={topGenres} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                                    <Pie 
+                                        data={topGenres} 
+                                        dataKey="value" 
+                                        nameKey="name" 
+                                        cx="50%" 
+                                        cy="50%" 
+                                        innerRadius={40} 
+                                        outerRadius={70} 
+                                        paddingAngle={2}
+                                    >
                                         {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
+                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
                                     <Legend iconSize={8} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
                    </StatCard>,
         curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
-                            <div className="w-full h-full">
+                            <div className="w-full h-48">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <RechartsPieChart>
-                                        <Pie data={collectionsData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                                        <Pie 
+                                            data={collectionsData} 
+                                            dataKey="value" 
+                                            nameKey="name" 
+                                            cx="50%" 
+                                            cy="50%" 
+                                            innerRadius={40} 
+                                            outerRadius={70} 
+                                            paddingAngle={2}
+                                        >
                                             {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                                         <Legend iconSize={8} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
                         </StatCard>,
         watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
-                       <div className="w-full h-full relative">
+                       <div className="w-full h-48 relative">
                            <ResponsiveContainer width="100%" height="100%">
                                <RadialBarChart
                                    data={goalGaugeData}
@@ -531,7 +444,7 @@ export default function AnalyticsPage() {
                                    <RadialBar background={{fill: 'hsl(var(--muted))'}} dataKey="value" cornerRadius={6} />
                                </RadialBarChart>
                            </ResponsiveContainer>
-                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                           <div className="absolute inset-0 flex flex-col items-center justify-center">
                                <span className="text-3xl font-bold">{totalTitlesWatched}</span>
                                <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
                            </div>
@@ -543,228 +456,214 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>,
         totalRewatches: <StatCard icon={Repeat} title="Total Rewatches">
-                            <div className="w-full h-full">
+                            <div className="w-full h-40">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <RechartsPieChart>
-                                        <Pie data={rewatchData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={50} cx="50%" cy="50%" paddingAngle={5}>
+                                        <Pie 
+                                            data={rewatchData} 
+                                            dataKey="value" 
+                                            nameKey="name" 
+                                            innerRadius={30} 
+                                            outerRadius={60} 
+                                            cx="50%" 
+                                            cy="50%" 
+                                            paddingAngle={5}
+                                        >
                                         {rewatchData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                                             ))}
                                         </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                                         <Legend iconSize={8} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
                         </StatCard>,
-        lastWatched: lastWatchedMovie && <LastWatchedCard movie={lastWatchedMovie} />
+        lastWatched: <LastWatchedCard movie={lastWatchedMovie} />
     };
 
-    const allGeekCards: Record<string, React.ReactNode> = {
+    const allGeekCards = {
         mostActors: <StatCard icon={Users} title="Most Watched Actors">
-                        <div className="w-full h-full">
+                        <div className="w-full h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
-                                    <Pie data={topActors} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                                    <Pie 
+                                        data={topActors} 
+                                        dataKey="value" 
+                                        nameKey="name" 
+                                        cx="50%" 
+                                        cy="50%" 
+                                        innerRadius={60} 
+                                        outerRadius={90} 
+                                        paddingAngle={5}
+                                    >
                                         {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                    />
+                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                                     <Legend iconSize={8} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
                     </StatCard>,
         mostDirectors: <StatCard icon={Video} title="Most Watched Directors">
-                            <div className="w-full h-full">
+                            <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
+                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 80, right: 20, top: 10, bottom: 10 }}>
                                         <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
-                                        <XAxis type="number" hide />
-                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={120} />
-                                        <Tooltip
-                                            cursor={{ fill: 'hsl(var(--muted))' }}
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
+                                        <XAxis type="number" />
+                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={70} />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                                         <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </StatCard>,
         topFranchises: <StatCard icon={Layers} title="Top Franchises">
-                            <div className="w-full h-full">
+                            <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <RechartsPieChart>
-                                        <Pie data={topFranchises} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+                                        <Pie 
+                                            data={topFranchises} 
+                                            dataKey="value" 
+                                            nameKey="name" 
+                                            cx="50%" 
+                                            cy="50%" 
+                                            outerRadius={80}
+                                        >
                                         {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
-                                        <Legend wrapperStyle={{fontSize: '12px'}} iconSize={8} />
+                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                        <Legend iconSize={8} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
                         </StatCard>,
-        collectionTimeline: (
-            <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade">
-                <div className="w-full h-full">
+        collectionTimeline: <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade">
+                <div className="w-full h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" fontSize={12} />
-                            <YAxis fontSize={12} />
-                            <Tooltip
-                                cursor={{ fill: 'hsl(var(--muted))' }}
-                                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                            />
+                        <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-            </StatCard>
-        ),
-        rewatchRatio: <StatCard icon={Repeat} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="Of your collection has been rewatched" />,
-        storageUsage: <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Estimated local data size" />,
-        seriesCompletion: (
-            <StatCard icon={ListChecks} title="Series Completion" description="Progress of shows you're currently watching">
-                <div className="space-y-4 pr-2">
-                    {watchingSeries.length > 0 ? (
-                        watchingSeries.map(series => (
-                            <Link key={series.id} href={`/app/movie/${series.id}`} className="block group">
-                                <div className="flex items-center gap-3">
-                                    <Image src={series.posterUrl} alt={series.title} width={40} height={60} className="w-10 h-auto rounded-md" data-ai-hint="tv series poster" />
-                                    <div className="flex-grow">
-                                        <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">{series.title}</p>
-                                        <Progress value={series.completion} className="h-2 mt-1" />
+            </StatCard>,
+        rewatchRatio: <StatCard icon={Zap} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="of your collection has been rewatched" />,
+        storageUsage: <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Local space used by library data" />,
+        seriesCompletion: <StatCard icon={ListChecks} title="Series Completion">
+                            <div className="space-y-4 pt-2">
+                                {watchingSeries.map(series => (
+                                    <div key={series.id}>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <p className="text-sm font-medium truncate">{series.title}</p>
+                                            <p className="text-sm text-muted-foreground">{series.completion}%</p>
+                                        </div>
+                                        <div className="w-full bg-muted rounded-full h-1.5">
+                                            <div className="bg-primary h-1.5 rounded-full" style={{width: `${series.completion}%`}}></div>
+                                        </div>
                                     </div>
-                                    <p className="text-sm font-semibold w-12 text-right">{series.completion}%</p>
-                                </div>
-                            </Link>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground text-center py-8">No series currently being watched.</p>
-                    )}
-                </div>
-            </StatCard>
-        ),
-        bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
-        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Titles watched after 9 PM">
-                            <div className="w-full h-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={nightOwlData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="hour" fontSize={12} />
-                                        <YAxis fontSize={12} />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
-                                        <Line type="monotone" dataKey="titles" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                                ))}
                             </div>
-                        </StatCard>,
-        obscurityIndex: <StatCard icon={FlaskConical} title="Obscurity Index" description="Your taste vs. popular taste">
-                            <div className="w-full h-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={obscurityData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                        <defs>
-                                            <linearGradient id="colorYourTaste" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                                                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                                            </linearGradient>
-                                            <linearGradient id="colorPopular" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3}/>
-                                                <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="month" fontSize={12} />
-                                        <YAxis fontSize={12} />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                                        />
-                                        <Area type="monotone" dataKey="YourTaste" stroke="hsl(var(--chart-1))" fill="url(#colorYourTaste)" />
-                                        <Area type="monotone" dataKey="Popular" stroke="hsl(var(--muted-foreground))" fill="url(#colorPopular)" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                         </StatCard>,
+                          </StatCard>,
+        bingeRating: <StatCard icon={FlaskConical} title="Binge Rating" value="8.5/10" description="Based on watch velocity" />,
+        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Most active watch times">
+                         <div className="w-full h-40">
+                             <ResponsiveContainer>
+                                 <AreaChart data={nightOwlData}>
+                                     <defs>
+                                        <linearGradient id="nightOwlFill" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                        </linearGradient>
+                                     </defs>
+                                     <Area type="monotone" dataKey="titles" stroke="hsl(var(--primary))" fill="url(#nightOwlFill)" />
+                                     <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
+                                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+                                 </AreaChart>
+                             </ResponsiveContainer>
+                         </div>
+                       </StatCard>,
+        posterPalette: <StatCard icon={Palette} title="Poster Palette">
+                           <div className="flex gap-2 pt-2">
+                               {posterPaletteData.map(c => (
+                                   <div key={c.color} className="flex flex-col items-center gap-1">
+                                       <div className="w-8 h-8 rounded-full" style={{backgroundColor: c.fill}}></div>
+                                       <span className="text-xs text-muted-foreground">{c.color}</span>
+                                   </div>
+                               ))}
+                           </div>
+                       </StatCard>
     };
+
+    if (!isClient) {
+        // Render a skeleton or loading state on the server
+        return <div className="bg-background min-h-screen flex items-center justify-center">Loading...</div>;
+    }
 
     return (
         <>
-        <div className="flex min-h-screen flex-col bg-background p-4 sm:p-8">
-            <div className="w-full max-w-7xl mx-auto">
-                <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
-                    <ArrowLeft className="w-5 h-5"/>
-                    <span>Back to Collection</span>
-                </Link>
+            <div className="bg-background min-h-screen">
+                <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+                    <div className="flex items-center gap-2 mb-8">
+                        <a href="/app/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Dashboard
+                        </a>
+                    </div>
+                    <div className="flex flex-col xl:flex-row items-baseline justify-between gap-4 border-b border-border pb-6 mb-8">
+                        <div>
+                            <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">Your Watchverse</h1>
+                            <p className="mt-2 text-lg text-muted-foreground">A deep dive into your cinematic universe.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button onClick={() => setActiveTab('basic')} variant={activeTab === 'basic' ? 'default' : 'outline'}>
+                                Basic Stats
+                            </Button>
+                            <Button onClick={() => setActiveTab('geek')} variant={activeTab === 'geek' ? 'default' : 'outline'}>
+                                Geek Out
+                            </Button>
+                        </div>
+                    </div>
 
-                <div className="text-left mb-8">
-                    <h1 className="text-5xl font-bold font-headline">Your Watchverse</h1>
-                    <p className="text-muted-foreground mt-2">A deep dive into your cinematic universe.</p>
+                    {activeTab === 'basic' ? (
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
+                            <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {basicCardOrder.map(id => allBasicCards[id as keyof typeof allBasicCards] ? (
+                                        <SortableCardWrapper key={id} id={id}>
+                                            {allBasicCards[id as keyof typeof allBasicCards]}
+                                        </SortableCardWrapper>
+                                    ) : null)}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
+                    ) : (
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
+                            <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {geekCardOrder.map(id => allGeekCards[id as keyof typeof allGeekCards] ? (
+                                        <SortableCardWrapper key={id} id={id}>
+                                            {allGeekCards[id as keyof typeof allGeekCards]}
+                                        </SortableCardWrapper>
+                                    ) : null)}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
+                    )}
                 </div>
-                
-                 <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="mb-6 grid w-full grid-cols-2">
-                        <TabsTrigger value="basic">
-                            <Activity className="w-4 h-4 mr-2"/> Basic Stats
-                        </TabsTrigger>
-                        <TabsTrigger value="geek">
-                            <FlaskConical className="w-4 h-4 mr-2" /> Geek Out
-                        </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="basic">
-                        {hasMounted ? (
-                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
-                                <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
-                                    <div className="flex flex-wrap gap-6 items-start">
-                                        {basicCardOrder.map(cardId => {
-                                            const card = allBasicCards[cardId];
-                                            const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 350, height: 200 };
-                                            const minSize = cardMinSizes[cardId] || [200, 140];
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)} minConstraints={minSize}>{card}</SortableCardWrapper> : null;
-                                        })}
-                                    </div>
-                                </SortableContext>
-                            </DndContext>
-                        ) : (
-                            <AnalyticsGridSkeleton items={basicCardOrder} />
-                        )}
-                    </TabsContent>
-
-                    <TabsContent value="geek">
-                         {hasMounted ? (
-                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
-                                <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
-                                    <div className="flex flex-wrap gap-6 items-start">
-                                        {geekCardOrder.map(cardId => {
-                                            const card = allGeekCards[cardId];
-                                            const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 400, height: 350 };
-                                            const minSize = cardMinSizes[cardId] || [250, 250];
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)} minConstraints={minSize}>{card}</SortableCardWrapper> : null;
-                                        })}
-                                    </div>
-                                </SortableContext>
-                            </DndContext>
-                         ) : (
-                            <AnalyticsGridSkeleton items={geekCardOrder} />
-                         )}
-                    </TabsContent>
-                </Tabs>
             </div>
-        </div>
-        <EditGoalDialog
-            isOpen={isGoalDialogOpen}
-            setIsOpen={setIsGoalDialogOpen}
-            currentGoal={watchGoal}
-            onGoalSet={setWatchGoal}
-        />
+            <EditGoalDialog 
+                isOpen={isGoalDialogOpen} 
+                setIsOpen={setIsGoalDialogOpen} 
+                currentGoal={watchGoal} 
+                onGoalSet={(newGoal) => {
+                    setWatchGoal(newGoal);
+                    loadData();
+                }}
+            />
         </>
-    );
+    )
 }
