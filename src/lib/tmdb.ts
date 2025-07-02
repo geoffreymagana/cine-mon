@@ -9,10 +9,6 @@ export const getPosterUrl = (path: string | null, size: 'w500' | 'original' = 'w
     return path ? `${IMAGE_BASE_URL}${size}${path}` : 'https://placehold.co/500x750.png';
 };
 
-/**
- * Ultra-Efficient Movie Poster Color Sampling System
- * Uses K-means clustering with strategic optimizations for minimal computation
- */
 class PosterColorSampler {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -26,9 +22,6 @@ class PosterColorSampler {
     }
   }
 
-  /**
-   * Main function to extract dominant color from poster URL
-   */
   async extractDominantColor(posterUrl: string): Promise<{ hex: string; rgb: { r: number; g: number; b: number }; colorName: string; confidence: number; timestamp: number }> {
     try {
       const imageData = await this.loadAndSampleImage(posterUrl);
@@ -46,13 +39,10 @@ class PosterColorSampler {
     }
   }
 
-  /**
-   * Load image and extract strategic pixel samples
-   */
   private loadAndSampleImage(posterUrl: string): Promise<{ r: number; g: number; b: number }[]> {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous'; // Handle CORS
+      img.crossOrigin = 'Anonymous';
       
       img.onload = () => {
         const sampleWidth = 32;
@@ -72,9 +62,6 @@ class PosterColorSampler {
     });
   }
 
-  /**
-   * Strategic sampling - focus on visually important areas
-   */
   private getStrategicSamples(width: number, height: number): { r: number; g: number; b: number }[] {
     const samples: { r: number; g: number; b: number }[] = [];
     const imageData = this.ctx.getImageData(0, 0, width, height);
@@ -100,9 +87,6 @@ class PosterColorSampler {
     return samples;
   }
 
-  /**
-   * Lightweight K-means clustering
-   */
   private findDominantColor(samples: { r: number; g: number; b: number }[]): { rgb: { r: number; g: number; b: number }; hex: string; confidence: number } {
     if (samples.length === 0) {
         const defaultColor = this.getDefaultColor();
@@ -169,9 +153,6 @@ class PosterColorSampler {
     );
   }
 
-  /**
-   * Perceptual color distance
-   */
   private colorDistance(color1: { r: number; g: number; b: number }, color2: { r: number; g: number; b: number }): number {
     const rMean = (color1.r + color2.r) / 2;
     const deltaR = color1.r - color2.r;
@@ -273,7 +254,6 @@ class PosterColorSampler {
   }
 }
 
-// Singleton instance to reuse the canvas
 let colorSamplerInstance: PosterColorSampler | null = null;
 const getColorSampler = () => {
     if (typeof window === 'undefined') {
@@ -288,13 +268,13 @@ const getColorSampler = () => {
 export const getDominantColor = async (imageUrl: string): Promise<string> => {
     try {
         const sampler = getColorSampler();
-        if (!sampler) return 'Gray'; // Return fallback on server
+        if (!sampler) return 'Gray';
         
         const result = await sampler.extractDominantColor(imageUrl);
         return result.colorName;
     } catch (error) {
         console.error("Dominant color calculation failed:", error);
-        return 'Gray'; // Fallback color
+        return 'Gray';
     }
 };
 
@@ -359,7 +339,6 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         (vid: any) => vid.site === 'YouTube' && vid.type === 'Trailer'
     );
     const posterUrl = getPosterUrl(tmdbResult.poster_path);
-    const dominantColor = await getDominantColor(posterUrl);
 
     let seasons: Season[] = [];
     let totalEpisodes = isMovie ? 1 : (tmdbResult.number_of_episodes || 0);
@@ -367,7 +346,7 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
     if (!isMovie) {
         const seasonsData = tmdbResult.seasons || [];
         const seasonPromises = seasonsData
-            .filter((s: any) => s.season_number > 0) // Exclude "Specials" season (season_number 0)
+            .filter((s: any) => s.season_number > 0)
             .map((season: any) => 
                 fetch(`${BASE_URL}/tv/${tmdbResult.id}/season/${season.season_number}?api_key=${API_KEY}&language=en-US`)
                 .then(res => {
@@ -431,6 +410,5 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         productionCountries: tmdbResult.production_countries?.map((c: any) => c.name).join(', '),
         trailerUrl: officialTrailer?.key,
         sortOrder: Date.now(),
-        dominantColor: dominantColor
     };
 };

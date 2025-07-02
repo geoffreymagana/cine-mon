@@ -2,7 +2,6 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { 
     Area,
     AreaChart,
@@ -22,11 +21,9 @@ import {
     YAxis 
 } from 'recharts';
 import { 
-    Activity,
     ArrowLeft, 
     Bookmark, 
     Calendar,
-    ChevronRight,
     Clock, 
     Database,
     Edit,
@@ -35,6 +32,7 @@ import {
     History,
     Layers,
     ListChecks,
+    Loader2,
     Moon,
     Palette,
     PieChart,
@@ -46,10 +44,12 @@ import {
     Video,
     Zap,
 } from 'lucide-react';
+import Link from 'next/link';
 import { MovieService } from '@/lib/movie-service';
 import { Button } from '@/components/ui/button';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import type { Movie, UserCollection } from '@/lib/types';
+import { getDominantColor } from '@/lib/tmdb';
 
 
 const CHART_COLORS = [
@@ -104,7 +104,7 @@ const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
             </div>
         </div>
         {movie ? (
-            <div className="flex items-center gap-4 group cursor-pointer h-full">
+             <Link href={`/app/movie/${movie.id}`} className="flex items-center gap-4 group cursor-pointer h-full">
                 <img
                     src={movie.posterUrl}
                     alt={movie.title}
@@ -115,8 +115,7 @@ const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
                     <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">{movie.title}</p>
                     <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </div>
+            </Link>
         ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                 No spin history yet.
@@ -152,6 +151,7 @@ export default function AnalyticsPage() {
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isClient, setIsClient] = React.useState(false);
+    const [isProcessingColors, setIsProcessingColors] = React.useState(false);
     
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
 
@@ -165,6 +165,26 @@ export default function AnalyticsPage() {
         setMovies(moviesFromDb);
         setCollections(collectionsFromDb);
         if (goalFromDb) setWatchGoal(goalFromDb);
+        
+        const unprocessedMovies = moviesFromDb.filter(m => !m.dominantColor);
+        if (unprocessedMovies.length > 0) {
+            setIsProcessingColors(true);
+            setTimeout(async () => {
+                for (const movie of unprocessedMovies) {
+                    try {
+                        const color = await getDominantColor(movie.posterUrl);
+                        await MovieService.updateMovie(movie.id, { dominantColor: color });
+                        setMovies(prevMovies => prevMovies.map(m => 
+                            m.id === movie.id ? { ...m, dominantColor: color } : m
+                        ));
+                    } catch (e) {
+                        console.error(`Failed to process color for ${movie.title}`, e);
+                    }
+                }
+                setIsProcessingColors(false);
+            }, 100);
+        }
+
         if (lastSpunId) {
             const lastSpunMovie = moviesFromDb.find(m => m.id === lastSpunId);
             if (lastSpunMovie) setLastWatchedMovie(lastSpunMovie);
@@ -329,7 +349,7 @@ export default function AnalyticsPage() {
     }, [watchedMovies]);
     
     const [activeTab, setActiveTab] = React.useState('basic');
-
+    
     const allBasicCards = {
         totalTitles: <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" />,
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
@@ -518,57 +538,63 @@ export default function AnalyticsPage() {
                              </ResponsiveContainer>
                          </div>
                        </StatCard>,
-        posterPalette: <StatCard icon={Palette} title="Poster Palette" description="Most common poster colors">
-                            <div className="w-full h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadialBarChart 
-                                        data={posterPaletteData} 
-                                        innerRadius="10%" 
-                                        outerRadius="80%" 
-                                        barSize={10} 
-                                        startAngle={90}
-                                        endAngle={-270}
-                                        cx="40%"
-                                    >
-                                        <defs>
-                                            {posterPaletteData.map((entry, index) => (
-                                                <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
-                                                    <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
-                                                    <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
-                                                </linearGradient>
-                                            ))}
-                                        </defs>
-                                        <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
-                                            {posterPaletteData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
-                                        </RadialBar>
-                                        <Tooltip content={({ active, payload }) => {
-                                            if (active && payload && payload.length) {
-                                                const data = payload[0];
-                                                const itemPayload = data.payload as any;
-                                                return (
-                                                    <div className="rounded-lg border bg-card p-2.5 shadow-sm">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-3 h-3 rounded-full" style={{backgroundColor: itemPayload.baseColor}} />
-                                                            <p className="font-semibold text-card-foreground">{itemPayload.name}: {data.value}</p>
+        posterPalette: <StatCard icon={Palette} title="Poster Palette" description={isProcessingColors ? "Analyzing poster colors..." : "Most common poster colors"}>
+                           {posterPaletteData.length === 0 ? (
+                                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                                    {isProcessingColors ? <Loader2 className="h-5 w-5 animate-spin"/> : 'No color data yet.'}
+                                </div>
+                            ) : (
+                                <div className="w-full h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <RadialBarChart 
+                                            data={posterPaletteData} 
+                                            innerRadius="10%" 
+                                            outerRadius="80%" 
+                                            barSize={10} 
+                                            startAngle={90}
+                                            endAngle={-270}
+                                            cx="40%"
+                                        >
+                                            <defs>
+                                                {posterPaletteData.map((entry, index) => (
+                                                    <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
+                                                        <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
+                                                        <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
+                                                    </linearGradient>
+                                                ))}
+                                            </defs>
+                                            <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
+                                                {posterPaletteData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
+                                                ))}
+                                            </RadialBar>
+                                            <Tooltip content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    const data = payload[0];
+                                                    const itemPayload = data.payload as any;
+                                                    return (
+                                                        <div className="rounded-lg border bg-card p-2.5 shadow-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-3 h-3 rounded-full" style={{backgroundColor: itemPayload.baseColor}} />
+                                                                <p className="font-semibold text-card-foreground">{itemPayload.name}: {data.value}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        }} />
-                                        <Legend
-                                            layout="vertical"
-                                            align="right"
-                                            verticalAlign="middle"
-                                            iconSize={8}
-                                            wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
-                                            payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
-                                        />
-                                    </RadialBarChart>
-                                </ResponsiveContainer>
-                            </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }} />
+                                            <Legend
+                                                layout="vertical"
+                                                align="right"
+                                                verticalAlign="middle"
+                                                iconSize={8}
+                                                wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
+                                                payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
+                                            />
+                                        </RadialBarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                           )}
                        </StatCard>
     };
     
@@ -657,9 +683,3 @@ export default function AnalyticsPage() {
         </>
     )
 }
-
-    
-
-  
-
-
