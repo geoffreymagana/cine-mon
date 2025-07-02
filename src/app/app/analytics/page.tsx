@@ -58,12 +58,9 @@ const CHART_COLORS = [
   'hsl(var(--chart-3))',
   'hsl(var(--chart-4))',
   'hsl(var(--chart-5))',
-  'hsl(27, 87%, 67%)',
-  'hsl(12, 76%, 61%)',
-  'hsl(197, 37%, 24%)',
 ];
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit }: {
+const StatCard = ({ icon: Icon, title, value, description, children, className, cardHeight }: {
     icon?: React.ElementType;
     title: string;
     value?: string | number;
@@ -71,8 +68,9 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
     children?: React.ReactNode;
     className?: string;
     onEdit?: () => void;
+    cardHeight?: string;
 }) => (
-    <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col ${className || ''}`}>
+    <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col ${className || ''}`} style={{ height: cardHeight }}>
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                  {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
@@ -335,9 +333,20 @@ export default function AnalyticsPage() {
             }, {});
 
         const colorMap: Record<string, string> = {
-            'Dark Blue': '#1e3a8a', 'Black': '#000000', 'Red': '#dc2626',
-            'Green': '#16a34a', 'Orange': '#ea580c', 'Yellow': '#facc15',
-            'Purple': '#8b5cf6', 'Gray': '#6b7280', 'White': '#ffffff'
+            'Black': '#1f2937',
+            'Dark Gray': '#4b5563',
+            'Gray': '#6b7280',
+            'Light Gray': '#d1d5db',
+            'White': '#f9fafb',
+            'Red': '#ef4444',
+            'Orange': '#f97316',
+            'Yellow': '#facc15',
+            'Green': '#22c55e',
+            'Cyan': '#06b6d4',
+            'Blue': '#3b82f6',
+            'Purple': '#8b5cf6',
+            'Magenta': '#d946ef',
+            'Pink': '#ec4899',
         };
 
         return Object.entries(colorCounts).map(([name, count]) => ({
@@ -350,279 +359,6 @@ export default function AnalyticsPage() {
     
     const [activeTab, setActiveTab] = React.useState('basic');
     
-    const allBasicCards = {
-        totalTitles: <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" />,
-        timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
-        episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} description="Across all tracked series" />,
-        averageRating: <StatCard icon={Star} title="Average Rating" value={`${averageRating.toFixed(1)}/100`} description="Average of all rated titles" />,
-        onWatchlist: <StatCard icon={Bookmark} title="On Watchlist" value={onWatchlistCount} description="Titles you plan to watch" />,
-        totalRewatches: <StatCard icon={Repeat} title="Total Rewatches" value={totalRewatches} description="Sum of all rewatch counts" />,
-        watchGoal: <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)}>
-                       <div className="w-full h-48 relative">
-                           <ResponsiveContainer width="100%" height="100%">
-                               <RadialBarChart
-                                   data={goalGaugeData}
-                                   startAngle={180}
-                                   endAngle={-180}
-                                   innerRadius="70%"
-                                   outerRadius="100%"
-                                   barSize={12}
-                               >
-                                    <defs>
-                                        <linearGradient id="goalGradient" x1="0" y1="0" x2="1" y2="0">
-                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={1} />
-                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                        </linearGradient>
-                                    </defs>
-                                   <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                   <RadialBar background={{fill: 'transparent'}} dataKey="value" cornerRadius={6} fill="url(#goalGradient)"/>
-                               </RadialBarChart>
-                           </ResponsiveContainer>
-                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                               <span className="text-3xl font-bold">{totalTitlesWatched}</span>
-                               <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
-                           </div>
-                       </div>
-                   </StatCard>,
-        topGenres: <StatCard icon={PieChart} title="Top Genres" description="Your most-watched genres">
-                        <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                    <Pie 
-                                        data={topGenres} 
-                                        dataKey="value" 
-                                        nameKey="name" 
-                                        cx="40%" 
-                                        cy="50%" 
-                                        innerRadius={50} 
-                                        outerRadius={80} 
-                                        paddingAngle={2}
-                                    >
-                                        {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltipContent />} />
-                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
-                        </div>
-                   </StatCard>,
-        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections" description="Vaults vs. Spotlights">
-                            <div className="w-full h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                        <Pie 
-                                            data={collectionsData} 
-                                            dataKey="value" 
-                                            nameKey="name" 
-                                            cx="40%" 
-                                            cy="50%" 
-                                            outerRadius={80} 
-                                            paddingAngle={2}
-                                        >
-                                            {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                        <Tooltip content={<CustomTooltipContent />} />
-                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
-                                    </RechartsPieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </StatCard>,
-        lastWatched: <LastWatchedCard movie={lastWatchedMovie} />
-    };
-
-    const allGeekCards = {
-        mostActors: <StatCard icon={Users} title="Most Watched Actors" description="Actors appearing most in your collection">
-                        <div className="w-full h-64">
-                           <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                    <Pie 
-                                        data={topActors} 
-                                        dataKey="value" 
-                                        nameKey="name" 
-                                        cx="40%" 
-                                        cy="50%" 
-                                        innerRadius={60} 
-                                        outerRadius={90} 
-                                        paddingAngle={5}
-                                    >
-                                        {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltipContent />} />
-                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </StatCard>,
-        mostDirectors: <StatCard icon={Video} title="Most Watched Directors" description="Directors who appear most often">
-                            <div className="w-full h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 10, right: 20, top: 10, bottom: 10 }}>
-                                        <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
-                                        <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={5} width={120} fontSize={12} />
-                                        <Tooltip content={<CustomTooltipContent />} />
-                                        <Bar dataKey="count" radius={4} barSize={16}>
-                                            {topDirectors.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </StatCard>,
-        topFranchises: <StatCard icon={Layers} title="Top Franchises" description="Your most-watched movie franchises">
-                            <div className="w-full h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                        <Pie 
-                                            data={topFranchises} 
-                                            dataKey="value" 
-                                            nameKey="name" 
-                                            cx="40%" 
-                                            cy="50%" 
-                                            outerRadius={80}
-                                        >
-                                        {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                        <Tooltip content={<CustomTooltipContent />} />
-                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
-                                    </RechartsPieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </StatCard>,
-        collectionTimeline: <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade">
-                <div className="w-full h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                            <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip content={<CustomTooltipContent />} />
-                            <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </StatCard>,
-        rewatchRatio: <StatCard icon={Zap} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="of your collection has been rewatched" />,
-        storageUsage: <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Local space used by library data" />,
-        seriesCompletion: <StatCard icon={ListChecks} title="Series Completion" description="Progress for series you're watching">
-                            <div className="space-y-4 pt-2">
-                                {watchingSeries.length > 0 ? watchingSeries.map(series => (
-                                    <div key={series.id}>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <p className="text-sm font-medium truncate">{series.title}</p>
-                                            <p className="text-sm text-muted-foreground">{series.completion}%</p>
-                                        </div>
-                                        <div className="w-full bg-muted rounded-full h-1.5">
-                                            <div className="bg-primary h-1.5 rounded-full" style={{width: `${series.completion}%`}}></div>
-                                        </div>
-                                    </div>
-                                )) : <p className="text-sm text-muted-foreground text-center pt-8">No series currently being watched.</p>}
-                            </div>
-                          </StatCard>,
-        bingeRating: <StatCard icon={FlaskConical} title="Binge Rating" value="8.5/10" description="Based on watch velocity (dummy data)" />,
-        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Most active watch times (dummy data)">
-                         <div className="w-full h-40">
-                             <ResponsiveContainer>
-                                 <AreaChart data={nightOwlData}>
-                                     <defs>
-                                        <linearGradient id="nightOwlFill" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                                        </linearGradient>
-                                     </defs>
-                                     <Area type="monotone" dataKey="titles" stroke="hsl(var(--primary))" fill="url(#nightOwlFill)" />
-                                     <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
-                                     <Tooltip content={<CustomTooltipContent />} />
-                                 </AreaChart>
-                             </ResponsiveContainer>
-                         </div>
-                       </StatCard>,
-        posterPalette: <StatCard icon={Palette} title="Poster Palette" description={isProcessingColors ? "Analyzing poster colors..." : "Most common poster colors"}>
-                           {posterPaletteData.length === 0 ? (
-                                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                                    {isProcessingColors ? <Loader2 className="h-5 w-5 animate-spin"/> : 'No color data yet.'}
-                                </div>
-                            ) : (
-                                <div className="w-full h-64">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <RadialBarChart 
-                                            data={posterPaletteData} 
-                                            innerRadius="10%" 
-                                            outerRadius="80%" 
-                                            barSize={10} 
-                                            startAngle={90}
-                                            endAngle={-270}
-                                            cx="40%"
-                                        >
-                                            <defs>
-                                                {posterPaletteData.map((entry, index) => (
-                                                    <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
-                                                        <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
-                                                        <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
-                                                    </linearGradient>
-                                                ))}
-                                            </defs>
-                                            <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
-                                                {posterPaletteData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
-                                                ))}
-                                            </RadialBar>
-                                            <Tooltip content={({ active, payload }) => {
-                                                if (active && payload && payload.length) {
-                                                    const data = payload[0];
-                                                    const itemPayload = data.payload as any;
-                                                    return (
-                                                        <div className="rounded-lg border bg-card p-2.5 shadow-sm">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-3 h-3 rounded-full" style={{backgroundColor: itemPayload.baseColor}} />
-                                                                <p className="font-semibold text-card-foreground">{itemPayload.name}: {data.value}</p>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            }} />
-                                            <Legend
-                                                layout="vertical"
-                                                align="right"
-                                                verticalAlign="middle"
-                                                iconSize={8}
-                                                wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
-                                                payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
-                                            />
-                                        </RadialBarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                           )}
-                       </StatCard>
-    };
-    
-    const basicLayout = [
-        { id: 'totalTitles', className: 'lg:col-span-1'},
-        { id: 'timeWatched', className: 'lg:col-span-1'},
-        { id: 'episodesWatched', className: 'lg:col-span-1'},
-        { id: 'onWatchlist', className: 'lg:col-span-1'},
-        { id: 'watchGoal', className: 'lg:col-span-2 row-span-2'},
-        { id: 'topGenres', className: 'lg:col-span-2 row-span-2'},
-        { id: 'curatedCollections', className: 'lg:col-span-2 row-span-2'},
-        { id: 'lastWatched', className: 'lg:col-span-2'},
-        { id: 'averageRating', className: 'lg:col-span-1'},
-        { id: 'totalRewatches', className: 'lg:col-span-1'},
-    ];
-
-    const geekLayout = [
-        { id: 'collectionTimeline', className: 'lg:col-span-4' },
-        { id: 'mostDirectors', className: 'lg:col-span-4' },
-        { id: 'seriesCompletion', className: 'lg:col-span-2 row-span-2' },
-        { id: 'rewatchRatio', className: 'lg:col-span-1' },
-        { id: 'storageUsage', className: 'lg:col-span-1' },
-        { id: 'mostActors', className: 'lg:col-span-2' },
-        { id: 'topFranchises', className: 'lg:col-span-2' },
-        { id: 'nightOwlScore', className: 'lg:col-span-2' },
-        { id: 'posterPalette', className: 'lg:col-span-2 row-span-2' },
-    ];
-
     if (!isClient) {
         return <div className="bg-background min-h-screen flex items-center justify-center">Loading...</div>;
     }
@@ -654,19 +390,251 @@ export default function AnalyticsPage() {
 
                     {activeTab === 'basic' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {basicLayout.map(({ id, className }) => (
-                                <div key={id} className={className}>
-                                    {allBasicCards[id as keyof typeof allBasicCards]}
+                            <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" className="lg:col-span-1" cardHeight="180px" />
+                            <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" className="lg:col-span-1" cardHeight="180px"/>
+                            <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} description="Across all tracked series" className="lg:col-span-1" cardHeight="180px"/>
+                            <StatCard icon={Bookmark} title="On Watchlist" value={onWatchlistCount} description="Titles you plan to watch" className="lg:col-span-1" cardHeight="180px"/>
+                            
+                            <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)} className="lg:col-span-2 row-span-2">
+                               <div className="w-full h-full relative">
+                                   <ResponsiveContainer width="100%" height="100%">
+                                       <RadialBarChart
+                                           data={goalGaugeData}
+                                           startAngle={180}
+                                           endAngle={-180}
+                                           innerRadius="70%"
+                                           outerRadius="100%"
+                                           barSize={12}
+                                       >
+                                            <defs>
+                                                <linearGradient id="goalGradient" x1="0" y1="0" x2="1" y2="0">
+                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                                </linearGradient>
+                                            </defs>
+                                           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                           <RadialBar background={{fill: 'transparent'}} dataKey="value" cornerRadius={6} fill="url(#goalGradient)"/>
+                                       </RadialBarChart>
+                                   </ResponsiveContainer>
+                                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                       <span className="text-3xl font-bold">{totalTitlesWatched}</span>
+                                       <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
+                                   </div>
+                               </div>
+                           </StatCard>
+                            <StatCard icon={PieChart} title="Top Genres" description="Your most-watched genres" className="lg:col-span-2 row-span-2">
+                                <div className="w-full h-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                            <Pie 
+                                                data={topGenres} 
+                                                dataKey="value" 
+                                                nameKey="name" 
+                                                cx="40%" 
+                                                cy="50%" 
+                                                innerRadius={50} 
+                                                outerRadius={80} 
+                                                paddingAngle={2}
+                                            >
+                                                {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                            </Pie>
+                                            <Tooltip content={<CustomTooltipContent />} />
+                                            <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
+                                        </RechartsPieChart>
+                                    </ResponsiveContainer>
                                 </div>
-                            ))}
+                           </StatCard>
+                            <StatCard icon={Sparkles} title="Curated Collections" description="Vaults vs. Spotlights" className="lg:col-span-2 row-span-2">
+                                    <div className="w-full h-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                                <Pie 
+                                                    data={collectionsData} 
+                                                    dataKey="value" 
+                                                    nameKey="name" 
+                                                    cx="40%" 
+                                                    cy="50%" 
+                                                    outerRadius={80} 
+                                                    paddingAngle={2}
+                                                >
+                                                    {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                                </Pie>
+                                                <Tooltip content={<CustomTooltipContent />} />
+                                                <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
+                                            </RechartsPieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </StatCard>
+                            <LastWatchedCard movie={lastWatchedMovie} />
+                            <StatCard icon={Star} title="Average Rating" value={`${averageRating.toFixed(1)}/100`} description="Average of all rated titles" cardHeight="180px"/>
+                            <StatCard icon={Repeat} title="Total Rewatches" value={totalRewatches} description="Sum of all rewatch counts" cardHeight="180px"/>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {geekLayout.map(({ id, className }) => (
-                                <div key={id} className={className}>
-                                    {allGeekCards[id as keyof typeof allGeekCards]}
+                            <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade" className="lg:col-span-4">
+                                <div className="w-full h-48">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                                            <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                            <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                                            <Tooltip content={<CustomTooltipContent />} />
+                                            <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
-                            ))}
+                            </StatCard>
+                            <StatCard icon={Video} title="Most Watched Directors" description="Directors who appear most often" className="lg:col-span-4">
+                                    <div className="w-full h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={topDirectors} layout="vertical" margin={{ left: 10, right: 20, top: 10, bottom: 10 }}>
+                                                <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
+                                                <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
+                                                <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={5} width={120} fontSize={12} />
+                                                <Tooltip content={<CustomTooltipContent />} />
+                                                <Bar dataKey="count" radius={4} barSize={16}>
+                                                    {topDirectors.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </StatCard>
+                             <StatCard icon={ListChecks} title="Series Completion" description="Progress for series you're watching" className="lg:col-span-2 row-span-2">
+                                    <div className="space-y-4 pt-2">
+                                        {watchingSeries.length > 0 ? watchingSeries.map(series => (
+                                            <div key={series.id}>
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <p className="text-sm font-medium truncate">{series.title}</p>
+                                                    <p className="text-sm text-muted-foreground">{series.completion}%</p>
+                                                </div>
+                                                <div className="w-full bg-muted rounded-full h-1.5">
+                                                    <div className="bg-primary h-1.5 rounded-full" style={{width: `${series.completion}%`}}></div>
+                                                </div>
+                                            </div>
+                                        )) : <p className="text-sm text-muted-foreground text-center pt-8">No series currently being watched.</p>}
+                                    </div>
+                                  </StatCard>
+                            <StatCard icon={Users} title="Most Watched Actors" description="Actors appearing most in your collection" className="lg:col-span-2">
+                                <div className="w-full h-full">
+                                   <ResponsiveContainer width="100%" height="100%">
+                                        <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                            <Pie 
+                                                data={topActors} 
+                                                dataKey="value" 
+                                                nameKey="name" 
+                                                cx="40%" 
+                                                cy="50%" 
+                                                innerRadius={60} 
+                                                outerRadius={90} 
+                                                paddingAngle={5}
+                                            >
+                                                {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                            </Pie>
+                                            <Tooltip content={<CustomTooltipContent />} />
+                                            <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
+                                        </RechartsPieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </StatCard>
+                            <StatCard icon={Layers} title="Top Franchises" description="Your most-watched movie franchises" className="lg:col-span-2">
+                                    <div className="w-full h-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsPieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                                <Pie 
+                                                    data={topFranchises} 
+                                                    dataKey="value" 
+                                                    nameKey="name" 
+                                                    cx="40%" 
+                                                    cy="50%" 
+                                                    outerRadius={80}
+                                                >
+                                                {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                                </Pie>
+                                                <Tooltip content={<CustomTooltipContent />} />
+                                                <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
+                                            </RechartsPieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </StatCard>
+                            <StatCard icon={Zap} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="of your collection has been rewatched" cardHeight="180px"/>
+                            <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Local space used by library data" cardHeight="180px"/>
+                            <StatCard icon={Moon} title="Night Owl Score" description="Most active watch times (dummy data)" className="lg:col-span-2">
+                                 <div className="w-full h-40">
+                                     <ResponsiveContainer>
+                                         <AreaChart data={nightOwlData}>
+                                             <defs>
+                                                <linearGradient id="nightOwlFill" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                                </linearGradient>
+                                             </defs>
+                                             <Area type="monotone" dataKey="titles" stroke="hsl(var(--primary))" fill="url(#nightOwlFill)" />
+                                             <XAxis dataKey="hour" fontSize={12} tickLine={false} axisLine={false} />
+                                             <Tooltip content={<CustomTooltipContent />} />
+                                         </AreaChart>
+                                     </ResponsiveContainer>
+                                 </div>
+                               </StatCard>
+                            <StatCard icon={Palette} title="Poster Palette" description={isProcessingColors ? "Analyzing poster colors..." : "Most common poster colors"} className="lg:col-span-2 row-span-2">
+                                   {posterPaletteData.length === 0 ? (
+                                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                                            {isProcessingColors ? <Loader2 className="h-5 w-5 animate-spin"/> : 'No color data yet.'}
+                                        </div>
+                                    ) : (
+                                        <div className="w-full h-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <RadialBarChart 
+                                                    data={posterPaletteData} 
+                                                    innerRadius="10%" 
+                                                    outerRadius="80%" 
+                                                    barSize={10} 
+                                                    startAngle={90}
+                                                    endAngle={-270}
+                                                    cx="40%"
+                                                >
+                                                    <defs>
+                                                        {posterPaletteData.map((entry, index) => (
+                                                            <linearGradient key={`gradient-${index}`} id={`paletteGradient${index}`} x1="0" y1="0" x2="1" y2="0">
+                                                                <stop offset="5%" stopColor={entry.baseColor} stopOpacity={1} />
+                                                                <stop offset="95%" stopColor={entry.baseColor} stopOpacity={0.3} />
+                                                            </linearGradient>
+                                                        ))}
+                                                    </defs>
+                                                    <RadialBar dataKey='count' background={{ fill: 'transparent' }}>
+                                                        {posterPaletteData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
+                                                        ))}
+                                                    </RadialBar>
+                                                    <Tooltip content={({ active, payload }) => {
+                                                        if (active && payload && payload.length) {
+                                                            const data = payload[0];
+                                                            const itemPayload = data.payload as any;
+                                                            return (
+                                                                <div className="rounded-lg border bg-card p-2.5 shadow-sm text-card-foreground">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="w-3 h-3 rounded-full" style={{backgroundColor: itemPayload.baseColor}} />
+                                                                        <p className="font-semibold">{itemPayload.name}: {data.value}</p>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    }} />
+                                                    <Legend
+                                                        layout="vertical"
+                                                        align="right"
+                                                        verticalAlign="middle"
+                                                        iconSize={8}
+                                                        wrapperStyle={{ fontSize: '12px', lineHeight: '1.5', paddingLeft: '10px' }}
+                                                        payload={posterPaletteData.map(item => ({ value: item.name, type: 'square', color: item.baseColor }))}
+                                                    />
+                                                </RadialBarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                   )}
+                               </StatCard>
                         </div>
                     )}
                 </div>
