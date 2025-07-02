@@ -309,12 +309,12 @@ export default function CollectionsPage() {
     return (
         <>
             {selectionModeFor && (
-                <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-secondary px-4 md:px-8">
-                    <div className="flex items-center gap-4">
+                <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 sm:gap-4 border-b bg-secondary px-4 md:px-8">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <Button variant="ghost" size="icon" onClick={handleClearSelection}><X className="h-5 w-5"/></Button>
-                        <span className="font-semibold text-lg">{selectedIds.size} Selected</span>
+                        <span className="font-semibold text-base sm:text-lg">{selectedIds.size} Selected</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="select-all"
@@ -324,10 +324,16 @@ export default function CollectionsPage() {
                                 }
                                 onCheckedChange={handleSelectAll}
                             />
-                            <label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer">Select all</label>
+                            <label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer hidden sm:inline">Select all</label>
                         </div>
-                        <Button variant="destructive" onClick={() => setIsDeleteAlertOpen(true)} disabled={selectedIds.size === 0}>
-                            <Trash2 className="mr-2"/> Delete ({selectedIds.size})
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => setIsDeleteAlertOpen(true)}
+                            disabled={selectedIds.size === 0}
+                            title={`Delete ${selectedIds.size} selected item(s)`}
+                        >
+                            <Trash2 />
                         </Button>
                     </div>
                 </div>
@@ -383,4 +389,3 @@ export default function CollectionsPage() {
         </>
     );
 }
-
