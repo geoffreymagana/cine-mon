@@ -242,6 +242,7 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
 }
 
+<<<<<<< Updated upstream
 /* Sticky Note Styles */
 .sticky-note {
   background: #ffc;
@@ -375,4 +376,35 @@ body {
 .react-resizable-handle-s {
   bottom: 0;
   transform: rotate(45deg);
+=======
+.theme-wrapped-sci-fi {
+  background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+}
+.theme-wrapped-horror {
+  background: linear-gradient(45deg, #000000, #430d0d, #1a0000);
+}
+.theme-wrapped-romance {
+  background: linear-gradient(45deg, #ffafbd, #ffc3a0, #ffd6a5);
+}
+.theme-wrapped-action {
+  background: linear-gradient(45deg, #ff4e50, #f9d423, #ff8c00);
+}
+.theme-wrapped-drama {
+  background: linear-gradient(45deg, #4b6cb7, #182848, #2c3e50);
+}
+.theme-wrapped-default {
+  background: linear-gradient(45deg, #1e1e1e, #3a3a3a, #121212);
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  animation: float 25s infinite linear;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(10vw); opacity: 0; }
+>>>>>>> Stashed changes
 }

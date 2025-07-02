@@ -69,6 +69,7 @@ export type VersionInfo = {
   sections: ChangeSection[];
 };
 
+<<<<<<< Updated upstream
 export type Feedback = {
   id: string;
   feedbackType: string;
@@ -111,3 +112,20 @@ export type Setting = {
   key: string;
   value: any;
 };
+=======
+export interface WrappedSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  stats: string;
+  visualTheme: 'sci-fi' | 'horror' | 'romance' | 'action' | 'drama' | 'default';
+  soundscape?: string;
+  musicSuggestion?: {
+    title: string;
+    artist: string;
+    searchQuery: string;
+  };
+  component?: 'decadeChart';
+  componentData?: any;
+}
+>>>>>>> Stashed changes
