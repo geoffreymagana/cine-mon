@@ -31,11 +31,14 @@ import {
     Calendar,
     ChevronRight,
     Clock, 
+    Database,
     Edit,
     Film, 
     FlaskConical,
     GripVertical,
+    History,
     Layers,
+    ListChecks,
     Moon,
     PieChart,
     Repeat,
@@ -61,6 +64,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { MovieService } from '@/lib/movie-service';
+import { Progress } from '@/components/ui/progress';
 
 
 const CHART_COLORS = [
@@ -174,7 +178,7 @@ const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: {
 
 const defaultCardOrder = {
     basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'watchGoal', 'onWatchlist', 'topGenres', 'curatedCollections', 'averageRating', 'totalRewatches', 'lastWatched'],
-    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
+    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'collectionTimeline', 'rewatchRatio', 'storageUsage', 'seriesCompletion', 'bingeRating', 'nightOwlScore', 'obscurityIndex']
 };
 
 const defaultCardSizes: Record<string, { width: number; height: number }> = {
@@ -194,6 +198,10 @@ const defaultCardSizes: Record<string, { width: number; height: number }> = {
     bingeRating: { width: 350, height: 150 },
     nightOwlScore: { width: 400, height: 280 },
     obscurityIndex: { width: 400, height: 280 },
+    collectionTimeline: { width: 400, height: 280 },
+    rewatchRatio: { width: 250, height: 150 },
+    storageUsage: { width: 250, height: 150 },
+    seriesCompletion: { width: 400, height: 380 },
 };
 
 const cardMinSizes: Record<string, [number, number]> = {
@@ -213,6 +221,10 @@ const cardMinSizes: Record<string, [number, number]> = {
     bingeRating: [200, 140],
     nightOwlScore: [300, 250],
     obscurityIndex: [300, 250],
+    collectionTimeline: [300, 250],
+    rewatchRatio: [200, 140],
+    storageUsage: [200, 140],
+    seriesCompletion: [300, 300],
 };
 
 const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
@@ -377,6 +389,54 @@ export default function AnalyticsPage() {
 
 
     // Geek Stats
+    const rewatchRatio = React.useMemo(() => {
+        if (watchedMovies.length === 0) return 0;
+        const rewatchedCount = watchedMovies.filter(m => (m.rewatchCount || 0) > 0).length;
+        return Math.round((rewatchedCount / watchedMovies.length) * 100);
+    }, [watchedMovies]);
+
+    const storageUsage = React.useMemo(() => {
+        try {
+            const moviesSize = new Blob([JSON.stringify(movies)]).size;
+            const collectionsSize = new Blob([JSON.stringify(collections)]).size;
+            const totalBytes = moviesSize + collectionsSize;
+            return (totalBytes / 1024).toFixed(2);
+        } catch {
+            return '0.00';
+        }
+    }, [movies, collections]);
+
+    const collectionTimelineData = React.useMemo(() => {
+        const decadeCounts = watchedMovies.reduce((acc, movie) => {
+            if (movie.releaseDate) {
+                const year = parseInt(movie.releaseDate.substring(0, 4), 10);
+                if (!isNaN(year)) {
+                    const decade = Math.floor(year / 10) * 10;
+                    const decadeLabel = `${decade}s`;
+                    acc[decadeLabel] = (acc[decadeLabel] || 0) + 1;
+                }
+            }
+            return acc;
+        }, {} as Record<string, number>);
+    
+        return Object.entries(decadeCounts)
+            .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+            .map(([name, value]) => ({ name, value }));
+    }, [watchedMovies]);
+    
+    const watchingSeries = React.useMemo(() => {
+        return watchedMovies
+            .filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.status === 'Watching' && m.totalEpisodes > 0)
+            .map(m => ({
+                id: m.id,
+                title: m.title,
+                posterUrl: m.posterUrl,
+                completion: Math.round((m.watchedEpisodes / m.totalEpisodes) * 100)
+            }))
+            .sort((a, b) => b.completion - a.completion)
+            .slice(0, 5); // Show top 5
+    }, [watchedMovies]);
+
     const topActors = React.useMemo(() => {
         const actorCounts = watchedMovies
             .flatMap(m => m.cast?.map(c => c.name) || [])
@@ -537,6 +597,46 @@ export default function AnalyticsPage() {
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </StatCard>,
+        collectionTimeline: (
+            <StatCard icon={History} title="Collection Timeline" description="Titles watched by release decade">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={collectionTimelineData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis fontSize={12} />
+                        <Tooltip
+                            cursor={{ fill: 'hsl(var(--muted))' }}
+                            contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                        />
+                        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </StatCard>
+        ),
+        rewatchRatio: <StatCard icon={Repeat} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="Of your collection has been rewatched" />,
+        storageUsage: <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Estimated local data size" />,
+        seriesCompletion: (
+            <StatCard icon={ListChecks} title="Series Completion" description="Progress of shows you're currently watching">
+                <div className="space-y-4 pr-2">
+                    {watchingSeries.length > 0 ? (
+                        watchingSeries.map(series => (
+                            <Link key={series.id} href={`/app/movie/${series.id}`} className="block group">
+                                <div className="flex items-center gap-3">
+                                    <Image src={series.posterUrl} alt={series.title} width={40} height={60} className="w-10 h-auto rounded-md" data-ai-hint="tv series poster" />
+                                    <div className="flex-grow">
+                                        <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">{series.title}</p>
+                                        <Progress value={series.completion} className="h-2 mt-1" />
+                                    </div>
+                                    <p className="text-sm font-semibold w-12 text-right">{series.completion}%</p>
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">No series currently being watched.</p>
+                    )}
+                </div>
+            </StatCard>
+        ),
         bingeRating: <StatCard icon={Zap} title="Binge Rating" value="High" description="You're watching series pretty quickly!" />,
         nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Titles watched after 9 PM">
                             <ResponsiveContainer width="100%" height="100%">
