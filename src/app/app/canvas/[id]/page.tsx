@@ -29,6 +29,7 @@ import CustomNode from '@/components/canvas/custom-node';
 import StickyNodeComponent from '@/components/canvas/sticky-note';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ColorPickerToolbar } from '@/components/canvas/color-picker-toolbar';
 import { EdgeToolbar } from '@/components/canvas/edge-toolbar';
 import {
