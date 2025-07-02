@@ -10,8 +10,6 @@ import {
     CartesianGrid, 
     Cell,
     Legend,
-    Line,
-    LineChart,
     Pie, 
     PieChart as RechartsPieChart,
     PolarAngleAxis,
@@ -33,7 +31,6 @@ import {
     Edit,
     Film, 
     FlaskConical,
-    GripVertical,
     History,
     Layers,
     ListChecks,
@@ -48,11 +45,8 @@ import {
     Zap,
     Palette,
 } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { MovieService } from '@/lib/movie-service';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
 import type { Movie, UserCollection } from '@/lib/types';
 
@@ -65,7 +59,7 @@ const CHART_COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit, dragHandleProps }: {
+const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit }: {
     icon?: React.ElementType;
     title: string;
     value?: string | number;
@@ -73,60 +67,48 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
     children?: React.ReactNode;
     className?: string;
     onEdit?: () => void;
-    dragHandleProps?: any;
 }) => (
-    <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col ${className || ''}`}>
+    <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col h-full ${className || ''}`}>
         <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-                {dragHandleProps && (
-                    <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
-                        <GripVertical className="h-5 w-5" />
-                    </div>
-                )}
+            <div className="flex items-center gap-3">
+                 {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
                 <div className="min-w-0">
-                    <h3 className="text-sm font-medium text-foreground truncate">{title}</h3>
-                    {description && <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>}
+                    <h3 className="text-sm font-medium text-foreground">{title}</h3>
+                    {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
                 </div>
             </div>
-            {onEdit ? (
+            {onEdit && (
                 <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-1" onClick={onEdit}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
-            ) : (
-                 Icon && <Icon className="h-4 w-4 text-muted-foreground" />
             )}
         </div>
         <div className="flex-grow min-h-0">
-            {value && <div className="text-2xl font-bold text-foreground mb-2">{value}</div>}
+            {value !== undefined && <div className="text-3xl font-bold text-foreground mb-2">{value}</div>}
             {children}
         </div>
     </div>
 );
 
-const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie | null, dragHandleProps: any }) => (
+const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
     <div className="bg-card rounded-lg border p-6 shadow-sm h-full">
         <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-                {dragHandleProps && (
-                    <div {...dragHandleProps} className="cursor-grab text-muted-foreground hover:text-foreground transition-colors">
-                        <GripVertical className="h-5 w-5" />
-                    </div>
-                )}
+            <div className="flex items-center gap-3">
+                <Calendar className="h-6 w-6 text-muted-foreground" />
                 <div>
                     <h3 className="text-sm font-medium text-foreground">Last Watched</h3>
                     <p className="text-xs text-muted-foreground mt-1">From "Surprise Me"</p>
                 </div>
             </div>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
         </div>
         {movie ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 group cursor-pointer h-full">
                 <img
                     src={movie.posterUrl}
                     alt={movie.title}
-                    className="w-16 h-24 object-cover rounded-md"
+                    className="w-16 h-24 object-cover rounded-md transition-transform group-hover:scale-105"
                     data-ai-hint="movie poster"
                 />
                 <div className="flex-grow min-w-0">
-                    <p className="font-bold text-foreground truncate">{movie.title}</p>
+                    <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">{movie.title}</p>
                     <p className="text-sm text-muted-foreground">{movie.releaseDate?.substring(0,4)}</p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -139,49 +121,13 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie | null, drag
     </div>
 );
 
-const SortableCardWrapper = ({ id, children }: { id: string, children: React.ReactNode }) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id });
-
-    const style = {
-        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition,
-        zIndex: isDragging ? 10 : 'auto',
-        opacity: isDragging ? 0.8 : 1,
-    };
-
-    return (
-        <div ref={setNodeRef} style={style} {...attributes}>
-            <div className="w-full h-full">
-                {React.cloneElement(children as React.ReactElement, { 
-                    dragHandleProps: listeners,
-                })}
-            </div>
-        </div>
-    );
-};
-
-const defaultCardOrder = {
-    basic: ['totalTitles', 'episodesWatched', 'timeWatched', 'averageRating', 'watchGoal', 'totalRewatches', 'onWatchlist', 'topGenres', 'curatedCollections', 'lastWatched'],
-    geek: ['mostActors', 'mostDirectors', 'topFranchises', 'collectionTimeline', 'rewatchRatio', 'storageUsage', 'seriesCompletion', 'bingeRating', 'nightOwlScore', 'posterPalette']
-};
 
 export default function AnalyticsPage() {
-    const isMobile = useIsMobile();
     const [movies, setMovies] = React.useState<Movie[]>([]);
     const [collections, setCollections] = React.useState<UserCollection[]>([]);
     const [watchGoal, setWatchGoal] = React.useState(50);
     const [lastWatchedMovie, setLastWatchedMovie] = React.useState<Movie | null>(null);
     const [isClient, setIsClient] = React.useState(false);
-
-    const [basicCardOrder, setBasicCardOrder] = React.useState(defaultCardOrder.basic);
-    const [geekCardOrder, setGeekCardOrder] = React.useState(defaultCardOrder.geek);
     
     const [isGoalDialogOpen, setIsGoalDialogOpen] = React.useState(false);
 
@@ -207,35 +153,6 @@ export default function AnalyticsPage() {
     }, [loadData]);
 
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                delay: isMobile ? 250 : 0,
-                tolerance: isMobile ? 5 : 2,
-            },
-        }),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-    );
-
-    const handleDragEnd = (event: DragEndEvent, tab: 'basic' | 'geek') => {
-        const { active, over } = event;
-        if (over && active.id !== over.id) {
-            if (tab === 'basic') {
-                setBasicCardOrder((items) => {
-                    const oldIndex = items.indexOf(active.id as string);
-                    const newIndex = items.indexOf(over.id as string);
-                    return arrayMove(items, oldIndex, newIndex);
-                });
-            } else {
-                setGeekCardOrder((items) => {
-                    const oldIndex = items.indexOf(active.id as string);
-                    const newIndex = items.indexOf(over.id as string);
-                    return arrayMove(items, oldIndex, newIndex);
-                });
-            }
-        }
-    };
-
     const watchedMovies = React.useMemo(() =>
         movies.filter(movie => movie.status === 'Completed' || movie.status === 'Watching')
     , [movies]);
@@ -251,14 +168,8 @@ export default function AnalyticsPage() {
     const averageRating = watchedMovies.length > 0 ? (watchedMovies.reduce((acc, m) => acc + m.rating, 0) / watchedMovies.length) : 0;
     const onWatchlistCount = movies.filter(movie => movie.status === 'Plan to Watch').length;
     
-    const rewatchData = React.useMemo(() => {
-        if (watchedMovies.length === 0) return [];
-        const rewatchedCount = watchedMovies.filter(m => (m.rewatchCount || 0) > 0).length;
-        const watchedOnceCount = watchedMovies.length - rewatchedCount;
-        return [
-            { name: 'Rewatched', value: rewatchedCount, fill: CHART_COLORS[0] },
-            { name: 'Watched Once', value: watchedOnceCount, fill: CHART_COLORS[1] },
-        ];
+    const totalRewatches = React.useMemo(() => {
+        return watchedMovies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
     }, [watchedMovies]);
 
     const topGenres = React.useMemo(() => {
@@ -381,55 +292,13 @@ export default function AnalyticsPage() {
     const [activeTab, setActiveTab] = React.useState('basic');
 
     const allBasicCards = {
-        totalTitles: <StatCard icon={Film} title="Total Titles Watched" value={totalTitlesWatched} />,
-        episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} />,
+        totalTitles: <StatCard icon={Film} title="Total Titles" value={totalTitlesWatched} description="Movies & series watched" />,
         timeWatched: <StatCard icon={Clock} title="Time Watched" value={`${totalTimeWatchedHours.toLocaleString()}h`} description="Estimated total hours" />,
-        onWatchlist: <StatCard icon={Bookmark} title="On Your Watchlist" value={onWatchlistCount} />,
-        topGenres: <StatCard icon={PieChart} title="Top Genres">
-                        <div className="w-full h-48">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
-                                    <Pie 
-                                        data={topGenres} 
-                                        dataKey="value" 
-                                        nameKey="name" 
-                                        cx="50%" 
-                                        cy="50%" 
-                                        innerRadius={40} 
-                                        outerRadius={70} 
-                                        paddingAngle={2}
-                                    >
-                                        {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                                    <Legend iconSize={8} />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
-                        </div>
-                   </StatCard>,
-        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections">
-                            <div className="w-full h-48">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart>
-                                        <Pie 
-                                            data={collectionsData} 
-                                            dataKey="value" 
-                                            nameKey="name" 
-                                            cx="50%" 
-                                            cy="50%" 
-                                            innerRadius={40} 
-                                            outerRadius={70} 
-                                            paddingAngle={2}
-                                        >
-                                            {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
-                                        <Legend iconSize={8} />
-                                    </RechartsPieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </StatCard>,
-        watchGoal: <StatCard title="2025 Watch Goal" onEdit={() => setIsGoalDialogOpen(true)}>
+        episodesWatched: <StatCard icon={Tv} title="Episodes Watched" value={totalEpisodesWatched.toLocaleString()} description="Across all tracked series" />,
+        averageRating: <StatCard icon={Star} title="Average Rating" value={`${averageRating.toFixed(1)}/100`} description="Average of all rated titles" />,
+        onWatchlist: <StatCard icon={Bookmark} title="On Watchlist" value={onWatchlistCount} description="Titles you plan to watch" />,
+        totalRewatches: <StatCard icon={Repeat} title="Total Rewatches" value={totalRewatches} description="Sum of all rewatch counts" />,
+        watchGoal: <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)}>
                        <div className="w-full h-48 relative">
                            <ResponsiveContainer width="100%" height="100%">
                                <RadialBarChart
@@ -444,37 +313,51 @@ export default function AnalyticsPage() {
                                    <RadialBar background={{fill: 'hsl(var(--muted))'}} dataKey="value" cornerRadius={6} />
                                </RadialBarChart>
                            </ResponsiveContainer>
-                           <div className="absolute inset-0 flex flex-col items-center justify-center">
+                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                <span className="text-3xl font-bold">{totalTitlesWatched}</span>
                                <span className="text-sm text-muted-foreground">/ {watchGoal} titles</span>
                            </div>
                        </div>
                    </StatCard>,
-        averageRating: <StatCard icon={Star} title="Average Rating">
-                        <div className="flex items-center gap-4 pt-2">
-                            <span className="text-3xl font-bold">{averageRating.toFixed(1)}/100</span>
+        topGenres: <StatCard icon={PieChart} title="Top Genres" description="Your most-watched genres">
+                        <div className="w-full h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RechartsPieChart margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
+                                    <Pie 
+                                        data={topGenres} 
+                                        dataKey="value" 
+                                        nameKey="name" 
+                                        cx="50%" 
+                                        cy="50%" 
+                                        innerRadius={50} 
+                                        outerRadius={80} 
+                                        paddingAngle={2}
+                                    >
+                                        {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                                    <Legend iconSize={8} verticalAlign="bottom" />
+                                </RechartsPieChart>
+                            </ResponsiveContainer>
                         </div>
-                    </StatCard>,
-        totalRewatches: <StatCard icon={Repeat} title="Total Rewatches">
-                            <div className="w-full h-40">
+                   </StatCard>,
+        curatedCollections: <StatCard icon={Sparkles} title="Curated Collections" description="Vaults vs. Spotlights">
+                            <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart>
+                                    <RechartsPieChart margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
                                         <Pie 
-                                            data={rewatchData} 
+                                            data={collectionsData} 
                                             dataKey="value" 
                                             nameKey="name" 
-                                            innerRadius={30} 
-                                            outerRadius={60} 
                                             cx="50%" 
                                             cy="50%" 
-                                            paddingAngle={5}
+                                            outerRadius={80} 
+                                            paddingAngle={2}
                                         >
-                                        {rewatchData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
+                                            {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
-                                        <Legend iconSize={8} />
+                                        <Legend iconSize={8} verticalAlign="bottom" />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -483,10 +366,10 @@ export default function AnalyticsPage() {
     };
 
     const allGeekCards = {
-        mostActors: <StatCard icon={Users} title="Most Watched Actors">
+        mostActors: <StatCard icon={Users} title="Most Watched Actors" description="Actors appearing most in your collection">
                         <div className="w-full h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
+                           <ResponsiveContainer width="100%" height="100%">
+                                <RechartsPieChart margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
                                     <Pie 
                                         data={topActors} 
                                         dataKey="value" 
@@ -500,28 +383,28 @@ export default function AnalyticsPage() {
                                         {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
-                                    <Legend iconSize={8} />
+                                    <Legend iconSize={8} verticalAlign="bottom" />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
                     </StatCard>,
-        mostDirectors: <StatCard icon={Video} title="Most Watched Directors">
+        mostDirectors: <StatCard icon={Video} title="Most Watched Directors" description="Directors who appear most often">
                             <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 80, right: 20, top: 10, bottom: 10 }}>
+                                    <BarChart data={topDirectors} layout="vertical" margin={{ left: 10, right: 20, top: 10, bottom: 10 }}>
                                         <CartesianGrid horizontal={false} stroke="hsl(var(--border))" />
-                                        <XAxis type="number" />
-                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={10} width={70} />
+                                        <XAxis type="number" hide />
+                                        <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} tickMargin={5} width={100} />
                                         <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
                                         <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} barSize={16} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </StatCard>,
-        topFranchises: <StatCard icon={Layers} title="Top Franchises">
+        topFranchises: <StatCard icon={Layers} title="Top Franchises" description="Your most-watched movie franchises">
                             <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RechartsPieChart>
+                                    <RechartsPieChart margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
                                         <Pie 
                                             data={topFranchises} 
                                             dataKey="value" 
@@ -533,7 +416,7 @@ export default function AnalyticsPage() {
                                         {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
-                                        <Legend iconSize={8} />
+                                        <Legend iconSize={8} verticalAlign="bottom" />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -553,9 +436,9 @@ export default function AnalyticsPage() {
             </StatCard>,
         rewatchRatio: <StatCard icon={Zap} title="Rewatch Ratio" value={`${rewatchRatio}%`} description="of your collection has been rewatched" />,
         storageUsage: <StatCard icon={Database} title="Storage Usage" value={`${storageUsage} KB`} description="Local space used by library data" />,
-        seriesCompletion: <StatCard icon={ListChecks} title="Series Completion">
+        seriesCompletion: <StatCard icon={ListChecks} title="Series Completion" description="Progress for series you're watching">
                             <div className="space-y-4 pt-2">
-                                {watchingSeries.map(series => (
+                                {watchingSeries.length > 0 ? watchingSeries.map(series => (
                                     <div key={series.id}>
                                         <div className="flex justify-between items-center mb-1">
                                             <p className="text-sm font-medium truncate">{series.title}</p>
@@ -565,11 +448,11 @@ export default function AnalyticsPage() {
                                             <div className="bg-primary h-1.5 rounded-full" style={{width: `${series.completion}%`}}></div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : <p className="text-sm text-muted-foreground text-center pt-8">No series currently being watched.</p>}
                             </div>
                           </StatCard>,
-        bingeRating: <StatCard icon={FlaskConical} title="Binge Rating" value="8.5/10" description="Based on watch velocity" />,
-        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Most active watch times">
+        bingeRating: <StatCard icon={FlaskConical} title="Binge Rating" value="8.5/10" description="Based on watch velocity (dummy data)" />,
+        nightOwlScore: <StatCard icon={Moon} title="Night Owl Score" description="Most active watch times (dummy data)">
                          <div className="w-full h-40">
                              <ResponsiveContainer>
                                  <AreaChart data={nightOwlData}>
@@ -586,7 +469,7 @@ export default function AnalyticsPage() {
                              </ResponsiveContainer>
                          </div>
                        </StatCard>,
-        posterPalette: <StatCard icon={Palette} title="Poster Palette">
+        posterPalette: <StatCard icon={Palette} title="Poster Palette" description="Most common poster colors (dummy data)">
                            <div className="flex gap-2 pt-2">
                                {posterPaletteData.map(c => (
                                    <div key={c.color} className="flex flex-col items-center gap-1">
@@ -597,9 +480,33 @@ export default function AnalyticsPage() {
                            </div>
                        </StatCard>
     };
+    
+    const basicLayout = [
+        { id: 'totalTitles', className: 'lg:col-span-1'},
+        { id: 'timeWatched', className: 'lg:col-span-1'},
+        { id: 'episodesWatched', className: 'lg:col-span-1'},
+        { id: 'onWatchlist', className: 'lg:col-span-1'},
+        { id: 'watchGoal', className: 'lg:col-span-2'},
+        { id: 'topGenres', className: 'lg:col-span-2'},
+        { id: 'curatedCollections', className: 'lg:col-span-2'},
+        { id: 'lastWatched', className: 'lg:col-span-1'},
+        { id: 'averageRating', className: 'lg:col-span-1'},
+        { id: 'totalRewatches', className: 'lg:col-span-1'},
+    ];
+
+    const geekLayout = [
+        { id: 'collectionTimeline', className: 'lg:col-span-2' },
+        { id: 'mostDirectors', className: 'lg:col-span-2' },
+        { id: 'seriesCompletion', className: 'lg:col-span-2' },
+        { id: 'rewatchRatio', className: 'lg:col-span-1' },
+        { id: 'storageUsage', className: 'lg:col-span-1' },
+        { id: 'mostActors', className: 'lg:col-span-2' },
+        { id: 'topFranchises', className: 'lg:col-span-2' },
+        { id: 'nightOwlScore', className: 'lg:col-span-2' },
+        { id: 'posterPalette', className: 'lg:col-span-2' },
+    ];
 
     if (!isClient) {
-        // Render a skeleton or loading state on the server
         return <div className="bg-background min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
@@ -608,10 +515,10 @@ export default function AnalyticsPage() {
             <div className="bg-background min-h-screen">
                 <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                     <div className="flex items-center gap-2 mb-8">
-                        <a href="/app/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                        <Link href="/app/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="w-4 h-4" />
                             Back to Dashboard
-                        </a>
+                        </Link>
                     </div>
                     <div className="flex flex-col xl:flex-row items-baseline justify-between gap-4 border-b border-border pb-6 mb-8">
                         <div>
@@ -629,29 +536,21 @@ export default function AnalyticsPage() {
                     </div>
 
                     {activeTab === 'basic' ? (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'basic')}>
-                            <SortableContext items={basicCardOrder} strategy={rectSwappingStrategy}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {basicCardOrder.map(id => allBasicCards[id as keyof typeof allBasicCards] ? (
-                                        <SortableCardWrapper key={id} id={id}>
-                                            {allBasicCards[id as keyof typeof allBasicCards]}
-                                        </SortableCardWrapper>
-                                    ) : null)}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-6">
+                            {basicLayout.map(({ id, className }) => (
+                                <div key={id} className={className}>
+                                    {allBasicCards[id as keyof typeof allBasicCards]}
                                 </div>
-                            </SortableContext>
-                        </DndContext>
+                            ))}
+                        </div>
                     ) : (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'geek')}>
-                            <SortableContext items={geekCardOrder} strategy={rectSwappingStrategy}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {geekCardOrder.map(id => allGeekCards[id as keyof typeof allGeekCards] ? (
-                                        <SortableCardWrapper key={id} id={id}>
-                                            {allGeekCards[id as keyof typeof allGeekCards]}
-                                        </SortableCardWrapper>
-                                    ) : null)}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-fr gap-6">
+                            {geekLayout.map(({ id, className }) => (
+                                <div key={id} className={className}>
+                                    {allGeekCards[id as keyof typeof allGeekCards]}
                                 </div>
-                            </SortableContext>
-                        </DndContext>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
