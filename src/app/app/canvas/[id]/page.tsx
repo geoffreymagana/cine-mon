@@ -101,7 +101,7 @@ function distanceToLineSegment(
   const yy = lineStart.y + param * D;
   
   const dx = point.x - xx;
-  const dy = point.y - yy;
+  const dy = point.y - dy;
   
   return Math.sqrt(dx * dx + dy * dy);
 }
@@ -124,6 +124,7 @@ function CanvasFlow() {
   
   const [selectedNodes, setSelectedNodes] = React.useState<Node[]>([]);
   const [selectedEdges, setSelectedEdges] = React.useState<Edge[]>([]);
+  const [clipboard, setClipboard] = React.useState<{ nodes: Node[], edges: Edge[] } | null>(null);
 
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
   const [currentLabel, setCurrentLabel] = useState('');
@@ -551,37 +552,118 @@ function CanvasFlow() {
   );
 
   const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+  
+  const handlePaste = useCallback(() => {
+    if (!clipboard) return;
+    const { nodes: copiedNodes, edges: copiedEdges } = clipboard;
+    if (copiedNodes.length === 0) return;
+
+    const pasteOffset = { x: 20, y: 20 };
+
+    const newNodes = copiedNodes.map(node => ({
+      ...node,
+      id: `node-${crypto.randomUUID()}`,
+      position: { x: node.position.x + pasteOffset.x, y: node.position.y + pasteOffset.y },
+      selected: true,
+    }));
+
+    const idMap = new Map(copiedNodes.map((node, index) => [node.id, newNodes[index].id]));
+
+    const newEdges = copiedEdges.map(edge => {
+      const sourceId = idMap.get(edge.source);
+      const targetId = idMap.get(edge.target);
+      if (sourceId && targetId) {
+        return {
+          ...edge,
+          id: `edge-${crypto.randomUUID()}`,
+          source: sourceId,
+          target: targetId,
+          selected: true,
+        };
+      }
+      return null;
+    }).filter((e): e is Edge => !!e);
+
+    setNodes(nds => [...nds.map(n => ({ ...n, selected: false })), ...newNodes]);
+    setEdges(eds => [...eds.map(e => ({ ...e, selected: false })), ...newEdges]);
+
+    setClipboard({ nodes: newNodes, edges: newEdges });
+  }, [clipboard, setNodes, setEdges, setClipboard]);
+
 
   useEffect(() => {
     const isEditingInNode = () => {
         const activeElement = document.activeElement;
         const isInput = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
         const isContentEditable = (activeElement as HTMLElement)?.isContentEditable;
-        const isInCommandPalette = activeElement?.closest('[role="dialog"]');
+        const isInDialog = activeElement?.closest('[role="dialog"]');
 
-        return isInput || isContentEditable || isInCommandPalette;
+        return isInput || isContentEditable || isInDialog;
     };
 
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      if (isEditingInNode()) return;
+
+      const isModKey = e.metaKey || e.ctrlKey;
+      
+      if (isModKey && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(open => !open);
         return;
       }
       
-      if (e.key === 'Backspace' && !isEditingInNode()) {
+      if (e.key === 'Backspace') {
         e.preventDefault();
-        const nodeIdsToDelete = selectedNodes.map(n => n.id);
-        const edgeIdsToDelete = selectedEdges.map(e => e.id);
-        
-        setNodes(nds => nds.filter(n => !nodeIdsToDelete.includes(n.id)));
-        setEdges(eds => eds.filter(e => !edgeIdsToDelete.includes(e.id)));
+        setNodes(nds => nds.filter(n => !selectedNodes.some(sn => sn.id === n.id)));
+        setEdges(eds => eds.filter(e => !selectedEdges.some(se => se.id === e.id)));
+        return;
+      }
+
+      // Clipboard and creation shortcuts
+      if (isModKey) {
+        switch (e.key.toLowerCase()) {
+          case 'c':
+            e.preventDefault();
+            setClipboard({ nodes: selectedNodes, edges: selectedEdges });
+            toast({ title: 'Copied!', description: `${selectedNodes.length} nodes and ${selectedEdges.length} edges copied.` });
+            break;
+          case 'x':
+            e.preventDefault();
+            setClipboard({ nodes: selectedNodes, edges: selectedEdges });
+            setNodes(nds => nds.filter(n => !selectedNodes.some(sn => sn.id === n.id)));
+            setEdges(eds => eds.filter(e => !selectedEdges.some(se => se.id === e.id)));
+            toast({ title: 'Cut!', description: `${selectedNodes.length} nodes and ${selectedEdges.length} edges cut.` });
+            break;
+          case 'v':
+            e.preventDefault();
+            handlePaste();
+            break;
+          case 'a':
+            e.preventDefault();
+            setNodes(nds => nds.map(n => ({ ...n, selected: true })));
+            setEdges(eds => eds.map(e => ({ ...e, selected: true })));
+            break;
+          case 'n':
+            e.preventDefault();
+            if (e.shiftKey) {
+              addNode('sticky');
+            } else {
+              addNode('custom');
+            }
+            break;
+          case 'm':
+            if (e.shiftKey) {
+              e.preventDefault();
+              addNode('movie');
+            }
+            break;
+        }
       }
     };
     
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, [selectedNodes, selectedEdges, setNodes, setEdges]);
+  }, [selectedNodes, selectedEdges, setNodes, setEdges, handlePaste, addNode]);
   
   const reactFlowInstance = useReactFlow();
 

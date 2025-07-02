@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -11,29 +12,29 @@ import {
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 const Kbd = ({ children }: { children: React.ReactNode }) => (
-    <kbd className="pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-xs font-medium text-muted-foreground">
+    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground">
         {children}
     </kbd>
 );
 
 const navigationShortcuts = [
-    { command: 'Pan', keys: [<Kbd>Space</Kbd>, '+', <Kbd>Drag</Kbd>] },
-    { command: 'Pan (alt)', keys: [<Kbd>Scroll</Kbd>] },
-    { command: 'Pan horizontally', keys: [<Kbd>Shift</Kbd>, '+', <Kbd>Scroll</Kbd>] },
-    { command: 'Zoom', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>Scroll</Kbd>] },
-    { command: 'Zoom to fit', keys: [<Kbd>Shift</Kbd>, '+', <Kbd>1</Kbd>] },
-    { command: 'Zoom to selection', keys: [<Kbd>Shift</Kbd>, '+', <Kbd>2</Kbd>] },
-    { command: 'Select all', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>A</Kbd>] },
+    { command: 'Pan', keys: [<Kbd>Space</Kbd>, <Kbd>Drag</Kbd>] },
+    { command: 'Zoom', keys: [<Kbd>⌘</Kbd>, <Kbd>Scroll</Kbd>] },
+    { command: 'Zoom to Fit', keys: [<Kbd>Shift</Kbd>, <Kbd>1</Kbd>] },
+];
+
+const creationShortcuts = [
+    { command: 'New Card', keys: [<Kbd>⌘</Kbd>, <Kbd>N</Kbd>] },
+    { command: 'New Sticky Note', keys: [<Kbd>⌘</Kbd>, <Kbd>Shift</Kbd>, <Kbd>N</Kbd>] },
+    { command: 'New Movie Card', keys: [<Kbd>⌘</Kbd>, <Kbd>Shift</Kbd>, <Kbd>M</Kbd>] },
 ];
 
 const editingShortcuts = [
-    { command: 'Add/remove selection', keys: [<Kbd>Shift</Kbd>, '+', <Kbd>Click</Kbd>] },
-    { command: 'Create card', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>Drag</Kbd>] },
-    { command: 'Clone card', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>Drag</Kbd>] },
-    { command: 'Constrain movement', keys: [<Kbd>Shift</Kbd>, '+', <Kbd>Drag</Kbd>] },
-    { command: 'Remove card', keys: [<Kbd>Backspace</Kbd>] },
-    { command: 'Undo', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>Z</Kbd>] },
-    { command: 'Redo', keys: [<Kbd>Ctrl</Kbd>, '+', <Kbd>Y</Kbd>] },
+    { command: 'Select All', keys: [<Kbd>⌘</Kbd>, <Kbd>A</Kbd>] },
+    { command: 'Copy', keys: [<Kbd>⌘</Kbd>, <Kbd>C</Kbd>] },
+    { command: 'Cut', keys: [<Kbd>⌘</Kbd>, <Kbd>X</Kbd>] },
+    { command: 'Paste', keys: [<Kbd>⌘</Kbd>, <Kbd>V</Kbd>] },
+    { command: 'Delete', keys: [<Kbd>Backspace</Kbd>] },
 ];
 
 
@@ -53,9 +54,9 @@ const ShortcutTable = ({ title, shortcuts }: { title: string, shortcuts: {comman
                             <TableCell className="font-medium py-2">{command}</TableCell>
                             <TableCell className="text-right py-2">
                                 <div className="flex items-center justify-end gap-1">
-                                    {Array.isArray(keys) ? keys.map((key, index) => (
+                                    {keys.map((key, index) => (
                                         <React.Fragment key={index}>{key}</React.Fragment>
-                                    )) : keys}
+                                    ))}
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -75,9 +76,10 @@ export function CanvasHelpDialog({ isOpen, setIsOpen }: CanvasHelpDialogProps) {
                     <DialogTitle>Canvas Shortcuts</DialogTitle>
                     <DialogDescription>Use these shortcuts to navigate the canvas faster.</DialogDescription>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-4">
                     <ShortcutTable title="Navigation & View" shortcuts={navigationShortcuts} />
-                    <ShortcutTable title="Editing & Actions" shortcuts={editingShortcuts} />
+                    <ShortcutTable title="Editing" shortcuts={editingShortcuts} />
+                    <ShortcutTable title="Creation" shortcuts={creationShortcuts} />
                 </div>
             </DialogContent>
         </Dialog>
