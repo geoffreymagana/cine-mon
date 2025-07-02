@@ -687,7 +687,7 @@ export default function AnalyticsPage() {
                                 <Treemap
                                     data={data.posterPaletteData}
                                     dataKey="size"
-                                    ratio={4 / 3}
+                                    aspectRatio={4 / 3}
                                     stroke="hsl(var(--card))"
                                     strokeWidth={2}
                                 >
