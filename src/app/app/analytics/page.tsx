@@ -45,11 +45,14 @@ import {
 } from 'lucide-react';
 import { MovieService } from '@/lib/movie-service';
 import { EditGoalDialog } from '@/components/edit-goal-dialog';
-import type { Movie } from '@/lib/types';
+import type { Movie, UserCollection } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getDominantColor, destroyColorSampler } from '@/lib/tmdb';
+import { RatingProgressBar } from '@/components/rating-progress-bar';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 
 const CHART_COLORS = [
@@ -80,7 +83,31 @@ const PALETTE_COLORS: Record<string, string> = {
     'Light Gray': '#d1d5db',
 };
 
-const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit }) => (
+function formatDuration(minutes: number) {
+    if (minutes === 0) return '0h 0m';
+    const d = Math.floor(minutes / (24 * 60));
+    const h = Math.floor((minutes % (24 * 60)) / 60);
+    const m = Math.round(minutes % 60);
+
+    const parts = [];
+    if (d > 0) parts.push(`${d}d`);
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0 || (d === 0 && h === 0)) parts.push(`${m}m`);
+    
+    return parts.join(' ');
+}
+
+function formatBytes(bytes: number, decimals = 2) {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
+
+const StatCard = ({ icon: Icon, title, value, description, children, className, onEdit }: { icon?: React.ElementType, title: string, value?: React.ReactNode, description?: string, children?: React.ReactNode, className?: string, onEdit?: () => void }) => (
     <div className={`bg-card rounded-lg border p-6 shadow-sm flex flex-col ${className || ''}`}>
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -101,7 +128,7 @@ const StatCard = ({ icon: Icon, title, value, description, children, className, 
     </div>
 );
 
-const LastWatchedCard = ({ movie }) => (
+const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
     <div className="bg-card rounded-lg border p-6 shadow-sm h-full overflow-hidden">
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -115,7 +142,7 @@ const LastWatchedCard = ({ movie }) => (
         {movie ? (
              <div className="flex items-center gap-4 group cursor-pointer h-full">
                 <div className="w-16 h-24 bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                    <Image src={movie.posterUrl} alt={movie.title} width={64} height={96} className="object-cover w-full h-full transition-transform group-hover:scale-105" />
+                    <Image src={movie.posterUrl} alt={movie.title} width={64} height={96} className="object-cover w-full h-full transition-transform group-hover:scale-105" data-ai-hint="movie poster" />
                 </div>
                 <div className="flex-grow min-w-0">
                     <p className="font-bold truncate group-hover:text-primary transition-colors">{movie.title}</p>
@@ -130,13 +157,13 @@ const LastWatchedCard = ({ movie }) => (
     </div>
 );
 
-const CustomTooltipContent = ({ active, payload, label }) => {
+const CustomTooltipContent = ({ active, payload, label }: { active?: boolean, payload?: any[], label?: string }) => {
     if (active && payload && payload.length) {
         return (
             <div className="rounded-lg border bg-background/90 backdrop-blur-sm p-2.5 shadow-sm text-foreground">
                 <div className="grid gap-1.5">
                     {label && <p className="font-medium">{label}</p>}
-                    {payload.map((pld, index) => {
+                    {payload.map((pld: any, index: number) => {
                         const name = pld.payload?.name || pld.name || pld.dataKey;
                         const value = pld.value;
                         const color = pld.payload?.fill || pld.color || pld.fill;
@@ -164,23 +191,38 @@ export default function AnalyticsPage() {
     const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
     
     const [allMovies, setAllMovies] = useState<Movie[]>([]);
+    const [allCollections, setAllCollections] = useState<UserCollection[]>([]);
     const [watchGoal, setWatchGoal] = useState(200);
     const [lastSpunMovie, setLastSpunMovie] = useState<Movie | null>(null);
 
     const [isMounted, setIsMounted] = useState(false);
     const [colorAnalysisProgress, setColorAnalysisProgress] = useState(0);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [storageUsage, setStorageUsage] = React.useState<{ usage: number, quota: number } | null>(null);
+
+    useEffect(() => {
+        if (navigator.storage?.estimate) {
+            navigator.storage.estimate().then(estimate => {
+                setStorageUsage({
+                    usage: estimate.usage ?? 0,
+                    quota: estimate.quota ?? 1
+                });
+            });
+        }
+    }, []);
 
     useEffect(() => {
         setIsMounted(true);
         const loadData = async () => {
-            const [moviesFromDb, goal, lastSpunId] = await Promise.all([
+            const [moviesFromDb, goal, lastSpunId, collectionsFromDb] = await Promise.all([
                 MovieService.getMovies(),
                 MovieService.getSetting('watchGoal'),
-                MovieService.getSetting('lastSpunMovieId')
+                MovieService.getSetting('lastSpunMovieId'),
+                MovieService.getCollections()
             ]);
             
             setAllMovies(moviesFromDb);
+            setAllCollections(collectionsFromDb);
             if (goal) setWatchGoal(goal);
             if (lastSpunId) {
                 const spunMovie = moviesFromDb.find(m => m.id === lastSpunId);
@@ -221,14 +263,14 @@ export default function AnalyticsPage() {
             setIsAnalyzing(false);
         };
 
-        if (watchedMovies.length > 0) {
+        if (isMounted && watchedMovies.length > 0) {
             analyzeColors();
         }
         
         return () => {
             destroyColorSampler();
         }
-    }, [watchedMovies]);
+    }, [watchedMovies, isMounted]);
 
     const data = useMemo(() => {
         const totalTitlesWatched = watchedMovies.length;
@@ -266,6 +308,49 @@ export default function AnalyticsPage() {
                 acc[color!] = (acc[color!] || 0) + 1;
                 return acc;
             }, {} as Record<string, number>);
+        
+        const totalMinutes = watchedMovies.reduce((acc, m) => {
+            if (m.type === 'Movie' && m.runtime) {
+                return acc + m.runtime;
+            }
+            if ((m.type === 'TV Show' || m.type === 'Anime') && m.watchedEpisodes > 0) {
+                return acc + (m.runtime || 45) * m.watchedEpisodes;
+            }
+            return acc;
+        }, 0);
+
+        const totalEpisodesWatched = watchedMovies.reduce((acc, m) => {
+            if (m.type !== 'Movie') {
+                return acc + (m.watchedEpisodes || 0);
+            }
+            return acc;
+        }, 0);
+
+        const ratedMovies = watchedMovies.filter(m => typeof m.rating === 'number' && m.rating > 0);
+        const averageRating = ratedMovies.length > 0
+            ? ratedMovies.reduce((acc, m) => acc + m.rating, 0) / ratedMovies.length
+            : 0;
+            
+        const topCollections = allCollections
+            .map(c => ({
+                id: c.id,
+                name: c.name,
+                count: c.movieIds.length
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 4);
+        
+        const seriesWithProgress = watchedMovies
+            .filter(s => s.type !== 'Movie' && s.totalEpisodes > 0)
+            .map(s => ({
+                id: s.id,
+                title: s.title,
+                progress: (s.watchedEpisodes / s.totalEpisodes) * 100
+            }))
+            .sort((a, b) => b.progress - a.progress)
+            .slice(0, 5);
+
+        const rewatchRatio = totalTitlesWatched > 0 ? (totalRewatches / totalTitlesWatched) : 0;
             
         return {
             totalTitlesWatched,
@@ -276,8 +361,14 @@ export default function AnalyticsPage() {
             topDirectors: Object.entries(topDirectors).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([label, count], i) => ({ label, count, fill: CHART_COLORS[i % CHART_COLORS.length] })).reverse(),
             topFranchises: Object.entries(topFranchises).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, value], i) => ({ name, value, fill: CHART_COLORS[i % CHART_COLORS.length] })),
             posterPaletteData: Object.entries(posterPalette).map(([name, size]) => ({ name, size, fill: PALETTE_COLORS[name] || '#6b7280' })),
+            totalTimeWatched: formatDuration(totalMinutes),
+            totalEpisodesWatched,
+            averageRating: Math.round(averageRating),
+            topCollections,
+            seriesCompletion: seriesWithProgress,
+            rewatchRatio: rewatchRatio.toFixed(2),
         };
-    }, [allMovies, watchedMovies]);
+    }, [allMovies, watchedMovies, allCollections]);
     
     const goalProgress = watchGoal > 0 ? (data.totalTitlesWatched / watchGoal) * 100 : 0;
     
@@ -286,8 +377,8 @@ export default function AnalyticsPage() {
             {activeTab === 'basic' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard icon={Film} title="Titles Watched" value={data.totalTitlesWatched} description="Movies & series completed" />
-                    <StatCard icon={Clock} title="Total Time Watched" value={'N/A'} description="Coming Soon"/>
-                    <StatCard icon={Tv} title="Episodes Watched" value={'N/A'} description="Coming Soon"/>
+                    <StatCard icon={Clock} title="Total Time Watched" value={data.totalTimeWatched} description="Calculated from runtime"/>
+                    <StatCard icon={Tv} title="Episodes Watched" value={data.totalEpisodesWatched.toLocaleString()} description="Across all series"/>
                     <StatCard icon={Bookmark} title="On Watchlist" value={data.onWatchlistCount} description="Titles you plan to watch"/>
                     
                     <StatCard title="2025 Watch Goal" description="Progress on your annual goal" onEdit={() => setIsGoalDialogOpen(true)} className="lg:col-span-2 row-span-2">
@@ -323,6 +414,7 @@ export default function AnalyticsPage() {
                                         startAngle={90}
                                         endAngle={90 + (goalProgress / 100) * 360}
                                         stroke="none"
+                                        cornerRadius={5}
                                     />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
@@ -370,21 +462,34 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>
 
-                     <StatCard icon={Sparkles} title="Curated Collections" description="Coming Soon" className="lg:col-span-2 row-span-2">
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                           No collection data yet.
-                        </div>
+                     <StatCard icon={Layers} title="Top Collections" description="Your biggest vaults & spotlights" className="lg:col-span-2 row-span-2">
+                        {data.topCollections.length > 0 ? (
+                            <ul className="space-y-3 h-full flex flex-col justify-around py-2">
+                                {data.topCollections.map(c => (
+                                    <li key={c.id} className="flex items-center justify-between text-sm">
+                                        <span className="font-semibold truncate pr-2">{c.name}</span>
+                                        <Badge variant="secondary">{c.count} items</Badge>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                               No collection data yet.
+                            </div>
+                        )}
                     </StatCard>
 
                     <LastWatchedCard movie={lastSpunMovie} />
-                    <StatCard icon={Star} title="Average Rating" value={'N/A'} description="Coming Soon" />
+                    <StatCard icon={Star} title="Average Rating" description="Across all rated titles">
+                         <RatingProgressBar percentage={data.averageRating} />
+                    </StatCard>
                     <StatCard icon={Repeat} title="Total Rewatches" value={data.totalRewatches} description="Sum of all rewatch counts" />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard icon={History} title="Collection Timeline" description="Coming Soon" className="lg:col-span-4">
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                           No timeline data yet.
+                    <StatCard icon={History} title="Collection Timeline" description="Detailed timeline requires 'date added' for each title" className="lg:col-span-4">
+                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-16">
+                           Feature coming soon.
                         </div>
                     </StatCard>
 
@@ -406,10 +511,24 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>
 
-                    <StatCard icon={ListChecks} title="Series Completion" description="Coming Soon" className="lg:col-span-2 row-span-2">
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                           No series data yet.
-                        </div>
+                    <StatCard icon={ListChecks} title="Series Completion" description="Progress for your most-watched series" className="lg:col-span-2 row-span-2">
+                        {data.seriesCompletion.length > 0 ? (
+                            <div className="space-y-4 pt-2">
+                                {data.seriesCompletion.map(s => (
+                                    <div key={s.id}>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <p className="text-sm font-medium truncate">{s.title}</p>
+                                            <p className="text-xs text-muted-foreground">{Math.round(s.progress)}%</p>
+                                        </div>
+                                        <Progress value={s.progress} className="h-2" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                               No series data yet.
+                            </div>
+                        )}
                     </StatCard>
 
                     <StatCard icon={Users} title="Most Watched Actors" description="Actors appearing most in your collection" className="lg:col-span-2">
@@ -484,12 +603,27 @@ export default function AnalyticsPage() {
                         </div>
                     </StatCard>
 
-                    <StatCard icon={Zap} title="Rewatch Ratio" value={'N/A'} description="Coming Soon" />
-                    <StatCard icon={Database} title="Storage Usage" value={'N/A'} description="Coming Soon" />
+                    <StatCard icon={Zap} title="Rewatch Ratio" value={data.rewatchRatio} description="Rewatches per unique title watched" />
+                    
+                    <StatCard icon={Database} title="Storage Usage" description="Local IndexedDB usage" className="lg:col-span-2">
+                        {storageUsage ? (
+                            <div className="flex flex-col h-full justify-center">
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-2xl font-bold">{formatBytes(storageUsage.usage)}</span>
+                                    <span className="text-sm text-muted-foreground">of {formatBytes(storageUsage.quota)}</span>
+                                </div>
+                                <Progress value={(storageUsage.usage / storageUsage.quota) * 100} className="mt-2" />
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                                Storage API not supported.
+                            </div>
+                        )}
+                    </StatCard>
 
-                    <StatCard icon={Moon} title="Night Owl Score" description="Coming Soon" className="lg:col-span-2">
+                    <StatCard icon={Moon} title="Night Owl Score" description="This requires tracking watch times, which isn't logged yet." className="lg:col-span-2">
                         <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                           No activity data yet.
+                           Feature coming soon.
                         </div>
                     </StatCard>
 
