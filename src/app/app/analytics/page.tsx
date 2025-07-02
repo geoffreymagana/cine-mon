@@ -369,7 +369,7 @@ export default function AnalyticsPage() {
                                         {topGenres.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip content={<CustomTooltipContent />} />
-                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
+                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
                                             {collectionsData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip content={<CustomTooltipContent />} />
-                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
+                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -416,7 +416,7 @@ export default function AnalyticsPage() {
                                         {topActors.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Pie>
                                     <Tooltip content={<CustomTooltipContent />} />
-                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
+                                    <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         </div>
@@ -453,7 +453,7 @@ export default function AnalyticsPage() {
                                         {topFranchises.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                         </Pie>
                                         <Tooltip content={<CustomTooltipContent />} />
-                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5"}} />
+                                        <Legend layout="vertical" verticalAlign="middle" align="right" iconSize={8} wrapperStyle={{fontSize: "12px", lineHeight: "1.5", paddingLeft: '10px', width: 110, wordWrap: 'break-word'}} />
                                     </RechartsPieChart>
                                 </ResponsiveContainer>
                             </div>
