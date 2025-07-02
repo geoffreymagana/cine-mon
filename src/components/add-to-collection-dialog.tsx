@@ -123,10 +123,10 @@ export const AddToCollectionDialog = ({ isOpen, setIsOpen, movieIds, onActionCom
           </Tabs>
           <DialogFooter className="mt-4 pt-4 border-t flex-col sm:flex-col sm:space-x-0 gap-2">
             <Button variant="outline" className="w-full justify-start" onClick={() => handleCreateCollectionClick('Vault')}>
-                <PlusCircle className="mr-2"/> Create New Vault
+                <PlusCircle className="mr-2"/> New Vault
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => handleCreateCollectionClick('Spotlight')}>
-                <PlusCircle className="mr-2"/> Create New Spotlight
+                <PlusCircle className="mr-2"/> New Spotlight
             </Button>
           </DialogFooter>
         </DialogContent>

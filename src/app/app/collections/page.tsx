@@ -267,7 +267,7 @@ export default function CollectionsPage() {
                     <h2 className="text-2xl font-bold flex items-center">{typeIcon} {typeName}</h2>
                     <div className="flex items-center gap-2">
                         <Button onClick={() => handleCreateClick(type)}>
-                            <Plus className="mr-2"/> Create New {type}
+                            <Plus className="mr-2"/> New {type}
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
