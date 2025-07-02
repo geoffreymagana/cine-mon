@@ -1,10 +1,17 @@
-
 'use client';
 
 import * as React from 'react';
 import {
-  FileText, BookText, Clapperboard, Link2, BoxSelect, Undo2,
-  ClipboardPaste, Grid, Lock, Check, StickyNote
+  FileText,
+  Clapperboard,
+  BoxSelect,
+  Undo2,
+  ClipboardPaste,
+  Grid,
+  Lock,
+  Check,
+  StickyNote,
+  ArrowUpRightSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -87,7 +94,7 @@ export function CanvasContextMenu({
             <MenuItem icon={FileText} onClick={() => handleAction(() => onAddNode('custom'))} disabled={isReadOnly}>Add card</MenuItem>
             <MenuItem icon={StickyNote} onClick={() => handleAction(() => onAddNode('sticky'))} disabled={isReadOnly}>Add sticky note</MenuItem>
             <MenuItem icon={Clapperboard} onClick={() => handleAction(() => onAddNode('movie'))} disabled={isReadOnly}>Add media from vault</MenuItem>
-            <MenuItem icon={Link2} onClick={() => handleAction(() => onAddNode('web'))} disabled={isReadOnly}>Add web page</MenuItem>
+            <MenuItem icon={ArrowUpRightSquare} onClick={() => handleAction(() => onAddNode('web'))} disabled={isReadOnly}>Add web page</MenuItem>
             <MenuItem icon={BoxSelect} disabled>Create group</MenuItem>
             <Separator className="my-1" />
             <MenuItem icon={Undo2} disabled={!canUndo || isReadOnly}>Undo</MenuItem>
