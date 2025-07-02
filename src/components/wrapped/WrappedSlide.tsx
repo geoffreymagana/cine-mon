@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { AreaChart, Area, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import type { WrappedSlide } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { MusicSuggestionCard } from './MusicSuggestionCard';
@@ -13,6 +13,18 @@ type WrappedSlideProps = {
   data: WrappedSlide;
 };
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border border-white/20 bg-black/50 backdrop-blur-sm p-2 shadow-lg text-white">
+        <p className="font-bold">{`${label}`}</p>
+        <p className="text-sm">{`Titles: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const SlideContent = ({ data }: { data: WrappedSlide }) => {
   if (data.component === 'decadeChart' && data.componentData) {
     const decadeData = data.componentData;
@@ -20,12 +32,19 @@ const SlideContent = ({ data }: { data: WrappedSlide }) => {
       <div className="w-full h-64 mt-4">
         <ChartContainer config={{ value: { label: 'Titles', color: 'hsl(var(--primary))' } }} className="h-full w-full">
             <ResponsiveContainer>
-              <BarChart data={decadeData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+              <AreaChart data={decadeData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <defs>
+                  <linearGradient id="wrappedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
                 <XAxis dataKey="name" tick={{ fill: 'white', fontSize: 12 }} tickLine={{ stroke: 'white' }} axisLine={{ stroke: 'white' }} />
-                <YAxis tick={{ fill: 'white', fontSize: 12 }} tickLine={{ stroke: 'white' }} axisLine={{ stroke: 'white' }} />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <YAxis tick={{ fill: 'white', fontSize: 12 }} tickLine={{ stroke: 'white' }} axisLine={{ stroke: 'white' }} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.1)' }}/>
+                <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#wrappedGradient)" />
+              </AreaChart>
             </ResponsiveContainer>
         </ChartContainer>
       </div>
