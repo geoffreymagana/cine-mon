@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSwappingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { ResizableBox, type ResizableBoxProps } from 'react-resizable';
+import { ResizableBox } from 'react-resizable';
 
 import type { Movie } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -124,7 +124,7 @@ const LastWatchedCard = ({ movie, dragHandleProps }: { movie: Movie, dragHandleP
     </Card>
 );
 
-const SortableCardWrapper = ({ id, children, size, onResize }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number, height: number}) => void }) => {
+const SortableCardWrapper = ({ id, children, size, onResize, minConstraints }: { id: string, children: React.ReactNode, size: { width: number, height: number }, onResize: (size: { width: number, height: number }) => void, minConstraints: [number, number] }) => {
     const {
         attributes,
         listeners,
@@ -147,7 +147,7 @@ const SortableCardWrapper = ({ id, children, size, onResize }: { id: string, chi
                 width={size.width}
                 height={size.height}
                 onResizeStop={(_e, data) => onResize({ width: data.size.width, height: data.size.height })}
-                minConstraints={[250, 140]}
+                minConstraints={minConstraints}
                 maxConstraints={[800, 800]}
                 className="relative"
             >
@@ -181,6 +181,22 @@ const defaultCardSizes: Record<string, { width: number; height: number }> = {
     bingeRating: { width: 350, height: 150 },
     nightOwlScore: { width: 400, height: 280 },
     obscurityIndex: { width: 400, height: 280 },
+};
+
+const cardMinSizes: Record<string, [number, number]> = {
+    totalTitles: [200, 140],
+    episodesWatched: [200, 140],
+    timeWatched: [200, 140],
+    averageRating: [250, 140],
+    watchGoal: [250, 140],
+    totalRewatches: [250, 200],
+    lastSuggestion: [300, 160],
+    mostActors: [300, 300],
+    mostDirectors: [350, 300],
+    topFranchises: [300, 300],
+    bingeRating: [200, 140],
+    nightOwlScore: [300, 250],
+    obscurityIndex: [300, 250],
 };
 
 const AnalyticsGridSkeleton = ({ items }: { items: string[] }) => (
@@ -530,7 +546,8 @@ export default function AnalyticsPage() {
                                         {basicCardOrder.map(cardId => {
                                             const card = allBasicCards[cardId];
                                             const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 350, height: 200 };
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)}>{card}</SortableCardWrapper> : null;
+                                            const minSize = cardMinSizes[cardId] || [200, 140];
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)} minConstraints={minSize}>{card}</SortableCardWrapper> : null;
                                         })}
                                     </div>
                                 </SortableContext>
@@ -548,7 +565,8 @@ export default function AnalyticsPage() {
                                         {geekCardOrder.map(cardId => {
                                             const card = allGeekCards[cardId];
                                             const size = cardSizes[cardId] || defaultCardSizes[cardId] || { width: 400, height: 350 };
-                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)}>{card}</SortableCardWrapper> : null;
+                                            const minSize = cardMinSizes[cardId] || [250, 250];
+                                            return card ? <SortableCardWrapper key={cardId} id={cardId} size={size} onResize={(newSize) => handleResize(cardId, newSize)} minConstraints={minSize}>{card}</SortableCardWrapper> : null;
                                         })}
                                     </div>
                                 </SortableContext>
