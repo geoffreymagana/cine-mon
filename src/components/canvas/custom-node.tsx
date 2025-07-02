@@ -6,6 +6,7 @@ import { Handle, Position, NodeResizer, type NodeProps, useViewport } from 'reac
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
+import { FileImage } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
@@ -151,9 +152,15 @@ const CustomNode = ({ id, data, selected }: NodeProps<CustomNodeData>) => {
             )} 
         >
           {isMovieNode ? (
-            <div className="w-full h-full [&>div>div]:border-none [&>div>div]:shadow-none">
-                <MovieCard movie={data.movieData!} disableLink={true} />
-            </div>
+            zoom < ZOOM_THRESHOLD ? (
+                <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                    <FileImage className="w-1/3 h-1/3 text-muted-foreground/70" />
+                </div>
+            ) : (
+                <div className="w-full h-full [&>div>div]:border-none [&>div>div]:shadow-none">
+                    <MovieCard movie={data.movieData!} disableLink={true} />
+                </div>
+            )
           ) : isEditing ? (
             <textarea
               ref={textareaRef}
