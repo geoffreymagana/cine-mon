@@ -37,6 +37,7 @@ import { X, Sparkles, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
 import { Slider } from "./ui/slider";
+import { getDominantColor } from "@/lib/tmdb";
 
 const movieSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -164,9 +165,11 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
   };
 
 
-  const onSubmit = (data: MovieFormValues) => {
+  const onSubmit = async (data: MovieFormValues) => {
+    const dominantColor = await getDominantColor(data.posterUrl);
     const movieData: Omit<Movie, "id"> = {
       ...data,
+      dominantColor,
       sortOrder: Date.now()
     }
     onSave(movieData);

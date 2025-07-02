@@ -128,14 +128,14 @@ const LastWatchedCard = ({ movie }: { movie: Movie | null }) => (
 const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-lg border bg-card p-2.5 shadow-sm">
+            <div className="rounded-lg border bg-card p-2.5 shadow-sm text-card-foreground">
                 <div className="grid gap-1.5">
-                    {label && <p className="font-medium text-card-foreground">{label}</p>}
+                    {label && <p className="font-medium">{label}</p>}
                     {payload.map((pld: any, index: number) => (
                         <div key={index} className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: pld.payload.fill || pld.color }} />
                             <p className="text-muted-foreground">{pld.name}:</p>
-                            <p className="font-semibold text-card-foreground">{pld.value.toLocaleString()}</p>
+                            <p className="font-semibold">{pld.value.toLocaleString()}</p>
                         </div>
                     ))}
                 </div>
@@ -306,15 +306,27 @@ export default function AnalyticsPage() {
     ];
     
     const posterPaletteData = React.useMemo(() => {
-        const colors = [
-            { name: 'Dark Blue', baseColor: '#1e3a8a', count: 15 },
-            { name: 'Black', baseColor: '#000000', count: 12 },
-            { name: 'Red', baseColor: '#dc2626', count: 8 },
-            { name: 'Green', baseColor: '#16a34a', count: 6 },
-            { name: 'Orange', baseColor: '#ea580c', count: 4 }
-        ];
-        return colors.map((item, index) => ({ ...item, fill: `url(#paletteGradient${index})` }));
-    }, []);
+        const colorCounts = watchedMovies
+            .map(m => m.dominantColor)
+            .filter(Boolean)
+            .reduce((acc: Record<string, number>, name) => {
+                acc[name!] = (acc[name!] || 0) + 1;
+                return acc;
+            }, {});
+
+        const colorMap: Record<string, string> = {
+            'Dark Blue': '#1e3a8a', 'Black': '#000000', 'Red': '#dc2626',
+            'Green': '#16a34a', 'Orange': '#ea580c', 'Yellow': '#facc15',
+            'Purple': '#8b5cf6', 'Gray': '#6b7280', 'White': '#ffffff'
+        };
+
+        return Object.entries(colorCounts).map(([name, count]) => ({
+            name,
+            count,
+            baseColor: colorMap[name] || '#6b7280'
+        })).sort((a, b) => b.count - a.count).slice(0, 5)
+           .map((item, index) => ({ ...item, fill: `url(#paletteGradient${index})` }));
+    }, [watchedMovies]);
     
     const [activeTab, setActiveTab] = React.useState('basic');
 
@@ -506,7 +518,7 @@ export default function AnalyticsPage() {
                              </ResponsiveContainer>
                          </div>
                        </StatCard>,
-        posterPalette: <StatCard icon={Palette} title="Poster Palette" description="Most common poster colors (dummy data)">
+        posterPalette: <StatCard icon={Palette} title="Poster Palette" description="Most common poster colors">
                             <div className="w-full h-64">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <RadialBarChart 
@@ -649,4 +661,5 @@ export default function AnalyticsPage() {
     
 
   
+
 

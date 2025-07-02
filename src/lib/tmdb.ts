@@ -8,6 +8,73 @@ export const getPosterUrl = (path: string | null, size: 'w500' | 'original' = 'w
     return path ? `${IMAGE_BASE_URL}${size}${path}` : 'https://placehold.co/500x750.png';
 };
 
+const colorBuckets = {
+    Red: [22, -22], Orange: [23, 45], Yellow: [46, 65],
+    Green: [66, 160], Blue: [161, 260], Purple: [261, 320],
+};
+
+const getDominantColorName = (r: number, g: number, b: number): string => {
+    if (r > 200 && g > 200 && b > 200) return 'White';
+    if (r < 50 && g < 50 && b < 50) return 'Black';
+    if (Math.abs(r - g) < 20 && Math.abs(g - b) < 20) return 'Gray';
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0;
+    if (max !== min) {
+        const d = max - min;
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    const hue = h * 360;
+
+    for (const [name, [start, end]] of Object.entries(colorBuckets)) {
+        if (end < start) { // Handles Red's wraparound case
+            if (hue >= start || hue <= end) return name;
+        } else {
+            if (hue >= start && hue <= end) return name;
+        }
+    }
+    return 'Gray';
+};
+
+export const getDominantColor = (imageUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = imageUrl;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return reject(new Error('Could not get canvas context'));
+            }
+            canvas.width = 10;
+            canvas.height = 10;
+            ctx.drawImage(img, 0, 0, 10, 10);
+            
+            const imageData = ctx.getImageData(0, 0, 10, 10).data;
+            const colorCounts: Record<string, number> = {};
+            
+            for (let i = 0; i < imageData.length; i += 4) {
+                const colorName = getDominantColorName(imageData[i], imageData[i+1], imageData[i+2]);
+                colorCounts[colorName] = (colorCounts[colorName] || 0) + 1;
+            }
+
+            const dominantColor = Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, 'Gray');
+            resolve(dominantColor);
+        };
+        img.onerror = (err) => {
+            console.error("Image load error for color sampling:", err);
+            resolve('Gray'); // Fallback color
+        };
+    });
+};
+
+
 export const searchMulti = async (query: string) => {
     if (!query) return [];
 
@@ -68,6 +135,8 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
     const officialTrailer = tmdbResult.videos?.results?.find(
         (vid: any) => vid.site === 'YouTube' && vid.type === 'Trailer'
     );
+    const posterUrl = getPosterUrl(tmdbResult.poster_path);
+    const dominantColor = await getDominantColor(posterUrl);
 
     let seasons: Season[] = [];
     let totalEpisodes = isMovie ? 1 : (tmdbResult.number_of_episodes || 0);
@@ -113,7 +182,7 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         tmdbId: tmdbResult.id,
         title: tmdbResult.title || tmdbResult.name,
         description: tmdbResult.overview,
-        posterUrl: getPosterUrl(tmdbResult.poster_path),
+        posterUrl: posterUrl,
         backdropUrl: getPosterUrl(tmdbResult.backdrop_path, 'original'),
         type: isMovie ? 'Movie' : (isAnime ? 'Anime' : 'TV Show'),
         status: 'Plan to Watch',
@@ -139,5 +208,6 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         productionCountries: tmdbResult.production_countries?.map((c: any) => c.name).join(', '),
         trailerUrl: officialTrailer?.key,
         sortOrder: Date.now(),
+        dominantColor: dominantColor
     };
 };

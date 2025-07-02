@@ -46,6 +46,7 @@ export type Movie = {
   runtime?: number;
   productionCountries?: string;
   sortOrder?: number;
+  dominantColor?: string;
 };
 
 export type UserCollection = {

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -24,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { MovieService } from '@/lib/movie-service';
+import { getDominantColor } from '@/lib/tmdb';
 
 
 const castMemberSchema = z.object({
@@ -53,6 +53,7 @@ const movieEditSchema = z.object({
   runtime: z.coerce.number().min(0).optional(),
   productionCountries: z.string().optional(),
   trailerUrl: z.string().optional(),
+  dominantColor: z.string().optional(),
 });
 
 type MovieEditFormValues = z.infer<typeof movieEditSchema>;
@@ -69,7 +70,7 @@ export default function MovieEditPage() {
   const alternatePosterFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [scriptFileName, setScriptFileName] = React.useState<string | null>(null);
-  const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
+  scriptFileInputRef.current;
   const [isCastOpen, setIsCastOpen] = React.useState(false);
 
 
@@ -94,6 +95,7 @@ export default function MovieEditPage() {
       revenue: 0,
       runtime: 0,
       productionCountries: '',
+      dominantColor: '',
     }
   });
 
@@ -137,8 +139,13 @@ export default function MovieEditPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue(fieldName, reader.result as string, { shouldValidate: true });
+      reader.onloadend = async () => {
+        const result = reader.result as string;
+        form.setValue(fieldName, result, { shouldValidate: true });
+        if (fieldName === 'posterUrl') {
+          const dominantColor = await getDominantColor(result);
+          form.setValue('dominantColor', dominantColor);
+        }
       };
       reader.readAsDataURL(file);
     }
