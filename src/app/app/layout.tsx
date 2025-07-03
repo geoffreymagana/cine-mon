@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { LayoutDashboard, Sparkles, TrendingUp, DownloadCloud } from "lucide-react";
+import { LayoutDashboard, LibraryBig, TrendingUp, DownloadCloud } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,7 +91,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton href="/app/collections" tooltip="Collections" isActive={pathname.startsWith('/app/collections')}>
-                                    <Sparkles />
+                                    <LibraryBig />
                                     <span>Collections</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

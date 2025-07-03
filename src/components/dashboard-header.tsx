@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles, Share2 } from "lucide-react";
+import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, LibraryBig, Share2, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -171,9 +171,15 @@ export const DashboardHeader = ({
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/app/collections">
-                <Sparkles className="mr-2 h-4 w-4" />
+                <LibraryBig className="mr-2 h-4 w-4" />
                 <span>View Collections</span>
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+                <Link href="/app/collections?filter=Animation">
+                    <Palette className="mr-2 h-4 w-4" />
+                    <span>View Animations</span>
+                </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Home, Sparkles, Shuffle, BarChart3, DownloadCloud } from 'lucide-react';
+import { Home, LibraryBig, Shuffle, PieChart, DownloadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,8 +16,8 @@ export const BottomNav = ({ onSurpriseMeClick }: BottomNavProps) => {
 
   const mainItems = [
     { name: 'Home', icon: Home, href: '/app/dashboard' },
-    { name: 'Stats', icon: BarChart3, href: '/app/analytics' },
-    { name: 'Collections', icon: Sparkles, href: '/app/collections' },
+    { name: 'Stats', icon: PieChart, href: '/app/analytics' },
+    { name: 'Collections', icon: LibraryBig, href: '/app/collections' },
     { name: 'Backup', icon: DownloadCloud, href: '/app/export' },
   ];
 

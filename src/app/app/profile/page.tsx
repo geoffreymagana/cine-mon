@@ -17,7 +17,7 @@ import {
     FileText,
     Mail,
     ChartPie,
-    Sparkles,
+    LibraryBig,
     MessageSquare,
     ShieldCheck
 } from "lucide-react";
@@ -563,7 +563,7 @@ export default function ProfilePage() {
                                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <Link href="/app/wrapped" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                                                <Sparkles className="mr-3 text-primary"/>
+                                                <LibraryBig className="mr-3 text-primary"/>
                                                 <div className="flex flex-col">
                                                    <span className="font-bold text-foreground">Your 2025 Wrapped</span>
                                                    <span className="text-xs text-muted-foreground">A look back at your year in film.</span>
@@ -572,7 +572,7 @@ export default function ProfilePage() {
                                         </Link>
                                         <Link href="/app/collections" passHref>
                                             <Button variant="ghost" className="w-full justify-start h-auto p-3 text-left">
-                                                <Sparkles className="mr-3 text-primary"/>
+                                                <LibraryBig className="mr-3 text-primary"/>
                                                 <div className="flex flex-col">
                                                    <span>My Vaults & Spotlights</span>
                                                    <span className="text-xs text-muted-foreground">Curate personal collections.</span>
