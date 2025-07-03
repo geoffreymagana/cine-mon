@@ -84,33 +84,43 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     <SidebarGroup>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton href="/app/dashboard" tooltip="Dashboard" isActive={pathname.startsWith('/app/dashboard')}>
-                                    <LayoutDashboard />
-                                    <span>Dashboard</span>
+                                <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname.startsWith('/app/dashboard')}>
+                                    <Link href="/app/dashboard">
+                                        <LayoutDashboard />
+                                        <span>Dashboard</span>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton href="/app/collections" tooltip="Collections" isActive={pathname.startsWith('/app/collections')}>
-                                    <LibraryBig />
-                                    <span>Collections</span>
+                                <SidebarMenuButton asChild tooltip="Collections" isActive={pathname.startsWith('/app/collections')}>
+                                     <Link href="/app/collections">
+                                        <LibraryBig />
+                                        <span>Collections</span>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                              <SidebarMenuItem>
-                                <SidebarMenuButton href="/app/canvas" tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
-                                    <LayoutDashboard />
-                                    <span>Canvas</span>
+                                <SidebarMenuButton asChild tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
+                                    <Link href="/app/canvas">
+                                        <LayoutDashboard />
+                                        <span>Canvas</span>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton href="/app/analytics" tooltip="Analytics" isActive={pathname.startsWith('/app/analytics')}>
-                                    <TrendingUp />
-                                    <span>Analytics</span>
+                                <SidebarMenuButton asChild tooltip="Analytics" isActive={pathname.startsWith('/app/analytics')}>
+                                    <Link href="/app/analytics">
+                                        <TrendingUp />
+                                        <span>Analytics</span>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                              <SidebarMenuItem>
-                                <SidebarMenuButton href="/app/export" tooltip="Backup & Export" isActive={pathname.startsWith('/app/export')}>
-                                    <DownloadCloud />
-                                    <span>Backup & Export</span>
+                                <SidebarMenuButton asChild tooltip="Backup & Export" isActive={pathname.startsWith('/app/export')}>
+                                    <Link href="/app/export">
+                                        <DownloadCloud />
+                                        <span>Backup & Export</span>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>

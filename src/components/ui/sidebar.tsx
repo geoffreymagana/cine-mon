@@ -555,7 +555,6 @@ const SidebarMenuButton = React.forwardRef<
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
-    href?: string
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -566,7 +565,6 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      href,
       ...props
     },
     ref
@@ -584,11 +582,9 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       />
     )
-    
-    const buttonWithLink = href ? <Link href={href} asChild>{button}</Link> : button;
 
     if (!tooltip) {
-      return buttonWithLink
+      return button
     }
 
     if (typeof tooltip === "string") {
@@ -599,7 +595,7 @@ const SidebarMenuButton = React.forwardRef<
 
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{buttonWithLink}</TooltipTrigger>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
