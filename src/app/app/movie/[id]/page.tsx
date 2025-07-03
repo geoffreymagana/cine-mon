@@ -138,11 +138,20 @@ export default function MovieDetailPage() {
         });
 
         const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+        let newStatus = movie.status;
+
+        if (watched && newStatus === 'Plan to Watch') {
+            newStatus = 'Watching';
+        }
+        if (newWatchedEpisodes === movie.totalEpisodes) {
+            newStatus = 'Completed';
+        }
 
         const updatedMovie = {
             ...movie,
             seasons: newSeasons,
             watchedEpisodes: newWatchedEpisodes,
+            status: newStatus,
         };
         
         updateMovieData(updatedMovie);
@@ -166,11 +175,20 @@ export default function MovieDetailPage() {
         });
 
         const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+        let newStatus = movie.status;
+
+        if (newWatchedState && newStatus === 'Plan to Watch') {
+            newStatus = 'Watching';
+        }
+        if (newWatchedEpisodes === movie.totalEpisodes) {
+            newStatus = 'Completed';
+        }
 
         const updatedMovie = {
             ...movie,
             seasons: newSeasons,
             watchedEpisodes: newWatchedEpisodes,
+            status: newStatus,
         };
         
         updateMovieData(updatedMovie);
@@ -190,7 +208,26 @@ export default function MovieDetailPage() {
 
     const handleStatusChange = (newStatus: Movie['status']) => {
         if (!movie) return;
-        const updatedMovie = { ...movie, status: newStatus };
+        
+        const isSeries = movie.type !== 'Movie';
+        let updatedMovie: Movie = { ...movie, status: newStatus };
+
+        if (newStatus === 'Completed' && isSeries && movie.seasons) {
+            const allWatchedSeasons = movie.seasons.map(season => ({
+                ...season,
+                episodes: season.episodes.map(ep => ({ ...ep, watched: true }))
+            }));
+            updatedMovie = {
+                ...updatedMovie,
+                seasons: allWatchedSeasons,
+                watchedEpisodes: movie.totalEpisodes,
+            };
+            toast({
+                title: "All Episodes Marked as Watched",
+                description: `Since the series is completed, all episodes have been updated.`,
+            });
+        }
+        
         updateMovieData(updatedMovie);
         toast({
             title: "Status Updated",
