@@ -141,19 +141,20 @@ const PALETTE_COLORS: Record<string, string> = {
 };
 
 export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200): WrappedSlide[] {
+  const currentYear = new Date().getFullYear();
+  
   if (movies.length === 0) {
     return [{
       id: 'no-data',
-      title: "It's been a quiet year...",
-      subtitle: "You have no movies in your collection for 2025.",
-      stats: "Add some movies to see your Wrapped!",
+      title: "It's a fresh start...",
+      subtitle: `Your film log for ${currentYear} is a blank slate.`,
+      stats: "Add movies to your collection to unwrap your year-in-review!",
       visualTheme: 'default',
       soundscape: soundscapes.default
     }];
   }
 
   const slides: WrappedSlide[] = [];
-  const currentYear = new Date().getFullYear();
   
   // --- CALCULATIONS ---
   const totalMinutes = movies.reduce((acc, movie) => {
@@ -267,9 +268,9 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
 
     slides.push({
       id: 'longest-movie',
-      title: `Your longest journey: ${longestMovie.runtime} minutes`,
+      title: longestMovie.title,
       subtitle: durationComment,
-      stats: longestMovie.title,
+      stats: `Your longest journey was ${longestMovie.runtime} minutes`,
       visualTheme: 'action',
       soundscape: soundscapes.action,
       musicSuggestion: {

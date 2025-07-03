@@ -94,12 +94,14 @@ export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
             </motion.div>
         </AnimatePresence>
 
-        <SlideNavigation
-            onNext={() => paginate(1)}
-            onPrev={() => paginate(-1)}
-            currentIndex={index}
-            totalSlides={slides.length}
-        />
+        {slides.length > 1 && (
+            <SlideNavigation
+                onNext={() => paginate(1)}
+                onPrev={() => paginate(-1)}
+                currentIndex={index}
+                totalSlides={slides.length}
+            />
+        )}
     </div>
   );
 };

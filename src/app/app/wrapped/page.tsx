@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Movie } from '@/lib/types';
+import type { Movie, WrappedSlide } from '@/lib/types';
 import { WrappedSlideshow } from '@/components/wrapped/WrappedSlideshow';
 import { generateWrappedSlides } from '@/lib/wrapped';
 import { Loader2 } from 'lucide-react';
@@ -32,15 +32,15 @@ export default function WrappedPage() {
   }, []);
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4 text-center">
-        <h1 className="text-2xl font-bold text-destructive mb-4">An Error Occurred</h1>
-        <p className="text-muted-foreground mb-8">{error}</p>
-        <Link href="/app/dashboard">
-          <Button>Back to Dashboard</Button>
-        </Link>
-      </div>
-    );
+    const errorSlide: WrappedSlide = {
+        id: 'error-slide',
+        title: "The film is a bit fuzzy...",
+        subtitle: "We couldn't generate your Wrapped data right now.",
+        stats: "Try again in a bit, or add more to your collection!",
+        visualTheme: 'mystery',
+        soundscape: '/sounds/myst-dark-drone-synth-female-vocal-choir-atmo-ambience-cinematic.wav'
+    };
+    return <WrappedSlideshow slides={[errorSlide]} />;
   }
 
   if (!slides) {
