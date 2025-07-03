@@ -283,7 +283,7 @@ export default function MovieDetailPage() {
     const currentStatusInfo = statusOptions.find(opt => opt.value === movie.status);
     const vaults = allCollections.filter(c => c.type === 'Vault');
     const spotlights = allCollections.filter(c => c.type === 'Spotlight');
-    const isSeries = movie.type === 'TV Show' || movie.type === 'Anime';
+    const isSeries = movie.type !== 'Movie';
 
     const moreOptionsMenuContent = (
       <DropdownMenuContent align="end">
