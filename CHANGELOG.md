@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] (2025-07-04)
+
+### Features
+
+#### Expanded Collection & Tracking
+-   **New Categories**: Introduced "K-Drama" and "Animation" as top-level collection types, allowing for more specific library organization.
+-   **Smart Classification**: When importing from TMDB, titles are now automatically categorized.
+    -   Korean TV shows and movies are classified as "K-Drama".
+    -   Japanese animated shows are now "Anime".
+    -   Animated content from other countries is now "Animation".
+-   **Consistent Episode Tracking**: All series types (TV Shows, Anime, K-Drama, Animation) now share the same detailed season and episode tracking UI, including progress bars and completion percentages.
+-   **Automated Status Updates**:
+    -   Setting a series to "Completed" now automatically marks all episodes as watched.
+    -   Watching the first episode or season of a title in "Plan to Watch" automatically updates its status to "Watching".
+    -   Watching the final episode of a series automatically marks the entire series as "Completed".
+
+#### UI & UX Polish
+-   **Radiating Button Animation**: The secondary CTA buttons on the landing page now feature a more engaging radial fill hover animation.
+
+### Fixes
+
+#### "Wrapped" Feature
+-   **Accurate Visual Vibe**: Fixed a critical bug where the "Visual Vibe" (dominant poster color) was calculated using the entire collection instead of only watched titles, and incorrectly filtered certain colors. The calculation is now accurate and consistent with the main analytics page.
+-   **Grammar & Layout Correction**: Corrected the text layout on the "Longest Journey" slide to be grammatically correct and more readable.
+-   **Robust Audio Controller**: Fixed a bug where audio would auto-mute after a slide transition, ensuring the user's play/pause state is respected throughout the slideshow.
+-   **Sassy Error Handling**: Replaced the generic "error" state with a friendly, on-brand slide that encourages users to build their collection when there's not enough data for a full Wrapped experience.
+-   **Dynamic Year**: The "Wrapped" year is now dynamically generated, ensuring it's always current.
+-   **Crash Fix**: Resolved a `TypeError` caused by a typo (`movie` vs `m`) that crashed the rewatch calculation logic.
+
+---
+
 ## [1.5.0] (2025-07-03)
 
 ### Features
