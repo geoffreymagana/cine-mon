@@ -20,7 +20,7 @@ type WrappedSlideshowProps = {
 export const WrappedSlideshow = ({ slides }: WrappedSlideshowProps) => {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const slideRef = useRef<HTMLDivElement>(null);
 
   const currentSlide = slides[index];

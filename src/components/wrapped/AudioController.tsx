@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
@@ -23,25 +22,21 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
     if (sourceRef.current) {
       const currentSource = sourceRef.current;
       currentSource.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
-      
-      // Schedule the source to stop after fading out
       setTimeout(() => {
-        try { currentSource.source.stop(); } catch(e) { /* Fails silently if already stopped */ }
+        try { currentSource.source.stop(); } catch (e) { /* Fails silently if already stopped */ }
       }, 350);
     }
-    
-    // Clear the ref immediately to allow a new sound to be prepared.
+
     sourceRef.current = null;
-    
-    // 2. If there's no new sound or we are paused, we're done.
-    if (!newSrc || !isPlaying) return;
+
+    if (!newSrc) return; // if no new sound, just stop.
 
     // 3. Load and fade in the new sound
     try {
       const response = await fetch(newSrc);
       if (!response.ok) {
         console.error(`Failed to fetch audio: ${newSrc}. Status: ${response.status}`);
-        return; // Exit gracefully
+        return;
       }
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
@@ -52,63 +47,58 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
       sourceNode.buffer = audioBuffer;
       sourceNode.loop = true;
       gainNode.gain.setValueAtTime(0.0001, audioContextRef.current.currentTime);
-      
       sourceNode.connect(gainNode);
       gainNode.connect(audioContextRef.current.destination);
       sourceNode.start();
 
-      // Fade in
       gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
-      
       sourceRef.current = { source: sourceNode, gainNode, src: newSrc };
     } catch (error) {
       console.error('Error processing audio:', error);
     }
-  }, [isPlaying]);
+  }, []); // This callback has no dependencies on state/props, making it stable.
 
+  // Main effect to handle all audio logic
   useEffect(() => {
-    // Effect to handle changes in sound source
-    if (soundscapeSrc !== sourceRef.current?.src) {
-      if (audioContextRef.current) { // Ensure context exists before changing sound
-        changeSound(soundscapeSrc);
-      }
-    }
-  }, [soundscapeSrc, changeSound]);
-
-  useEffect(() => {
-    // Effect to handle play/pause state
-    if (!audioContextRef.current || !sourceRef.current) return;
+    if (!audioContextRef.current) return;
 
     if (isPlaying) {
-      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
-    } else {
-      sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
+      // If the source is different, or if there's no source playing, change the sound.
+      if (soundscapeSrc !== sourceRef.current?.src) {
+        changeSound(soundscapeSrc);
+      } else if (sourceRef.current) { // If source is the same, just ensure it's faded in
+        sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
+      }
+    } else { // if not playing
+      if (sourceRef.current) {
+        sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
+      }
     }
-  }, [isPlaying]);
+  }, [isPlaying, soundscapeSrc, changeSound]);
 
   const handleTogglePlay = () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
+    
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
-    setIsPlaying(!isPlaying);
 
-    // If starting from scratch, trigger the sound change
-    if (!sourceRef.current && soundscapeSrc && !isPlaying === false) {
-      changeSound(soundscapeSrc);
-    }
+    setIsPlaying(prev => !prev);
   };
-  
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (sourceRef.current) {
-        try { sourceRef.current.source.stop(); } catch(e) {}
+        try { sourceRef.current.source.stop(); } catch (e) {}
       }
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        // Use a variable to hold the context for the cleanup function
+        const contextToClose = audioContextRef.current;
+        contextToClose.close().catch(console.error);
+        audioContextRef.current = null;
       }
     };
   }, []);
