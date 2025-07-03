@@ -1,14 +1,15 @@
+
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Button } from '../ui/button';
 
 type AudioControllerProps = {
   soundscapeSrc?: string;
-  isPlaying: boolean;
-  setIsPlaying: (playing: boolean) => void;
+  isPlaying: boolean; // This will now control the MUTE state
+  setIsPlaying: (playing: boolean) => void; // This will now control the MUTE state
 };
 
 export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: AudioControllerProps) => {
@@ -16,22 +17,27 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
   const sourceRef = useRef<{ source: AudioBufferSourceNode; gainNode: GainNode; src: string } | null>(null);
 
   const changeSound = useCallback(async (newSrc?: string) => {
-    if (!audioContextRef.current) return;
+    if (typeof window === 'undefined') return;
+    
+    // Ensure context exists for any sound change operation
+    if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const context = audioContextRef.current;
 
-    // 1. Fade out the current sound, if it exists
+    // Fade out current sound
     if (sourceRef.current) {
-      const currentSource = sourceRef.current;
-      currentSource.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
+      const current = sourceRef.current;
+      current.gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.3);
       setTimeout(() => {
-        try { currentSource.source.stop(); } catch (e) { /* Fails silently if already stopped */ }
+        try { current.source.stop(); } catch (e) { /* Fails silently if already stopped */ }
       }, 350);
     }
-
     sourceRef.current = null;
 
-    if (!newSrc) return; // if no new sound, just stop.
+    if (!newSrc) return;
 
-    // 3. Load and fade in the new sound
+    // Load and play new sound
     try {
       const response = await fetch(newSrc);
       if (!response.ok) {
@@ -39,65 +45,71 @@ export const AudioController = ({ soundscapeSrc, isPlaying, setIsPlaying }: Audi
         return;
       }
       const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+      const audioBuffer = await context.decodeAudioData(arrayBuffer);
 
-      const sourceNode = audioContextRef.current.createBufferSource();
-      const gainNode = audioContextRef.current.createGain();
-
+      const gainNode = context.createGain();
+      const sourceNode = context.createBufferSource();
+      
       sourceNode.buffer = audioBuffer;
       sourceNode.loop = true;
-      gainNode.gain.setValueAtTime(0.0001, audioContextRef.current.currentTime);
       sourceNode.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-      sourceNode.start();
+      gainNode.connect(context.destination);
+      
+      const targetVolume = isPlaying ? 1 : 0; // Check MUTE state
+      gainNode.gain.setValueAtTime(targetVolume > 0 ? 0.0001 : 0, context.currentTime);
 
-      gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
+      sourceNode.start();
+      
+      if (targetVolume > 0) {
+        gainNode.gain.exponentialRampToValueAtTime(targetVolume, context.currentTime + 0.3);
+      }
       sourceRef.current = { source: sourceNode, gainNode, src: newSrc };
+
     } catch (error) {
       console.error('Error processing audio:', error);
     }
-  }, []); // This callback has no dependencies on state/props, making it stable.
+  }, [isPlaying]); // isPlaying is now the MUTE state
 
-  // Main effect to handle all audio logic
+  // Effect to change sound when slide changes
   useEffect(() => {
-    if (!audioContextRef.current) return;
-
-    if (isPlaying) {
-      // If the source is different, or if there's no source playing, change the sound.
-      if (soundscapeSrc !== sourceRef.current?.src) {
+    if (soundscapeSrc !== sourceRef.current?.src) {
         changeSound(soundscapeSrc);
-      } else if (sourceRef.current) { // If source is the same, just ensure it's faded in
-        sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(1, audioContextRef.current.currentTime + 0.3);
-      }
-    } else { // if not playing
-      if (sourceRef.current) {
-        sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextRef.current.currentTime + 0.3);
+    }
+  }, [soundscapeSrc, changeSound]);
+
+  // Effect to handle muting/unmuting
+  useEffect(() => {
+    if (sourceRef.current) {
+      const context = audioContextRef.current;
+      if (context) {
+        const targetVolume = isPlaying ? 1 : 0;
+        sourceRef.current.gainNode.gain.exponentialRampToValueAtTime(
+          targetVolume > 0 ? targetVolume : 0.0001,
+          context.currentTime + 0.3
+        );
       }
     }
-  }, [isPlaying, soundscapeSrc, changeSound]);
+  }, [isPlaying]);
 
   const handleTogglePlay = () => {
+    // On first click, create and resume context
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
-
     setIsPlaying(prev => !prev);
   };
-
-  // Cleanup on unmount
+  
+  // Cleanup
   useEffect(() => {
     return () => {
       if (sourceRef.current) {
         try { sourceRef.current.source.stop(); } catch (e) {}
       }
       if (audioContextRef.current) {
-        // Use a variable to hold the context for the cleanup function
-        const contextToClose = audioContextRef.current;
-        contextToClose.close().catch(console.error);
+        audioContextRef.current.close().catch(console.error);
         audioContextRef.current = null;
       }
     };

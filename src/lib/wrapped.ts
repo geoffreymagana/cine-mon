@@ -36,6 +36,7 @@ const soundscapes: Record<WrappedSlide['visualTheme'], string> = {
 
 const timeWatchedCommentary = {
   low: [
+    "Are you even trying?",
     "A film a month. We love a casual commitment.",
     "You blinked and missed it. Literally.",
     "Your watch history is basically a trailer.",
@@ -46,11 +47,13 @@ const timeWatchedCommentary = {
     "Respectable. Balanced. Still enough time to touch grass.",
     "Not a binge, more of a polite nibble.",
     "The algorithm nods in quiet approval.",
+    "Just enough for cinephile street cred.",
   ],
   heavy: [
     "Okay binge mode, we see you.",
     "You've seen more screen time than some actors this year.",
     "You *could* have learned French… but this was probably more fun.",
+    "Streaming service loyalty: platinum tier.",
     "The popcorn didn’t stand a chance.",
   ],
   extreme: [
@@ -58,6 +61,7 @@ const timeWatchedCommentary = {
     "This wasn’t watching. This was *training*.",
     "Impressive. Concerning. Iconic.",
     "Hope your couch has a loyalty program.",
+    "A spiritual journey through pixels.",
   ],
   offTheCharts: [
     "Cine-Mon says go outside. Please.",
@@ -163,7 +167,7 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   
   const longestMovie = [...movies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
   
-  const totalRewatches = movies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
+  const totalRewatches = movies.reduce((acc, m) => acc + (movie.rewatchCount || 0), 0);
   const mostRewatched = totalRewatches > 0 ? [...movies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0] : null;
 
   const completedSeries = movies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
@@ -235,9 +239,9 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   if (longestMovie && longestMovie.runtime) {
     slides.push({
       id: 'longest-movie',
-      title: `Your longest journey was ${longestMovie.runtime} minutes with`,
-      subtitle: 'A true test of endurance',
-      stats: `${longestMovie.title}`,
+      title: `with ${longestMovie.title}`,
+      subtitle: `Your longest journey was ${longestMovie.runtime} minutes`,
+      stats: ``,
       visualTheme: 'action',
       soundscape: soundscapes.action,
       musicSuggestion: {
