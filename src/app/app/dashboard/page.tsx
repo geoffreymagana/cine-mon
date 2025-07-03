@@ -171,8 +171,8 @@ function DashboardContent() {
   return (
     <>
       <div className="flex flex-col h-full">
-        {/* Sticky Header and Filter Bar */}
-        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
           <DashboardHeader 
             onAddMovieClick={handleOpenAddDialog} 
             onSearchClick={handleOpenSearchDialog}
@@ -185,6 +185,10 @@ function DashboardContent() {
             onSelectAll={handleSelectAll}
             allMovies={filteredMovies}
           />
+        </div>
+        
+        {/* Sticky, Horizontally-Scrollable Filter Bar */}
+        <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-sm border-b">
           <GenreFilter />
         </div>
         
