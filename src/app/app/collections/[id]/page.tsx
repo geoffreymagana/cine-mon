@@ -152,7 +152,7 @@ export default function CollectionDetailPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
                 </div>
 
-                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 -mt-24 md:-mt-32 relative z-10">
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20 -mt-24 md:-mt-32 relative z-10">
                     <div className="mb-8">
                         <Link href="/app/collections" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
                             <ArrowLeft className="w-4 h-4"/>
@@ -160,9 +160,13 @@ export default function CollectionDetailPage() {
                         </Link>
                     </div>
                     
-                    <div className="flex justify-between items-start mb-2">
-                        <p className="text-primary font-semibold">{collection.type}</p>
-                        <div className="flex gap-2">
+                    <div className="flex justify-between items-start mb-8">
+                        <div>
+                            <p className="text-primary font-semibold">{collection.type}</p>
+                            <h1 className="text-4xl lg:text-5xl font-bold font-headline">{collection.name}</h1>
+                            <p className="mt-2 text-muted-foreground max-w-3xl">{collection.description}</p>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
                             <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}><Edit className="mr-2"/>Edit</Button>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -182,11 +186,6 @@ export default function CollectionDetailPage() {
                                 </AlertDialogContent>
                             </AlertDialog>
                         </div>
-                    </div>
-
-                    <div className="mb-8">
-                        <h1 className="text-4xl lg:text-5xl font-bold font-headline">{collection.name}</h1>
-                        <p className="mt-2 text-muted-foreground max-w-3xl">{collection.description}</p>
                     </div>
 
                     <DndContext

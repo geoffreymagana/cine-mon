@@ -361,7 +361,7 @@ export default function CollectionsPage() {
             </div>
 
             <div className="flex-grow overflow-y-auto">
-                 <div className="w-full max-w-7xl mx-auto p-4 sm:p-8 pt-4">
+                 <div className="w-full max-w-7xl mx-auto p-4 sm:p-8 pt-4 pb-20">
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <Tabs defaultValue="vaults" className="w-full">
                             <TabsList className="mb-8 grid w-full grid-cols-2">
