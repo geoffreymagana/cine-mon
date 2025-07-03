@@ -71,6 +71,29 @@ const timeWatchedCommentary = {
   ],
 };
 
+const longestMovieCommentary = {
+  short: [
+    "A quick trip. Barely enough time for popcorn.",
+    "A breeze. Light, breezy, beautiful.",
+    "The perfect length for a casual Tuesday night.",
+  ],
+  standard: [
+    "The perfect runtime. A classic cinematic adventure.",
+    "Just right. Not too long, not too short.",
+    "The sweet spot for storytelling.",
+  ],
+  long: [
+    "Settle in. This one's a commitment.",
+    "A proper epic. You went the distance.",
+    "Hope you took a bathroom break for this one.",
+  ],
+  marathon: [
+    "A marathon, not a sprint. You've earned a medal.",
+    "Truly epic. You could have flown to another city in that time.",
+    "You didn't just watch a movie; you lived it.",
+  ],
+};
+
 const decadeCommentary = {
     '1940s': "Serving black & white realness with a side of jazz hands.",
     '1950s': "Your taste has vintage filter energy — *no app required*.",
@@ -237,11 +260,16 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   });
 
   if (longestMovie && longestMovie.runtime) {
+    let durationComment = getRandomComment(longestMovieCommentary.standard);
+    if (longestMovie.runtime < 90) durationComment = getRandomComment(longestMovieCommentary.short);
+    else if (longestMovie.runtime >= 151 && longestMovie.runtime <= 180) durationComment = getRandomComment(longestMovieCommentary.long);
+    else if (longestMovie.runtime > 180) durationComment = getRandomComment(longestMovieCommentary.marathon);
+
     slides.push({
       id: 'longest-movie',
-      title: `with ${longestMovie.title}`,
-      subtitle: `Your longest journey was ${longestMovie.runtime} minutes`,
-      stats: ``,
+      title: `Your longest journey: ${longestMovie.runtime} minutes`,
+      subtitle: durationComment,
+      stats: longestMovie.title,
       visualTheme: 'action',
       soundscape: soundscapes.action,
       musicSuggestion: {
