@@ -4,7 +4,7 @@
 
 This project was developed to be a private, powerful, and deeply personal media journal, not just another tracking app.
 
-**[🚀 Launch the App](https://cine-mon.vercel.app/)**
+**[Launch the App](https://cine-mon.vercel.app/)**
 
 ---
 
