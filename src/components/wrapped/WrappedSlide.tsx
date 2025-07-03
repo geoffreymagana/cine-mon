@@ -33,7 +33,7 @@ const SlideContent = ({ data }: { data: WrappedSlide }) => {
       <div className="w-full h-64 mt-4">
         <ChartContainer config={{ value: { label: 'Titles', color: 'hsl(var(--primary))' } }} className="h-full w-full">
             <ResponsiveContainer>
-              <AreaChart data={decadeData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+              <AreaChart data={decadeData} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
                 <defs>
                   <linearGradient id="wrappedGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />

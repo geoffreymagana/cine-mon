@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles, Share2, Palette } from "lucide-react";
+import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Sparkles, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useSearchParams } from "next/navigation";
+import type { Movie } from "@/lib/types";
 
 type DashboardHeaderProps = {
   onAddMovieClick: () => void;
@@ -28,8 +30,8 @@ type DashboardHeaderProps = {
   onClearSelection: () => void;
   onDeleteSelected: () => void;
   onAddToCollection: () => void;
-  onSelectAll: () => void;
-  isAllSelected: boolean;
+  onSelectAll: (filteredMovies: Movie[]) => void;
+  allMovies: Movie[];
 };
 
 export const DashboardHeader = ({ 
@@ -42,9 +44,12 @@ export const DashboardHeader = ({
   onDeleteSelected,
   onAddToCollection,
   onSelectAll,
-  isAllSelected
+  allMovies,
 }: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const filter = searchParams.get('filter') || 'All';
+
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = React.useState("My");
 
@@ -73,6 +78,13 @@ export const DashboardHeader = ({
     return () => window.removeEventListener('profileUpdated', loadProfileData);
   }, [loadProfileData]);
   
+  const filteredMovies = React.useMemo(() => {
+    if (filter === 'All') return allMovies;
+    return allMovies.filter((movie) => movie.type === filter);
+  }, [allMovies, filter]);
+
+  const isAllSelected = filteredMovies.length > 0 && selectedCount === filteredMovies.length;
+  
   if (isSelectionMode) {
     return (
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-secondary px-4 md:px-8">
@@ -87,7 +99,7 @@ export const DashboardHeader = ({
                 <Checkbox
                     id="select-all"
                     checked={isAllSelected}
-                    onCheckedChange={onSelectAll}
+                    onCheckedChange={() => onSelectAll(filteredMovies)}
                 />
                 <Label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer">
                     Select all
@@ -122,9 +134,7 @@ export const DashboardHeader = ({
         <h1 className="text-base md:text-lg font-headline font-semibold">{userName === "My" ? "My Collection" : `${userName}'s Collection`}</h1>
       </div>
       
-      {/* Container for the right side actions */}
       <div className="flex items-center gap-2">
-        {/* Desktop Search Input */}
         <div className="relative hidden sm:block">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -136,10 +146,6 @@ export const DashboardHeader = ({
             />
         </div>
 
-        {/* --- Buttons with responsive visibility and styling --- */}
-        
-        {/* Add Manually Button: solid on desktop, ghost on mobile */}
-        {/* This is now FIRST in order on mobile */}
         <Button onClick={onAddMovieClick} className="hidden sm:inline-flex shrink-0">
           <Plus className="h-4 w-4" />
           <span className="hidden md:inline ml-2">Add Manually</span>
@@ -149,15 +155,11 @@ export const DashboardHeader = ({
             <span className="sr-only">Add Manually</span>
         </Button>
         
-        {/* Mobile: Search Button (solid background) */}
-        {/* This is now SECOND in order on mobile */}
         <Button variant="default" size="icon" className="sm:hidden shrink-0" onClick={onSearchClick}>
             <Search className="h-5 w-5" />
             <span className="sr-only">Search</span>
         </Button>
         
-
-        {/* More Options Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="shrink-0">
@@ -171,12 +173,6 @@ export const DashboardHeader = ({
               <Link href="/app/collections">
                 <Sparkles className="mr-2 h-4 w-4" />
                 <span>View Collections</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/app/dashboard?filter=Animation">
-                <Palette className="mr-2 h-4 w-4" />
-                <span>View Animations</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

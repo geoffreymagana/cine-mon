@@ -8,7 +8,7 @@ import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
 import { SearchDialog } from "@/components/search-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import {
   DndContext,
   closestCenter,
@@ -22,7 +22,6 @@ import {
   arrayMove,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { Suspense } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MovieService } from "@/lib/movie-service";
 import {
@@ -36,11 +35,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AddToCollectionDialog } from "@/components/add-to-collection-dialog";
+import { GenreFilter } from "@/components/genre-filter";
 
 
 function DashboardContent() {
-  const searchParams = useSearchParams();
-  const filter = searchParams.get('filter') || 'All';
   const { toast } = useToast();
 
   const [movies, setMovies] = React.useState<Movie[]>([]);
@@ -92,11 +90,6 @@ function DashboardContent() {
   
   const handleOpenAddDialog = () => setIsAddMovieOpen(true);
   const handleOpenSearchDialog = () => setIsSearchOpen(true);
-
-  const filteredMovies = React.useMemo(() => {
-    if (filter === 'All') return movies;
-    return movies.filter((movie) => movie.type === filter);
-  }, [movies, filter]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const {active, over} = event;
@@ -160,15 +153,13 @@ function DashboardContent() {
     handleClearSelection();
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAll = (filteredMovies: Movie[]) => {
     if (selectedMovieIds.size === filteredMovies.length) {
       setSelectedMovieIds(new Set());
     } else {
       setSelectedMovieIds(new Set(filteredMovies.map(m => m.id)));
     }
   };
-
-  const isAllSelected = filteredMovies.length > 0 && selectedMovieIds.size === filteredMovies.length;
 
   return (
     <>
@@ -182,9 +173,10 @@ function DashboardContent() {
             onClearSelection={handleClearSelection}
             onDeleteSelected={() => setIsDeleteAlertOpen(true)}
             onAddToCollection={() => setIsAddToCollectionOpen(true)}
-            onSelectAll={handleSelectAll}
-            isAllSelected={isAllSelected}
+            onSelectAll={(filteredMovies) => handleSelectAll(filteredMovies)}
+            allMovies={movies}
           />
+          <GenreFilter />
           <div className="flex-grow p-4 md:p-8">
               <DndContext
                 sensors={sensors}
@@ -193,7 +185,7 @@ function DashboardContent() {
                 disabled={isSelectionMode}
               >
                 <MovieGrid
-                  movies={filteredMovies}
+                  movies={movies}
                   isSelectionMode={isSelectionMode}
                   selectedMovieIds={selectedMovieIds}
                   onSelectMovie={handleSelectMovie}

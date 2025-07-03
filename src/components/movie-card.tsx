@@ -118,8 +118,8 @@ export const MovieCard = ({ movie, onRemoveFromCollection, disableLink = false, 
             </div>
         </div>
       
-      <CardContent className="pt-8 px-2 flex-grow flex flex-col">
-        <p className="text-base font-bold leading-tight truncate flex-grow" title={movie.title}>
+      <CardContent className="pt-6 sm:pt-8 px-2 flex-grow flex flex-col">
+        <p className="text-sm sm:text-base font-bold leading-tight truncate flex-grow" title={movie.title}>
           {movie.title}
         </p>
         <p className="text-xs text-muted-foreground mt-1">{formattedDate}</p>
