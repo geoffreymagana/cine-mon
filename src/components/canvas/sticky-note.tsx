@@ -79,11 +79,11 @@ const StickyNode = ({ id, data, selected }: NodeProps<StickyNodeData>) => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 placeholder="Write something..."
-                className="w-full h-full border-none bg-transparent outline-none nodrag p-4 text-lg leading-snug"
-                style={{ resize: 'none', fontFamily: `'Kalam', cursive` }}
+                className="font-handwriting w-full h-full border-none bg-transparent outline-none nodrag p-4 text-lg leading-snug"
+                style={{ resize: 'none' }}
             />
         ) : (
-            <div className={cn("w-full h-full p-4 text-lg leading-snug break-words", zoom < ZOOM_THRESHOLD && 'sticky-note-text-obfuscated')} style={{ fontFamily: `'Kalam', cursive` }}>
+            <div className={cn("font-handwriting w-full h-full p-4 text-lg leading-snug break-words", zoom < ZOOM_THRESHOLD && 'sticky-note-text-obfuscated')}>
                 {text || <span className="opacity-50">Write something...</span>}
             </div>
         )}

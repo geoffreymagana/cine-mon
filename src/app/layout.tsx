@@ -2,6 +2,27 @@ import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeInitializer } from '@/components/theme-initializer';
+import { Inter, Space_Grotesk, Kalam } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const fontInter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const fontSpaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+});
+
+const fontKalam = Kalam({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+  variable: '--font-kalam',
+});
 
 
 export const metadata: Metadata = {
@@ -28,14 +49,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet" crossOrigin="anonymous" />
-      </head>
-      <body className="font-body antialiased" suppressHydrationWarning>
+      <body 
+        className={cn(
+          "font-body antialiased",
+          fontInter.variable,
+          fontSpaceGrotesk.variable,
+          fontKalam.variable
+        )} 
+        suppressHydrationWarning
+      >
         <ThemeInitializer />
         {children}
         <Toaster />
