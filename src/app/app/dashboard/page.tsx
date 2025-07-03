@@ -187,8 +187,8 @@ function DashboardContent() {
           />
         </div>
         
-        {/* Sticky, Horizontally-Scrollable Filter Bar */}
-        <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-sm border-b">
+        {/* Horizontally-Scrollable Filter Bar */}
+        <div className="w-full overflow-x-hidden border-b">
           <GenreFilter />
         </div>
         
@@ -200,7 +200,7 @@ function DashboardContent() {
             onDragEnd={handleDragEnd}
             disabled={isSelectionMode || filter !== 'All'}
           >
-            <div className="p-4 md:p-8 pb-20 md:pb-8">
+            <div className="p-4 md:p-8">
               <MovieGrid
                 movies={filteredMovies}
                 isSelectionMode={isSelectionMode}
