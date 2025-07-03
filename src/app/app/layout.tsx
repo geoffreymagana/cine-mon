@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { LayoutDashboard, LibraryBig, TrendingUp, DownloadCloud } from "lucide-react";
+import { LayoutDashboard, LibraryBig, TrendingUp, DownloadCloud, Shuffle, LayoutGrid } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,6 +83,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarContent>
                     <SidebarGroup>
                         <SidebarMenu>
+                             <SidebarMenuItem>
+                                <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Surprise Me!">
+                                    <Shuffle />
+                                    <span>Surprise Me!</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                    <SidebarSeparator />
+                    <SidebarGroup>
+                        <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname.startsWith('/app/dashboard')}>
                                     <Link href="/app/dashboard">
@@ -102,7 +113,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                              <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
                                     <Link href="/app/canvas">
-                                        <LayoutDashboard />
+                                        <LayoutGrid />
                                         <span>Canvas</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -115,6 +126,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                    <SidebarSeparator />
+                     <SidebarGroup>
+                        <SidebarMenu>
                              <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Backup & Export" isActive={pathname.startsWith('/app/export')}>
                                     <Link href="/app/export">
