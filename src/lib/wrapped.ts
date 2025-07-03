@@ -142,8 +142,9 @@ const PALETTE_COLORS: Record<string, string> = {
 
 export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200): WrappedSlide[] {
   const currentYear = new Date().getFullYear();
+  const watchedMovies = movies.filter(m => ['Watching', 'Completed'].includes(m.status));
   
-  if (movies.length === 0) {
+  if (watchedMovies.length === 0) {
     return [{
       id: 'no-data',
       title: "It's a fresh start...",
@@ -157,21 +158,21 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   const slides: WrappedSlide[] = [];
   
   // --- CALCULATIONS ---
-  const totalMinutes = movies.reduce((acc, movie) => {
+  const totalMinutes = watchedMovies.reduce((acc, movie) => {
     const isMovie = movie.type === 'Movie';
     const duration = isMovie ? (movie.runtime || 90) : (movie.watchedEpisodes * (movie.runtime || 24));
     return acc + (duration * (1 + (movie.rewatchCount || 0)));
   }, 0);
   const totalHours = Math.floor(totalMinutes / 60);
 
-  const allTags = movies.flatMap(m => m.tags);
+  const allTags = watchedMovies.flatMap(m => m.tags);
   const genreCounts = allTags.reduce((acc, genre) => {
     acc[genre] = (acc[genre] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0];
   
-  const directorCounts = movies
+  const directorCounts = watchedMovies
     .filter(m => m.director)
     .reduce((acc, m) => {
       acc[m.director!] = (acc[m.director!] || 0) + 1;
@@ -179,7 +180,7 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
     }, {} as Record<string, number>);
   const topDirector = Object.entries(directorCounts).sort((a, b) => b[1] - a[1])[0];
   
-  const allActorsWithAvatars = movies.flatMap(m => m.cast?.map(c => ({ name: c.name, avatarUrl: c.avatarUrl })) || []);
+  const allActorsWithAvatars = watchedMovies.flatMap(m => m.cast?.map(c => ({ name: c.name, avatarUrl: c.avatarUrl })) || []);
   const actorCounts = allActorsWithAvatars.reduce((acc, actor) => {
       if (!acc[actor.name]) {
           acc[actor.name] = { count: 0, avatarUrl: actor.avatarUrl };
@@ -189,15 +190,15 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   }, {} as Record<string, { count: number, avatarUrl: string }>);
   const topActors = Object.entries(actorCounts).sort((a, b) => b[1].count - a[1].count).slice(0, 3).map(([name, data]) => ({ name, avatarUrl: data.avatarUrl, count: data.count }));
   
-  const longestMovie = [...movies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
+  const longestMovie = [...watchedMovies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
   
-  const totalRewatches = movies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
-  const mostRewatched = totalRewatches > 0 ? [...movies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0] : null;
+  const totalRewatches = watchedMovies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
+  const mostRewatched = totalRewatches > 0 ? [...watchedMovies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0] : null;
 
-  const completedSeries = movies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
+  const completedSeries = watchedMovies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
   
   const decadeCounts: Record<string, number> = {};
-  movies.forEach(m => {
+  watchedMovies.forEach(m => {
     const year = m.releaseDate ? parseInt(m.releaseDate.substring(0, 4), 10) : 0;
     if (year) {
       const decade = `${Math.floor(year / 10) * 10}s`;
@@ -207,9 +208,9 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   const decadeData = Object.entries(decadeCounts).map(([name, value]) => ({ name, value })).sort((a,b) => a.name.localeCompare(b.name));
   const topDecade = decadeData.length > 0 ? [...decadeData].sort((a, b) => b.value - a.value)[0] : null;
   
-  const posterPalette = movies
+  const posterPalette = watchedMovies
     .map(m => m.dominantColor)
-    .filter((c): c is string => !!c && c !== 'Gray' && c !== 'Light Gray')
+    .filter((c): c is string => !!c)
     .reduce((acc, color) => {
         acc[color] = (acc[color] || 0) + 1;
         return acc;
@@ -222,7 +223,7 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
     id: 'overview',
     title: `Your ${currentYear} in Review`,
     subtitle: "A cinematic journey through",
-    stats: `${movies.length} stories`,
+    stats: `${watchedMovies.length} stories`,
     visualTheme: 'epic',
     soundscape: soundscapes.epic,
   });
@@ -373,13 +374,13 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
     });
   }
   
-  const goalProgress = watchGoal > 0 ? Math.round((movies.length / watchGoal) * 100) : 0;
+  const goalProgress = watchGoal > 0 ? Math.round((watchedMovies.length / watchGoal) * 100) : 0;
   if (goalProgress >= 100) {
     slides.push({
         id: 'goal-reached',
         title: 'Goal Smashed!',
         subtitle: `You aimed for ${watchGoal} titles and hit`,
-        stats: `${movies.length}!`,
+        stats: `${watchedMovies.length}!`,
         visualTheme: 'epic',
         soundscape: soundscapes.epic
     });
