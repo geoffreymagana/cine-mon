@@ -47,9 +47,7 @@ export const DashboardHeader = ({
   allMovies,
 }: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
-  const searchParams = useSearchParams();
-  const filter = searchParams.get('filter') || 'All';
-
+  
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = React.useState("My");
 
@@ -78,16 +76,11 @@ export const DashboardHeader = ({
     return () => window.removeEventListener('profileUpdated', loadProfileData);
   }, [loadProfileData]);
   
-  const filteredMovies = React.useMemo(() => {
-    if (filter === 'All') return allMovies;
-    return allMovies.filter((movie) => movie.type === filter);
-  }, [allMovies, filter]);
-
-  const isAllSelected = filteredMovies.length > 0 && selectedCount === filteredMovies.length;
+  const isAllSelected = allMovies.length > 0 && selectedCount === allMovies.length;
   
   if (isSelectionMode) {
     return (
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-secondary px-4 md:px-8">
+      <header className="flex h-16 items-center justify-between gap-4 px-4 md:px-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onClearSelection}>
             <X className="h-5 w-5" />
@@ -99,7 +92,7 @@ export const DashboardHeader = ({
                 <Checkbox
                     id="select-all"
                     checked={isAllSelected}
-                    onCheckedChange={() => onSelectAll(filteredMovies)}
+                    onCheckedChange={() => onSelectAll(allMovies)}
                 />
                 <Label htmlFor="select-all" className="text-sm font-medium leading-none cursor-pointer">
                     Select all
@@ -121,7 +114,7 @@ export const DashboardHeader = ({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-8">
+    <header className="flex h-16 items-center justify-between gap-4 px-4 md:px-8">
       <div className="flex items-center gap-4">
         {isMobile ? (
           <Link href="/app/profile" aria-label="Go to profile">

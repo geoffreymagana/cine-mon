@@ -30,7 +30,7 @@ export const GenreFilter = () => {
 
   return (
     <div className="w-full px-4 md:px-8">
-        <div className="hide-scrollbar flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="hide-scrollbar flex items-center gap-2 overflow-x-auto py-2">
         {filters.map((filter) => (
             <Button
             key={filter.value}

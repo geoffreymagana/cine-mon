@@ -8,7 +8,7 @@ import { MovieGrid } from "@/components/movie-grid";
 import { AddMovieDialog } from "@/components/add-movie-dialog";
 import { SearchDialog } from "@/components/search-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -36,10 +36,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AddToCollectionDialog } from "@/components/add-to-collection-dialog";
 import { GenreFilter } from "@/components/genre-filter";
+import { useSearchParams } from "next/navigation";
 
 
 function DashboardContent() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const filter = searchParams.get('filter') || 'All';
 
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [isAddMovieOpen, setIsAddMovieOpen] = React.useState(false);
@@ -72,6 +75,11 @@ function DashboardContent() {
     loadMovies();
   }, [loadMovies]);
 
+  const filteredMovies = useMemo(() => {
+    if (filter === 'All') return movies;
+    return movies.filter((movie) => movie.type === filter);
+  }, [movies, filter]);
+
   const handleSaveMovie = async (movieData: Omit<Movie, "id">) => {
     if (movieData.tmdbId && movies.some(m => m.tmdbId === movieData.tmdbId)) {
         toast({
@@ -103,7 +111,6 @@ function DashboardContent() {
 
         const newItems = arrayMove(items, oldIndex, newIndex);
         
-        // Re-assign sortOrder to all items to persist the manual order
         const now = Date.now();
         const newItemsWithOrder = newItems.map((item, index) => ({ 
             ...item, 
@@ -153,17 +160,19 @@ function DashboardContent() {
     handleClearSelection();
   };
 
-  const handleSelectAll = (filteredMovies: Movie[]) => {
-    if (selectedMovieIds.size === filteredMovies.length) {
+  const handleSelectAll = (moviesToSelect: Movie[]) => {
+    if (selectedMovieIds.size === moviesToSelect.length) {
       setSelectedMovieIds(new Set());
     } else {
-      setSelectedMovieIds(new Set(filteredMovies.map(m => m.id)));
+      setSelectedMovieIds(new Set(moviesToSelect.map(m => m.id)));
     }
   };
 
   return (
     <>
-      <main className="min-h-screen flex flex-col pb-16 md:pb-0 dotted-background-permanent">
+      <div className="flex flex-col h-full">
+        {/* Sticky Header and Filter Bar */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b">
           <DashboardHeader 
             onAddMovieClick={handleOpenAddDialog} 
             onSearchClick={handleOpenSearchDialog}
@@ -173,26 +182,31 @@ function DashboardContent() {
             onClearSelection={handleClearSelection}
             onDeleteSelected={() => setIsDeleteAlertOpen(true)}
             onAddToCollection={() => setIsAddToCollectionOpen(true)}
-            onSelectAll={(filteredMovies) => handleSelectAll(filteredMovies)}
-            allMovies={movies}
+            onSelectAll={handleSelectAll}
+            allMovies={filteredMovies}
           />
           <GenreFilter />
-          <div className="flex-grow p-4 md:p-8">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-                disabled={isSelectionMode}
-              >
-                <MovieGrid
-                  movies={movies}
-                  isSelectionMode={isSelectionMode}
-                  selectedMovieIds={selectedMovieIds}
-                  onSelectMovie={handleSelectMovie}
-                />
-              </DndContext>
-          </div>
-      </main>
+        </div>
+        
+        {/* Scrollable Content */}
+        <div className="flex-grow overflow-y-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            disabled={isSelectionMode || filter !== 'All'}
+          >
+            <div className="p-4 md:p-8 pb-20 md:pb-8">
+              <MovieGrid
+                movies={filteredMovies}
+                isSelectionMode={isSelectionMode}
+                selectedMovieIds={selectedMovieIds}
+                onSelectMovie={handleSelectMovie}
+              />
+            </div>
+          </DndContext>
+        </div>
+      </div>
       
       <AddMovieDialog
         isOpen={isAddMovieOpen}
