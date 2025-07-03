@@ -167,7 +167,7 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
   
   const longestMovie = [...movies].filter(m => m.runtime && m.type === 'Movie').sort((a,b) => (b.runtime || 0) - (a.runtime || 0))[0];
   
-  const totalRewatches = movies.reduce((acc, m) => acc + (movie.rewatchCount || 0), 0);
+  const totalRewatches = movies.reduce((acc, m) => acc + (m.rewatchCount || 0), 0);
   const mostRewatched = totalRewatches > 0 ? [...movies].sort((a,b) => (b.rewatchCount || 0) - (a.rewatchCount || 0))[0] : null;
 
   const completedSeries = movies.filter(m => (m.type === 'TV Show' || m.type === 'Anime') && m.totalEpisodes > 0 && m.watchedEpisodes === m.totalEpisodes);
@@ -233,7 +233,7 @@ export function generateWrappedSlides(movies: Movie[], watchGoal: number = 200):
     subtitle: timeComment,
     stats: `${totalHours.toLocaleString()} hours`,
     visualTheme: 'nostalgic',
-    soundscape: soundscapes['nostalgic'],
+    soundscape: soundscapes.nostalgic,
   });
 
   if (longestMovie && longestMovie.runtime) {
