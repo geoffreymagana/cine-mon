@@ -1,9 +1,9 @@
-
 "use client";
 
 import * as React from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 import { Clapperboard, Film, Tv, Ghost, Heart, Palette } from 'lucide-react';
 
 const filters = [
@@ -29,19 +29,21 @@ export const GenreFilter = () => {
 
   return (
     <div className="w-full px-4 md:px-8">
-      <div className="thin-scrollbar flex items-center gap-2 overflow-x-auto py-2">
-        {filters.map((filter) => (
-          <Button
-            key={filter.value}
-            variant={currentFilter === filter.value ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleFilterChange(filter.value)}
-            className="shrink-0 whitespace-nowrap"
-          >
-            <filter.icon className="mr-2 h-4 w-4" />
-            {filter.name}
-          </Button>
-        ))}
+      <div className="thin-scrollbar overflow-x-auto py-2">
+        <div className="flex w-max items-center gap-2">
+          {filters.map((filter) => (
+            <Button
+              key={filter.value}
+              variant={currentFilter === filter.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleFilterChange(filter.value)}
+              className="shrink-0 whitespace-nowrap"
+            >
+              <filter.icon className="mr-2 h-4 w-4" />
+              {filter.name}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );
