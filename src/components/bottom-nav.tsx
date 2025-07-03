@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Clapperboard, Film, Tv, Shuffle, Ghost, Heart, Palette } from 'lucide-react';
+import { Clapperboard, Film, Tv, Shuffle, Ghost, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
 
@@ -20,7 +20,6 @@ export const BottomNav = ({ filter, setFilter, onSurpriseMeClick }: BottomNavPro
   ];
   
   const rightItems = [
-    { name: 'Animation', icon: Palette, filter: 'Animation' as const },
     { name: 'K-Drama', icon: Heart, filter: 'K-Drama' as const },
     { name: 'Anime', icon: Ghost, filter: 'Anime' as const },
   ];
