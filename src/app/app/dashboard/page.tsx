@@ -170,7 +170,7 @@ function DashboardContent() {
 
   return (
     <>
-      <div className="flex flex-col h-full overflow-x-hidden">
+      <div className="flex flex-col h-full">
         {/* Sticky Header */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
           <DashboardHeader 
@@ -188,7 +188,7 @@ function DashboardContent() {
         </div>
         
         {/* Horizontally-Scrollable Filter Bar */}
-        <div className="w-full overflow-x-hidden border-b">
+        <div className="w-full border-b">
           <GenreFilter />
         </div>
         
