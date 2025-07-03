@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles, LayoutDashboard, TrendingUp } from "lucide-react";
+import { Film, Tv, Clapperboard, Shuffle, Sparkles, LayoutDashboard, TrendingUp, Ghost, Palette, Heart } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -145,9 +145,21 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                             <SidebarMenuButton isActive={filter === 'Anime'} onClick={() => setFilter('Anime')}>
-                                <Popcorn />
+                                <Ghost />
                                 <span>Anime</span>
                             </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton isActive={filter === 'K-Drama'} onClick={() => setFilter('K-Drama')}>
+                                    <Heart />
+                                    <span>K-Drama</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton isActive={filter === 'Animation'} onClick={() => setFilter('Animation')}>
+                                    <Palette />
+                                    <span>Animation</span>
+                                </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarSeparator />
                             {!isMobile && (

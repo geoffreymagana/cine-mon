@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Clapperboard, Film, Tv, Popcorn, Shuffle } from 'lucide-react';
+import { Clapperboard, Film, Tv, Shuffle, Ghost, Heart, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Movie } from '@/lib/types';
 
@@ -16,11 +16,13 @@ export const BottomNav = ({ filter, setFilter, onSurpriseMeClick }: BottomNavPro
   const leftItems = [
     { name: 'All', icon: Clapperboard, filter: 'All' as const },
     { name: 'Movies', icon: Film, filter: 'Movie' as const },
+    { name: 'TV Shows', icon: Tv, filter: 'TV Show' as const },
   ];
   
   const rightItems = [
-    { name: 'TV Shows', icon: Tv, filter: 'TV Show' as const },
-    { name: 'Anime', icon: Popcorn, filter: 'Anime' as const },
+    { name: 'Animation', icon: Palette, filter: 'Animation' as const },
+    { name: 'K-Drama', icon: Heart, filter: 'K-Drama' as const },
+    { name: 'Anime', icon: Ghost, filter: 'Anime' as const },
   ];
 
   const NavButton = ({ item, isActive, onClick }: { item: { name: string; icon: React.ElementType }, isActive: boolean, onClick: () => void }) => (

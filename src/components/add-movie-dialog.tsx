@@ -43,7 +43,7 @@ const movieSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   posterUrl: z.string().min(1, "A poster image is required."),
-  type: z.enum(["Movie", "TV Show", "Anime"]),
+  type: z.enum(["Movie", "TV Show", "Anime", "K-Drama", "Animation"]),
   status: z.enum(["Watching", "Completed", "On-Hold", "Dropped", "Plan to Watch"]),
   watchedEpisodes: z.coerce.number().min(0),
   totalEpisodes: z.coerce.number().min(1),
@@ -267,9 +267,11 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        <SelectItem value="Movie">Movie</SelectItem>
-                        <SelectItem value="TV Show">TV Shows</SelectItem>
-                        <SelectItem value="Anime">Anime</SelectItem>
+                          <SelectItem value="Movie">Movie</SelectItem>
+                          <SelectItem value="TV Show">TV Show</SelectItem>
+                          <SelectItem value="Anime">Anime</SelectItem>
+                          <SelectItem value="K-Drama">K-Drama</SelectItem>
+                          <SelectItem value="Animation">Animation</SelectItem>
                         </SelectContent>
                     </Select>
                     <FormMessage />

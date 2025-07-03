@@ -37,7 +37,7 @@ const movieEditSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   posterUrl: z.string().url('Must be a valid URL'),
   backdropUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  type: z.enum(['Movie', 'TV Show', 'Anime']),
+  type: z.enum(['Movie', 'TV Show', 'Anime', 'K-Drama', 'Animation']),
   status: z.enum(['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch']),
   rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
@@ -320,6 +320,8 @@ export default function MovieEditPage() {
                                   <SelectItem value="Movie">Movie</SelectItem>
                                   <SelectItem value="TV Show">TV Show</SelectItem>
                                   <SelectItem value="Anime">Anime</SelectItem>
+                                  <SelectItem value="K-Drama">K-Drama</SelectItem>
+                                  <SelectItem value="Animation">Animation</SelectItem>
                               </SelectContent>
                           </Select>
                           <FormMessage />

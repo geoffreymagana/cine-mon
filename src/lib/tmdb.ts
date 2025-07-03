@@ -341,11 +341,31 @@ export const getTvDetails = (id: number) => fetchDetails(id, 'tv');
 
 export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie, 'id'>> => {
     const isMovie = tmdbResult.media_type === 'movie' || !('name' in tmdbResult);
-    const isAnime = tmdbResult.genres?.some((g: any) => g.id === 16) || tmdbResult.origin_country?.includes('JP');
     const officialTrailer = tmdbResult.videos?.results?.find(
         (vid: any) => vid.site === 'YouTube' && vid.type === 'Trailer'
     );
     const posterUrl = getPosterUrl(tmdbResult.poster_path);
+
+    const originCountry = tmdbResult.origin_country?.[0] || tmdbResult.production_countries?.[0]?.iso_3166_1;
+    const isAnimationGenre = tmdbResult.genres?.some((g: any) => g.id === 16);
+
+    let finalType: 'Movie' | 'TV Show' | 'Anime' | 'K-Drama' | 'Animation';
+
+    if (originCountry === 'KR') {
+        if (isAnimationGenre) {
+            finalType = 'Anime';
+        } else {
+            finalType = 'K-Drama';
+        }
+    } else if (originCountry === 'JP') {
+        finalType = 'Anime';
+    } else if (isAnimationGenre) {
+        finalType = 'Animation';
+    } else if (isMovie) {
+        finalType = 'Movie';
+    } else {
+        finalType = 'TV Show';
+    }
 
     let seasons: Season[] = [];
     let totalEpisodes = isMovie ? 1 : (tmdbResult.number_of_episodes || 0);
@@ -393,7 +413,7 @@ export const mapTmdbResultToMovie = async (tmdbResult: any): Promise<Omit<Movie,
         description: tmdbResult.overview,
         posterUrl: posterUrl,
         backdropUrl: getPosterUrl(tmdbResult.backdrop_path, 'original'),
-        type: isMovie ? 'Movie' : (isAnime ? 'Anime' : 'TV Show'),
+        type: finalType,
         status: 'Plan to Watch',
         watchedEpisodes: 0,
         totalEpisodes: totalEpisodes,
