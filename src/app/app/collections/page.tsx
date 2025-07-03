@@ -307,7 +307,7 @@ export default function CollectionsPage() {
     };
 
     return (
-        <>
+        <div className="flex flex-col h-full overflow-hidden">
             {selectionModeFor && (
                 <div className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 sm:gap-4 border-b bg-secondary px-4 md:px-8">
                     <div className="flex items-center gap-2 sm:gap-4">
@@ -346,18 +346,22 @@ export default function CollectionsPage() {
                     </div>
                 </div>
             )}
-            <div className={cn("flex min-h-screen flex-col bg-background p-4 sm:p-8", !selectionModeFor && "dotted-background-permanent")}>
-                <div className="w-full max-w-7xl mx-auto">
-                    <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-8 font-semibold text-lg hover:text-primary transition-colors">
+            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b p-4 sm:p-8 pb-4">
+                 <div className="w-full max-w-7xl mx-auto">
+                    <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-4 font-semibold text-lg hover:text-primary transition-colors">
                         <ArrowLeft className="w-5 h-5"/>
                         <span>Back to Collection</span>
                     </Link>
 
-                    <div className="text-left mb-8">
+                    <div className="text-left">
                         <h1 className="text-3xl sm:text-5xl font-bold font-headline">My Vaults & Spotlights</h1>
                         <p className="text-muted-foreground mt-2">Curate personal collections of your favorite and must-watch titles.</p>
                     </div>
-                    
+                 </div>
+            </div>
+
+            <div className="flex-grow overflow-y-auto">
+                 <div className="w-full max-w-7xl mx-auto p-4 sm:p-8 pt-4">
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <Tabs defaultValue="vaults" className="w-full">
                             <TabsList className="mb-8 grid w-full grid-cols-2">
@@ -374,6 +378,7 @@ export default function CollectionsPage() {
                     </DndContext>
                 </div>
             </div>
+            
             <CreateCollectionDialog
                 isOpen={isDialogOpen}
                 setIsOpen={setIsDialogOpen}
@@ -394,6 +399,6 @@ export default function CollectionsPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     );
 }

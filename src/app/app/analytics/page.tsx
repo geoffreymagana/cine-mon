@@ -702,39 +702,46 @@ export default function AnalyticsPage() {
     );
 
     return (
-        <div className="bg-background min-h-screen">
-            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-                <div className="flex items-center gap-2 mb-8">
-                     <Button variant="ghost" onClick={() => router.push('/app/dashboard')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Dashboard
-                    </Button>
-                </div>
-                <div className="flex flex-col xl:flex-row items-baseline justify-between gap-4 border-b border-border pb-6 mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold tracking-tight">Your Watchverse</h1>
-                        <p className="mt-2 text-lg text-muted-foreground">A deep dive into your cinematic universe.</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button 
-                            onClick={() => setActiveTab('basic')} 
-                            variant={activeTab === 'basic' ? 'default' : 'outline'}
-                        >
-                            Basic Stats
-                        </Button>
-                        <Button 
-                            onClick={() => setActiveTab('geek')} 
-                            variant={activeTab === 'geek' ? 'default' : 'outline'}
-                        >
-                            Geek Out
+        <div className="flex flex-col h-full overflow-hidden">
+             <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b p-4 sm:p-6 lg:p-8">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center gap-2 mb-8">
+                        <Button variant="ghost" onClick={() => router.push('/app/dashboard')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Dashboard
                         </Button>
                     </div>
-                </div>
-
-                <div key={isMounted ? 'mounted' : 'initial'}>
-                    {chartGrids}
+                    <div className="flex flex-col xl:flex-row items-baseline justify-between gap-4">
+                        <div>
+                            <h1 className="text-4xl font-bold tracking-tight">Your Watchverse</h1>
+                            <p className="mt-2 text-lg text-muted-foreground">A deep dive into your cinematic universe.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                onClick={() => setActiveTab('basic')} 
+                                variant={activeTab === 'basic' ? 'default' : 'outline'}
+                            >
+                                Basic Stats
+                            </Button>
+                            <Button 
+                                onClick={() => setActiveTab('geek')} 
+                                variant={activeTab === 'geek' ? 'default' : 'outline'}
+                            >
+                                Geek Out
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div className="flex-grow overflow-y-auto">
+                <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+                     <div key={isMounted ? 'mounted' : 'initial'}>
+                        {chartGrids}
+                    </div>
+                </div>
+            </div>
+
              <EditGoalDialog 
                 isOpen={isGoalDialogOpen}
                 setIsOpen={setIsGoalDialogOpen}

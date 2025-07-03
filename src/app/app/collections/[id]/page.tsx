@@ -160,12 +160,8 @@ export default function CollectionDetailPage() {
                         </Link>
                     </div>
                     
-                    <div className="flex justify-between items-start mb-8">
-                        <div className="max-w-3xl">
-                            <p className="text-primary font-semibold">{collection.type}</p>
-                            <h1 className="text-4xl lg:text-5xl font-bold font-headline mt-1">{collection.name}</h1>
-                            <p className="mt-2 text-muted-foreground">{collection.description}</p>
-                        </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <p className="text-primary font-semibold">{collection.type}</p>
                         <div className="flex gap-2">
                             <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}><Edit className="mr-2"/>Edit</Button>
                             <AlertDialog>
@@ -186,6 +182,11 @@ export default function CollectionDetailPage() {
                                 </AlertDialogContent>
                             </AlertDialog>
                         </div>
+                    </div>
+
+                    <div className="mb-8">
+                        <h1 className="text-4xl lg:text-5xl font-bold font-headline">{collection.name}</h1>
+                        <p className="mt-2 text-muted-foreground max-w-3xl">{collection.description}</p>
                     </div>
 
                     <DndContext
