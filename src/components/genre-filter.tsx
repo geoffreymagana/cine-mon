@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from 'react';
@@ -29,21 +28,19 @@ export const GenreFilter = () => {
 
   return (
     <div className="w-full px-4 md:px-8">
-      <div className="thin-scrollbar flex items-center gap-2 overflow-x-auto py-2 min-w-0">
-        <div className="flex items-center gap-2 w-max">
-          {filters.map((filter) => (
-            <Button
-              key={filter.value}
-              variant={currentFilter === filter.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handleFilterChange(filter.value)}
-              className="shrink-0 whitespace-nowrap"
-            >
-              <filter.icon className="mr-2 h-4 w-4" />
-              {filter.name}
-            </Button>
-          ))}
-        </div>
+      <div className="thin-scrollbar flex items-center gap-2 overflow-x-auto py-2">
+        {filters.map((filter) => (
+          <Button
+            key={filter.value}
+            variant={currentFilter === filter.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleFilterChange(filter.value)}
+            className="shrink-0 whitespace-nowrap"
+          >
+            <filter.icon className="mr-2 h-4 w-4" />
+            {filter.name}
+          </Button>
+        ))}
       </div>
     </div>
   );
