@@ -170,7 +170,7 @@ function DashboardContent() {
 
   return (
     <>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full overflow-x-hidden">
         {/* Sticky Header */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
           <DashboardHeader 
