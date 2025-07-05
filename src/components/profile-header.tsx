@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BadgeCheck, Camera, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { MovieService } from '@/lib/movie-service';
 
 export const ProfileHeader = () => {
     const { toast } = useToast();
@@ -18,21 +19,22 @@ export const ProfileHeader = () => {
     const avatarInputRef = React.useRef<HTMLInputElement>(null);
     const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
-    const loadData = React.useCallback(() => {
+    const loadData = React.useCallback(async () => {
         try {
-            const storedAvatar = localStorage.getItem('profileAvatar');
+            const [storedAvatar, storedBanner, storedName, storedUsername] = await Promise.all([
+                MovieService.getSetting('profileAvatar'),
+                MovieService.getSetting('profileBanner'),
+                MovieService.getSetting('profileName'),
+                MovieService.getSetting('profileUsername'),
+            ]);
+            
             if (storedAvatar) setAvatarUrl(storedAvatar);
-
-            const storedBanner = localStorage.getItem('profileBanner');
             if (storedBanner) setBannerUrl(storedBanner);
-
-            const storedName = localStorage.getItem('profileName');
             if (storedName) setName(storedName);
-
-            const storedUsername = localStorage.getItem('profileUsername');
             if (storedUsername) setUsername(storedUsername);
+
         } catch (error) {
-            console.error("Failed to access localStorage:", error);
+            console.error("Failed to load profile data from DB:", error);
         }
     }, []);
 
@@ -49,20 +51,21 @@ export const ProfileHeader = () => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
                 const result = reader.result as string;
                 try {
                     if (type === 'avatar') {
                         setAvatarUrl(result);
-                        localStorage.setItem('profileAvatar', result);
+                        await MovieService.setSetting('profileAvatar', result);
                         toast({ title: "Avatar updated!" });
                     } else {
                         setBannerUrl(result);
-                        localStorage.setItem('profileBanner', result);
+                        await MovieService.setSetting('profileBanner', result);
                         toast({ title: "Banner updated!" });
                     }
+                    window.dispatchEvent(new Event('profileUpdated'));
                 } catch (error) {
-                    console.error("Failed to save to localStorage:", error);
+                    console.error("Failed to save to DB:", error);
                     toast({ title: "Error", description: "Could not save image.", variant: "destructive" });
                 }
             };
@@ -117,11 +120,6 @@ export const ProfileHeader = () => {
                         </div>
                         <p className="text-muted-foreground">@{username}</p>
                     </div>
-                    {/* This button is decorative for now. Functionality can be added to open an edit modal */}
-                    {/* <Button variant="outline" size="icon">
-                        <Edit className="h-5 w-5"/>
-                        <span className="sr-only">Edit Profile</span>
-                    </Button> */}
                 </div>
             </div>
         </div>

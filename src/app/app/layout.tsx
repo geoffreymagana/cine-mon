@@ -3,8 +3,8 @@
 
 import * as React from "react";
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter, SidebarInset, SidebarGroup, SidebarSeparator } from "@/components/ui/sidebar";
-import { Film, Tv, Clapperboard, Shuffle, Popcorn, Sparkles } from "lucide-react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { LayoutDashboard, LibraryBig, TrendingUp, DownloadCloud, Shuffle, LayoutGrid } from "lucide-react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SpinWheelDialog } from "@/components/spin-wheel-dialog";
 import type { Movie } from "@/lib/types";
 import { Suspense } from "react";
+import { migrateFromLocalStorage } from "@/lib/migrate-storage";
+import { MovieService } from "@/lib/movie-service";
+import { version } from '../../../package.json';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
     const pathname = usePathname();
     const isMobile = useIsMobile();
     
@@ -30,49 +31,39 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const [name, setName] = React.useState("Cine-Mon User");
     const [username, setUsername] = React.useState("cinemon_user");
     
-    const filter = searchParams.get('filter') || 'All';
-
     // This will check if the current page is a movie detail or edit page
-    const isMoviePage = pathname.startsWith('/app/movie');
+    const isImmersivePage = pathname.startsWith('/app/movie') || pathname.startsWith('/app/canvas') || pathname.startsWith('/app/wrapped');
     
-    React.useEffect(() => {
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) setAllMovies(JSON.parse(storedMovies));
+    const loadData = React.useCallback(async () => {
+        const movies = await MovieService.getMovies();
+        setAllMovies(movies);
 
-            const storedAvatar = localStorage.getItem('profileAvatar');
-            if (storedAvatar) setAvatarUrl(storedAvatar);
-
-            const storedName = localStorage.getItem('profileName');
-            if (storedName) setName(storedName);
-
-            const storedUsername = localStorage.getItem('profileUsername');
-            if (storedUsername) setUsername(storedUsername);
-
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
+        const [profileName, profileUsername, profileAvatar] = await Promise.all([
+            MovieService.getSetting('profileName'),
+            MovieService.getSetting('profileUsername'),
+            MovieService.getSetting('profileAvatar')
+        ]);
         
-        const handleProfileUpdate = () => {
-             const storedName = localStorage.getItem('profileName');
-             if (storedName) setName(storedName);
-             const storedUsername = localStorage.getItem('profileUsername');
-             if (storedUsername) setUsername(storedUsername);
-             const storedAvatar = localStorage.getItem('profileAvatar');
-             if (storedAvatar) setAvatarUrl(storedAvatar);
-        }
-        window.addEventListener('profileUpdated', handleProfileUpdate);
-        return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-
+        if (profileName) setName(profileName);
+        if (profileUsername) setUsername(profileUsername);
+        if (profileAvatar) setAvatarUrl(profileAvatar);
     }, []);
 
-    const setFilter = (newFilter: string) => {
-        router.push(`/app/dashboard?filter=${newFilter}`);
-    };
-    
-    if (isMoviePage) {
-        // Render movie pages without the main sidebar for a full-screen experience.
-        // We still need the TooltipProvider for components on this page.
+    React.useEffect(() => {
+        const runMigration = async () => {
+            await migrateFromLocalStorage();
+            loadData(); // Load data after migration
+        };
+        runMigration();
+
+        // Listen for custom event to reload profile data
+        const handleProfileUpdate = () => loadData();
+        window.addEventListener('profileUpdated', handleProfileUpdate);
+        return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+    }, [loadData]);
+
+    if (isImmersivePage) {
+        // Render immersive pages without the main sidebar for a full-screen experience.
         return (
             <TooltipProvider>
               {children}
@@ -90,80 +81,84 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
                 </SidebarHeader>
                 <SidebarContent>
-                {!isMobile && (
-                    <>
-                        <SidebarGroup>
+                    <SidebarGroup>
                         <SidebarMenu>
-                            <SidebarMenuItem>
-                            <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Suggest something to watch">
-                                <Shuffle />
-                                <span>Surprise Me</span>
-                            </SidebarMenuButton>
+                             <SidebarMenuItem>
+                                <SidebarMenuButton onClick={() => setIsSpinWheelOpen(true)} tooltip="Surprise Me!">
+                                    <Shuffle />
+                                    <span>Surprise Me!</span>
+                                </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
-                        </SidebarGroup>
-                        <SidebarSeparator />
-                        <SidebarGroup>
-                            <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton onClick={() => router.push('/app/collections')} tooltip="My Vaults & Spotlights" isActive={pathname.startsWith('/app/collections')}>
-                                        <Sparkles />
+                    </SidebarGroup>
+                    <SidebarSeparator />
+                    <SidebarGroup>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname.startsWith('/app/dashboard')}>
+                                    <Link href="/app/dashboard">
+                                        <LayoutDashboard />
+                                        <span>Dashboard</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Collections" isActive={pathname.startsWith('/app/collections')}>
+                                     <Link href="/app/collections">
+                                        <LibraryBig />
                                         <span>Collections</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            </SidebarMenu>
-                        </SidebarGroup>
-                        <SidebarSeparator />
-                        <SidebarGroup>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                            <SidebarMenuButton isActive={filter === 'All' && pathname.startsWith('/app/dashboard')} onClick={() => setFilter('All')}>
-                                <Clapperboard />
-                                <span>All</span>
-                            </SidebarMenuButton>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Canvas" isActive={pathname.startsWith('/app/canvas')}>
+                                    <Link href="/app/canvas">
+                                        <LayoutGrid />
+                                        <span>Canvas</span>
+                                    </Link>
+                                </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                            <SidebarMenuButton isActive={filter === 'Movie'} onClick={() => setFilter('Movie')}>
-                                <Film />
-                                <span>Movies</span>
-                            </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                            <SidebarMenuButton isActive={filter === 'TV Show'} onClick={() => setFilter('TV Show')}>
-                                <Tv />
-                                <span>TV Shows</span>
-                            </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                            <SidebarMenuButton isActive={filter === 'Anime'} onClick={() => setFilter('Anime')}>
-                                <Popcorn />
-                                <span>Anime</span>
-                            </SidebarMenuButton>
+                                <SidebarMenuButton asChild tooltip="Analytics" isActive={pathname.startsWith('/app/analytics')}>
+                                    <Link href="/app/analytics">
+                                        <TrendingUp />
+                                        <span>Analytics</span>
+                                    </Link>
+                                </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
-                        </SidebarGroup>
-                        <SidebarSeparator />
-                    </>
-                    )}
+                    </SidebarGroup>
+                    <SidebarSeparator />
+                     <SidebarGroup>
+                        <SidebarMenu>
+                             <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Backup & Export" isActive={pathname.startsWith('/app/export')}>
+                                    <Link href="/app/export">
+                                        <DownloadCloud />
+                                        <span>Backup & Export</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
                 </SidebarContent>
-                {!isMobile && (
-                    <SidebarFooter>
-                        <div className="p-2">
-                            <Link href="/app/profile">
-                                <Button variant="ghost" className="w-full justify-start h-auto p-2">
-                                    <Avatar className="h-10 w-10 mr-3">
-                                        <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
-                                        <AvatarFallback>U</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-semibold">{name}</span>
-                                        <span className="text-xs text-muted-foreground">@{username}</span>
-                                    </div>
-                                </Button>
-                            </Link>
-                        </div>
-                    </SidebarFooter>
-                )}
+                <SidebarFooter>
+                    <div className="p-2">
+                        <Link href="/app/profile">
+                            <Button variant="ghost" className="w-full justify-start h-auto p-2">
+                                <Avatar className="h-10 w-10 mr-3">
+                                    <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="person portrait"/>
+                                    <AvatarFallback>U</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col items-start">
+                                    <span className="font-semibold">{name}</span>
+                                    <span className="text-xs text-muted-foreground">@{username}</span>
+                                </div>
+                            </Button>
+                        </Link>
+                    </div>
+                    <p className="px-4 py-2 text-center text-xs text-muted-foreground">v{version}</p>
+                </SidebarFooter>
             </Sidebar>
 
             <TooltipProvider>
@@ -172,7 +167,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
               </SidebarInset>
             </TooltipProvider>
 
-            {isMobile && <BottomNav filter={filter as any} setFilter={setFilter} onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
+            {isMobile && <BottomNav onSurpriseMeClick={() => setIsSpinWheelOpen(true)} />}
 
             <SpinWheelDialog
                 isOpen={isSpinWheelOpen}

@@ -2,6 +2,150 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] (2025-07-04)
+
+### Features
+
+#### Expanded Collection & Tracking
+-   **New Categories**: Introduced "K-Drama" and "Animation" as top-level collection types, allowing for more specific library organization.
+-   **Smart Classification**: When importing from TMDB, titles are now automatically categorized.
+    -   Korean TV shows and movies are classified as "K-Drama".
+    -   Japanese animated shows are now "Anime".
+    -   Animated content from other countries is now "Animation".
+-   **Consistent Episode Tracking**: All series types (TV Shows, Anime, K-Drama, Animation) now share the same detailed season and episode tracking UI, including progress bars and completion percentages.
+-   **Automated Status Updates**:
+    -   Setting a series to "Completed" now automatically marks all episodes as watched.
+    -   Watching the first episode or season of a title in "Plan to Watch" automatically updates its status to "Watching".
+    -   Watching the final episode of a series automatically marks the entire series as "Completed".
+
+#### UI & UX Polish
+-   **Radiating Button Animation**: The secondary CTA buttons on the landing page now feature a more engaging radial fill hover animation.
+
+### Fixes
+
+#### "Wrapped" Feature
+-   **Accurate Visual Vibe**: Fixed a critical bug where the "Visual Vibe" (dominant poster color) was calculated using the entire collection instead of only watched titles, and incorrectly filtered certain colors. The calculation is now accurate and consistent with the main analytics page.
+-   **Grammar & Layout Correction**: Corrected the text layout on the "Longest Journey" slide to be grammatically correct and more readable.
+-   **Robust Audio Controller**: Fixed a bug where audio would auto-mute after a slide transition, ensuring the user's play/pause state is respected throughout the slideshow.
+-   **Sassy Error Handling**: Replaced the generic "error" state with a friendly, on-brand slide that encourages users to build their collection when there's not enough data for a full Wrapped experience.
+-   **Dynamic Year**: The "Wrapped" year is now dynamically generated, ensuring it's always current.
+-   **Crash Fix**: Resolved a `TypeError` caused by a typo (`movie` vs `m`) that crashed the rewatch calculation logic.
+
+---
+
+## [1.5.0] (2025-07-03)
+
+### Features
+
+#### Canvas Enhancements & Productivity
+-   **Keyboard-First Workflow**: Added extensive keyboard shortcuts for a faster canvas experience, including `Copy (Cmd+C)`, `Cut (Cmd+X)`, `Paste (Cmd+V)`, `Select All (Cmd+A)`, and creation shortcuts (`Cmd+N` for cards, `Cmd+Shift+N` for sticky notes).
+-   **Web Bookmarks**: Users can now add "Web Page" nodes to the canvas by pasting a URL, creating a clean link preview card. Double-clicking a bookmark opens the link in a new tab.
+-   **Read-Only Mode**: A new "Read-Only" mode can be toggled to lock the canvas and prevent accidental edits while still allowing navigation.
+-   **Performance View**: When zoomed out, the canvas now intelligently simplifies its view: text becomes abstract blocks and movie posters switch to lightweight placeholders to maintain performance.
+
+#### Data Portability & Safety
+-   **Full Backup & Restore**: The export feature now creates a comprehensive JSON backup of the entire library, including all titles, collections, canvases, and settings.
+-   **Intelligent Import**: The import process is now much safer and more powerful. It intelligently detects conflicts and allows users to either **overwrite** existing data or **skip** duplicates, giving them full control.
+
+#### Analytics
+-   **Decade Distribution Chart**: A new chart on the analytics page visualizes which movie release decades the user watches most, replacing the old "Collection Timeline" placeholder.
+
+### Fixes
+
+#### Core Functionality
+-   **Data Export**: Fixed a critical bug where the export function was reading from the wrong data source (`localStorage`), causing it to fail for users with existing collections.
+-   **Data Import**: Resolved a `TypeError` that could crash the profile page when importing certain files.
+
+#### Canvas Stability
+-   **Edge Intersection**: Corrected a `ReferenceError` that occurred when dragging a node over an edge, making the edge-splitting feature reliable.
+-   **UI Crash**: Fixed a bug where the canvas page would crash due to a missing `Badge` component import when entering read-only mode.
+
+#### UI Polish
+-   **Analytics Tooltip**: Corrected the font weight on the analytics color palette tooltip, ensuring text is no longer incorrectly bold.
+
+---
+
+## [1.4.0] (2025-07-02)
+
+### Features
+
+#### Multi-Select & Bulk Actions
+-   **Selection Mode**: Users can now enter a "selection mode" from the dashboard header to select multiple movie or show cards at once.
+-   **Contextual Header**: When one or more items are selected, a new contextual header appears, showing the number of selected items and providing new bulk action buttons.
+-   **Bulk Delete**: Users can now delete multiple items from their collection simultaneously, with a confirmation dialog to prevent accidental data loss.
+-   **Bulk Add to Collection**: Implemented a new dialog allowing users to add multiple selected items to any existing Vault or Spotlight, or to create a new collection on the fly.
+
+#### Collection Management
+-   **Drag-and-Drop Reordering**: Vaults and Spotlights can now be reordered via drag-and-drop on the collections page, with the order saved across sessions.
+-   **Share Placeholder**: Added a share button to Spotlight cards, preparing for future sharing functionality.
+
+### Fixes
+
+#### Data Integrity & Core Functionality
+-   **Robust Data Import**: Fixed a critical `DatabaseClosedError` that could occur when importing malformed JSON data by implementing a more robust data sanitization process.
+-   **Correct Item Sorting**: Newly imported titles now correctly appear at the top of the main collection view.
+
+#### Component Functionality
+-   **Dialog Data Loading**: Fixed bugs where the "Add to Collection" and "Edit Collection" dialogs would appear empty due to incorrect data loading.
+-   **Profile Avatar**: Corrected an issue preventing the user's avatar from displaying in the dashboard header.
+
+#### Canvas
+-   **Node Sizing**: Imported movie cards now appear at a more manageable default size on the canvas.
+-   **Auto-Layout Edges**: Fixed a bug where using auto-layout would incorrectly reset custom edge types.
+
+#### UI Responsiveness & Layout
+-   **Search Dialog Refactor**: Completely rebuilt the layout of the TMDB search dialog to be fully responsive. The "Import" button is no longer hidden on smaller screens with long titles.
+-   **Changelog Alignment**: Corrected a minor vertical alignment issue in the changelog's timeline view, ensuring the version dot and badge are perfectly lined up.
+
+#### Visual Polish & Theming
+-   **Contextual Header Opacity**: The contextual header for multi-select actions now has a solid background, fixing a transparency bug where underlying content would show through.
+-   **Theme Contrast Fix**: Resolved a major bug where the app's light/dark mode theme was incorrectly affecting the text color on public pages (Landing, Changelog, Legal), making text unreadable. These pages now maintain a consistent, high-contrast look.
+
+---
+
+### Chores
+
+- **feat(ui): Implement bulk "Add to Collection" and fix UI issues**
+
+## [1.3.0] (2025-07-01)
+
+### Features
+
+#### Interactive Canvas {Desktop Only}
+
+-   **Free-form Canvas:** Introduced an infinite, zoomable canvas powered by React Flow for visual brainstorming and organisation.
+-   **Rich Node Support:** Add resizable text cards with markdown support, or import full movie or series cards directly from your collection.
+-   **Intuitive Connections:** Connect nodes with customizable edges (curved, straight) and colours.
+-   **Edge Intersection Splitting:** Drag and drop a node directly onto an edge to automatically split the connection and insert the node.
+
+![Canvas](https://res.cloudinary.com/dwqwwb2fh/image/upload/v1751341663/ocfgfigr3d8zghmfil2m.png)
+
+#### Command Palette & Keyboard-First UI
+
+-   **Command Palette (`Cmd+K`):** Added a central, searchable command palette to access all canvas actions (add node, save, zoom), streamlining the UI.
+-   **Keyboard Shortcuts:** Implemented context-aware shortcuts, including `Backspace` to delete selected nodes/edges.
+
+### Fixes
+
+#### Canvas Stability & Functionality
+
+-   **Edge Splitting Logic:** Corrected the `onNodeDragStop` logic to ensure edges split correctly, re-assigning `source` and `target` properties properly.
+-   **State Hydration:** Fixed a critical bug that caused canvases to crash on reload by correctly re-hydrating nodes from `localStorage` with their required function props.
+-   **Robust Intersection Detection:** Replaced fragile DOM-based edge detection (`elementsFromPoint`) with a more reliable geometric calculation, preventing intersection failures.
+-   **Build & Runtime Errors:** Resolved multiple underlying issues, including incorrect `'use client'` directive placement, a missing `cmdk` dependency for the command palette, and usage of deprecated React Flow APIs.
+
+### Docs
+
+
+-   **In-App Guide Update:** Updated the "Getting Started" guide within the app to include instructions and use cases for the new Canvas feature.
+
+---
+
+### Chores
+
+-   **UI Cleanup:** Consolidated scattered canvas UI controls into the new command palette for a cleaner, more focused editing experience.
+ ([eda6721](https://github.com/geoffreymagana/cine-mon/commit/eda672165126aa702accacb8c5c1d29663f82ce1))
+
 ## [1.2.0] (2025-06-30)
 
 ### Features

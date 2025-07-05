@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -14,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Check, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MovieService } from "@/lib/movie-service";
 
 const spinnerCaptions = [
   "Rewinding film reels...",
@@ -117,6 +119,7 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
       
     setIsSpinning(false);
     setSelectedMovie(finalMovie);
+    await MovieService.setSetting('lastSpunMovieId', finalMovie.id);
       
     setCaptionOpacity(0);
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -146,32 +149,23 @@ export const SpinWheelDialog = ({ isOpen, setIsOpen, movies }: SpinWheelDialogPr
     setIsOpen(open);
   }
   
-  const handleAcceptFate = () => {
+  const handleAcceptFate = async () => {
     if (!selectedMovie) return;
 
     try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const allMovies: Movie[] = JSON.parse(storedMovies);
-        const updatedMovies = allMovies.map(movie => {
-          if (movie.id === selectedMovie.id) {
-            const newRewatchCount = (movie.rewatchCount || 0) + 1;
-            toast({
-              title: "Fate Accepted!",
-              description: `You've now watched "${selectedMovie.title}" ${newRewatchCount} times.`,
-            });
-            return {
-              ...movie,
-              rewatchCount: newRewatchCount,
-            };
-          }
-          return movie;
+        const newRewatchCount = (selectedMovie.rewatchCount || 0) + 1;
+        await MovieService.updateMovie(selectedMovie.id, {
+            rewatchCount: newRewatchCount,
         });
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
+        
+        toast({
+          title: "Fate Accepted!",
+          description: `You've now watched "${selectedMovie.title}" ${newRewatchCount} times.`,
+        });
+
         setIsOpen(false);
-      }
     } catch (error) {
-      console.error("Failed to update movie in localStorage:", error);
+      console.error("Failed to update movie:", error);
       toast({
         title: "Error",
         description: "Could not update your watch count.",

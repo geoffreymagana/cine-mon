@@ -1,13 +1,10 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html {
   scroll-behavior: smooth;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 @layer base {
@@ -93,6 +90,13 @@ body {
 
   html.theme-blue { --primary: 217 91% 60%; --ring: 217 91% 60%; }
   html.dark.theme-blue { --primary: 217 91% 70%; --ring: 217 91% 70%; }
+
+  .landing-page-text {
+    color: hsl(var(--foreground));
+  }
+  .dark .landing-page-text {
+      color: white;
+  }
 }
 
 @layer base {
@@ -102,6 +106,28 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline);
+  }
+}
+
+@layer components {
+    .btn-fill-hover {
+        @apply relative overflow-hidden transition-colors duration-300 ease-in-out;
+        z-index: 1;
+    }
+
+    .btn-fill-hover::before {
+        content: '';
+        @apply absolute top-0 left-0 w-full h-full bg-neutral-200;
+        transition: clip-path 0.4s ease-in-out;
+        clip-path: circle(0% at 50% 50%);
+        z-index: -1;
+    }
+
+    .btn-fill-hover:hover::before {
+        clip-path: circle(150% at 50% 50%);
+    }
 }
 
 .revolving-carousel-container {
@@ -211,7 +237,207 @@ body {
   background: hsl(var(--primary));
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Thin Scrollbar styles */
+.thin-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) hsl(var(--background));
+}
+
+
 .backdrop-gradient-mask {
   mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+/* Sticky Note Styles */
+.sticky-note {
+  background: #ffc;
+  box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+  transition: transform 0.15s linear;
+}
+.sticky-note:hover {
+  transform: scale(1.05);
+  box-shadow: 5px 10px 15px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+.sticky-note-fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 25px 25px 0;
+  border-color: transparent hsl(var(--card)) transparent transparent;
+  box-shadow: -1px 1px 2px rgba(0,0,0,0.1);
+  transition: all 0.2s ease-out;
+}
+.sticky-note:hover .sticky-note-fold {
+    border-width: 0 30px 30px 0;
+}
+.dark .sticky-note {
+  background: hsl(60, 33%, 80%);
+}
+.dark .sticky-note-fold {
+  border-color: transparent hsl(var(--background)) transparent transparent;
+}
+.resize-handle-line {
+    border-style: solid;
+    border-color: hsl(var(--primary) / 0.8);
+    border-width: 2px;
+}
+
+/* Zoom-based Text Obfuscation */
+.prose-obfuscated :is(h3, p, li, strong, em, code, span, a) {
+    color: transparent !important;
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+    user-select: none;
+}
+.prose-obfuscated li::marker {
+    color: transparent !important;
+}
+.sticky-note-text-obfuscated {
+    color: transparent !important;
+    user-select: none;
+    background-color: hsla(0, 0%, 0%, 0.1) !important;
+    border-radius: 3px;
+}
+.dark .sticky-note-text-obfuscated {
+    background-color: hsla(0, 0%, 100%, 0.1) !important;
+}
+
+/* React-Resizable handles */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 20;
+}
+.react-resizable:hover .react-resizable-handle,
+.react-resizable-handle:hover {
+  opacity: 1;
+}
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--primary));
+  border-bottom-right-radius: 2px;
+}
+.react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: rotate(90deg);
+}
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+.react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+  transform: rotate(180deg);
+}
+.react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+  transform: rotate(270deg);
+}
+.react-resizable-handle-w,
+.react-resizable-handle-e {
+  top: 50%;
+  margin-top: -10px;
+  cursor: ew-resize;
+}
+.react-resizable-handle-w {
+  left: 0;
+  transform: rotate(135deg);
+}
+.react-resizable-handle-e {
+  right: 0;
+  transform: rotate(315deg);
+}
+.react-resizable-handle-n,
+.react-resizable-handle-s {
+  left: 50%;
+  margin-left: -10px;
+  cursor: ns-resize;
+}
+.react-resizable-handle-n {
+  top: 0;
+  transform: rotate(225deg);
+}
+.react-resizable-handle-s {
+  bottom: 0;
+  transform: rotate(45deg);
+}
+
+.theme-wrapped-sci-fi {
+  background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+}
+.theme-wrapped-horror {
+  background: linear-gradient(45deg, #000000, #430d0d, #1a0000);
+}
+.theme-wrapped-romance {
+  background: linear-gradient(45deg, #ffafbd, #ffc3a0, #ffd6a5);
+}
+.theme-wrapped-action {
+  background: linear-gradient(45deg, #ff4e50, #f9d423, #ff8c00);
+}
+.theme-wrapped-drama {
+  background: linear-gradient(45deg, #4b6cb7, #182848, #2c3e50);
+}
+.theme-wrapped-mystery {
+  background: linear-gradient(45deg, #141e30, #243b55, #16222A);
+}
+.theme-wrapped-nostalgic {
+  background: linear-gradient(45deg, #7474BF, #348AC7, #5f2c82);
+}
+.theme-wrapped-epic {
+    background: linear-gradient(45deg, #DAA520, #B8860B, #FFD700, #F0E68C);
+}
+.theme-wrapped-default {
+  background: linear-gradient(45deg, #1e1e1e, #3a3a3a, #121212);
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  animation: float 25s infinite linear;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(10vw); opacity: 0; }
 }

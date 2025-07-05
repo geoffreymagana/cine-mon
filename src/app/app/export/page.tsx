@@ -3,72 +3,71 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileJson, FileText } from 'lucide-react';
+import { ArrowLeft, DownloadCloud, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { Movie } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { MovieService } from '@/lib/movie-service';
+import { format } from 'date-fns';
 
 export default function ExportPage() {
     const { toast } = useToast();
-    const [movies, setMovies] = React.useState<Movie[]>([]);
+    const [isExporting, setIsExporting] = React.useState(false);
 
-    React.useEffect(() => {
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) {
-                setMovies(JSON.parse(storedMovies));
-            }
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
-    }, []);
-
-    const handleExport = (format: 'json' | 'csv') => {
-        if (movies.length === 0) {
-            toast({
-                title: "Collection is Empty",
-                description: "There is no data to export.",
-                variant: 'destructive'
-            });
-            return;
-        }
-
-        let dataStr: string;
-        let fileName: string;
-
-        if (format === 'json') {
-            dataStr = JSON.stringify(movies, null, 2);
-            fileName = 'cinemon-collection.json';
-        } else {
-            const header = Object.keys(movies[0]).join(',');
-            const rows = movies.map(row => 
-                Object.values(row).map(value => {
-                    if (Array.isArray(value)) {
-                        return `"${value.join(';')}"`; // Handle tags array
-                    }
-                    const strValue = String(value);
-                    return `"${strValue.replace(/"/g, '""')}"`; // Escape double quotes
-                }).join(',')
-            );
-            dataStr = [header, ...rows].join('\n');
-            fileName = 'cinemon-collection.csv';
-        }
-
-        const blob = new Blob([dataStr], { type: `text/${format};charset=utf-8;` });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
+    const handleExport = async () => {
+        setIsExporting(true);
         toast({
-            title: "Export Successful!",
-            description: `Your collection has been exported as ${fileName}.`,
+            title: "Preparing Backup...",
+            description: "Gathering all your data. This may take a moment.",
         });
+
+        try {
+            const allData = await MovieService.exportAllData();
+            
+            if (allData.movies.length === 0 && allData.collections.length === 0 && allData.canvases.length === 0) {
+                 toast({
+                    title: "Library is Empty",
+                    description: "There is no data to create a backup from.",
+                    variant: 'destructive'
+                });
+                setIsExporting(false);
+                return;
+            }
+            
+            const backupObject = {
+                format: 'CineMon-Backup',
+                version: '2.0',
+                exportedAt: new Date().toISOString(),
+                data: allData,
+            };
+
+            const dataStr = JSON.stringify(backupObject, null, 2);
+            const fileName = `cinemon-backup-${format(new Date(), 'yyyy-MM-dd')}.json`;
+            
+            const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast({
+                title: "Backup Successful!",
+                description: `Your full backup file '${fileName}' has been downloaded.`,
+            });
+        } catch (error) {
+            console.error("Failed to export data:", error);
+            toast({
+                title: "Export Failed",
+                description: "Could not generate your backup file.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsExporting(false);
+        }
     }
 
     return (
@@ -76,21 +75,23 @@ export default function ExportPage() {
             <div className="w-full max-w-4xl">
                  <Link href="/app/dashboard" className="inline-flex items-center gap-2 mb-6 font-semibold text-lg hover:text-primary transition-colors">
                     <ArrowLeft className="w-5 h-5"/>
-                    <span>Back to Collection</span>
+                    <span>Back to Dashboard</span>
                 </Link>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-3xl font-headline">Data Backup / Export</CardTitle>
-                        <CardDescription>Export your entire collection. It's your data, after all.</CardDescription>
+                        <CardTitle className="text-3xl font-headline">Full Data Backup</CardTitle>
+                        <CardDescription>
+                            Create a complete backup of your entire Cine-Mon library. This includes all your titles, collections, canvases, and settings. Keep this file in a safe place.
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col sm:flex-row gap-4">
-                        <Button variant="outline" className="w-full" onClick={() => handleExport('json')}>
-                            <FileJson className="mr-2"/>
-                            Export as JSON
-                        </Button>
-                        <Button variant="outline" className="w-full" onClick={() => handleExport('csv')}>
-                            <FileText className="mr-2"/>
-                            Export as CSV
+                    <CardContent>
+                        <Button className="w-full" onClick={handleExport} disabled={isExporting}>
+                            {isExporting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <DownloadCloud className="mr-2"/>
+                            )}
+                            {isExporting ? 'Generating Backup...' : 'Download Full Backup (JSON)'}
                         </Button>
                     </CardContent>
                 </Card>

@@ -1,30 +1,27 @@
-feat(tracking): Implement detailed season and episode tracking
+feat(ui): Introduce Multi-Select, Bulk Actions, and major UI/UX refinements
 
-This major feature enhances the user experience for tracking TV shows and anime by breaking them down into seasons and episodes.
+This release introduces a powerful multi-select feature for managing collections, alongside significant UI/UX enhancements and critical bug fixes to improve usability and visual polish across the app.
 
-- feat(tmdb): Automatically fetch and import full season and episode data from TMDB when adding a series.
-- feat(ui): Add a new "Seasons" tab to the TV show details page, featuring an accordion for each season with individual episode tracking via checkboxes.
-- feat(ui): Include a progress bar for each season and automatically calculate overall series progress based on watched episodes.
-- refactor(ui): Remove manual episode count fields from the edit page for TV shows, as progress is now calculated automatically.
+### ✨ New Features
 
-feat(mobile): Enhance PWA readiness and native mobile experience
+#### Multi-Select & Bulk Actions
 
-- feat(pwa): Add a `manifest.webmanifest` file configured for a standalone, app-like experience and link it in the root layout.
-- feat(mobile): Disable pinch-to-zoom and implement long-press to initiate drag-and-drop on mobile, providing a more controlled, native-app feel.
-- feat(ui): Replace the sidebar toggle with a profile avatar link in the header and rely on the bottom nav for primary mobile navigation.
-- docs(ui): Update landing page "Install" button text to "Launch App" for clarity on PWA installation process.
+-   **Selection Mode**: Users can now enter a "selection mode" from the dashboard header to select multiple movie or show cards at once.
+-   **Contextual Header**: When one or more items are selected, a new contextual header appears, showing the number of selected items and providing new bulk action buttons.
+-   **Bulk Delete**: Users can now delete multiple items from their collection simultaneously, with a confirmation dialog to prevent accidental data loss.
+-   **Add to Collection (Foundation)**: The UI for adding multiple selected items to a Vault or Spotlight is now in place, ready for future implementation.
 
-feat(ui): Add public changelog and improve layouts
+### 🎨 UI & UX Enhancements
 
-- feat(changelog): Add a new public-facing changelog page that parses `CHANGELOG.md` and update all site navigations to include the link.
-- feat(layout): Conditionally render the main sidebar to provide a full-screen, immersive view for movie detail and edit pages.
-- feat(ui): Convert "Play Trailer" and "Edit" buttons on the movie detail page to icon-only buttons on smaller screens to save space.
+-   **Personalized Dashboard Title**: The dashboard header is now personalized, displaying "[User]'s Collection" for a more custom feel. The font size has also been refined for a cleaner look.
+-   **Responsive Search Dialog**: The TMDB search dialog has been redesigned to be fully responsive, ensuring a seamless experience on mobile devices. The layout now adapts gracefully to prevent long titles from hiding the "Import" button.
+-   **Improved "Fork on GitHub" Button**: The secondary call-to-action buttons on the landing page now feature a smoother, more engaging "fill from left" hover animation and clearer "Fork on GitHub" text.
+-   **Redesigned Changelog Page**: The public changelog page has been redesigned to match the elegant, single-column "reading mode" layout of the "About" page, significantly improving readability.
 
-fix(layout): Correct responsive layout and navigation bugs
+### ⚙️ Fixes & Under the Hood
 
-- fix(navigation): Resolve 404 error on movie detail pages by updating the link in `MovieCard` to the correct route.
-- fix(ui): Ensure the "More options" menu on the movie detail page is always visible and correctly positioned on mobile.
-
-chore: Update landing page content
-
-- chore(content): Replace placeholder screenshots on the landing page with final application images.
+-   **Build Error Resolution**: Fixed critical "Module not found" errors that were preventing the dashboard from building correctly.
+-   **Theme & Contrast Fix**: Resolved a major bug where the app's light/dark mode theme was incorrectly affecting the text color on public-facing pages (Landing, Changelog, Legal), making text unreadable. These pages now maintain a consistent, high-contrast look.
+-   **UI Bug Fixes**:
+    -   The contextual header for multi-select actions now has a solid background, fixing a transparency issue.
+    -   Corrected a minor layout misalignment in the changelog's timeline view.

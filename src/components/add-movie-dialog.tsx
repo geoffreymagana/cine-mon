@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -38,12 +37,13 @@ import { X, Sparkles, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { autoTagMovies } from "@/ai/flows/auto-tag-movies";
 import { Slider } from "./ui/slider";
+import { getDominantColor } from "@/lib/tmdb";
 
 const movieSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   posterUrl: z.string().min(1, "A poster image is required."),
-  type: z.enum(["Movie", "TV Show", "Anime"]),
+  type: z.enum(["Movie", "TV Show", "Anime", "K-Drama", "Animation"]),
   status: z.enum(["Watching", "Completed", "On-Hold", "Dropped", "Plan to Watch"]),
   watchedEpisodes: z.coerce.number().min(0),
   totalEpisodes: z.coerce.number().min(1),
@@ -106,14 +106,21 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
     }
   };
 
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && tagInput.trim() !== "") {
-      e.preventDefault();
-      const currentTags = form.getValues("tags");
-      if (!currentTags.includes(tagInput.trim())) {
-        form.setValue("tags", [...currentTags, tagInput.trim()]);
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag) {
+        const currentTags = form.getValues("tags");
+        if (!currentTags.includes(trimmedTag)) {
+            form.setValue("tags", [...currentTags, trimmedTag]);
+        }
         setTagInput("");
-      }
+    }
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
     }
   };
 
@@ -158,8 +165,14 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
   };
 
 
-  const onSubmit = (data: MovieFormValues) => {
-    onSave(data);
+  const onSubmit = async (data: MovieFormValues) => {
+    const dominantColor = await getDominantColor(data.posterUrl);
+    const movieData: Omit<Movie, "id"> = {
+      ...data,
+      dominantColor,
+      sortOrder: Date.now()
+    }
+    onSave(movieData);
     setIsOpen(false);
   };
 
@@ -254,9 +267,11 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        <SelectItem value="Movie">Movie</SelectItem>
-                        <SelectItem value="TV Show">TV Shows</SelectItem>
-                        <SelectItem value="Anime">Anime</SelectItem>
+                          <SelectItem value="Movie">Movie</SelectItem>
+                          <SelectItem value="TV Show">TV Show</SelectItem>
+                          <SelectItem value="Anime">Anime</SelectItem>
+                          <SelectItem value="K-Drama">K-Drama</SelectItem>
+                          <SelectItem value="Animation">Animation</SelectItem>
                         </SelectContent>
                     </Select>
                     <FormMessage />
@@ -368,12 +383,15 @@ export const AddMovieDialog = ({ isOpen, setIsOpen, onSave }: AddMovieDialogProp
                     </Button>
                 </div>
                     <FormControl>
-                        <Input 
-                        placeholder="Add tags and press Enter"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        />
+                        <div className="flex items-center gap-2">
+                           <Input 
+                            placeholder="Add a tag..."
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={handleTagKeyDown}
+                           />
+                           <Button type="button" variant="secondary" onClick={handleAddTag}>Add</Button>
+                        </div>
                     </FormControl>
                 <div className="flex flex-wrap gap-2 mt-2">
                     {form.watch("tags").map((tag) => (

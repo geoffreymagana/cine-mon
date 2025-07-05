@@ -15,20 +15,20 @@ function LegalPageContent() {
     const tab = searchParams.get('tab') || 'terms';
 
     return (
-        <div className="bg-black text-gray-100 font-body antialiased">
+        <div className="bg-black text-neutral-100 font-body antialiased">
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
                 <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <Link href="/" className="flex items-center gap-2">
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
-                        <span className="text-xl font-bold font-headline">Cine-Mon</span>
+                        <span className="text-xl font-bold font-headline text-white">Cine-Mon</span>
                     </Link>
                     <div className="hidden md:flex items-center gap-6">
-                        <Link href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</Link>
-                        <Link href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</Link>
-                        <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
-                        <Link href="/changelog" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Changelog</Link>
-                        <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+                        <Link href="/#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</Link>
+                        <Link href="/#testimonials" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Testimonials</Link>
+                        <Link href="/about" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">About</Link>
+                        <Link href="/changelog" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Changelog</Link>
+                        <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">GitHub</a>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link href="/app/dashboard" target="_blank" rel="noopener noreferrer">
@@ -45,7 +45,7 @@ function LegalPageContent() {
                     <div className="max-w-4xl mx-auto">
                         <div className="text-center mb-12">
                             <h1 className="text-4xl md:text-6xl font-bold font-headline text-white text-glow">Terms & Privacy</h1>
-                            <p className="mt-4 text-lg md:text-xl text-gray-300">Legal information about using Cine-Mon.</p>
+                            <p className="mt-4 text-lg md:text-xl text-neutral-300">Legal information about using Cine-Mon.</p>
                         </div>
                         
                         <Tabs defaultValue={tab} className="w-full">
@@ -53,7 +53,7 @@ function LegalPageContent() {
                                 <TabsTrigger value="terms">Terms of Service</TabsTrigger>
                                 <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="terms" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-gray-400 space-y-4">
+                            <TabsContent value="terms" className="mt-8 prose prose-lg prose-invert max-w-none text-neutral-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -109,7 +109,7 @@ function LegalPageContent() {
                                     <p>For feedback, feature requests, or legal questions: geoffreymagana21@gmail.com</p>
                                 </div>
                             </TabsContent>
-                            <TabsContent value="privacy" className="mt-8 prose prose-lg dark:prose-invert max-w-none text-gray-400 space-y-4">
+                            <TabsContent value="privacy" className="mt-8 prose prose-lg prose-invert max-w-none text-neutral-400 space-y-4">
                                 <p className="text-sm italic">Last updated: June 27, 2025</p>
                                 
                                 <div>
@@ -177,9 +177,9 @@ function LegalPageContent() {
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <div className="flex items-center gap-2 mb-4 md:mb-0">
                         <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
-                        <span className="text-lg font-bold">Cine-Mon</span>
+                        <span className="text-lg font-bold text-white">Cine-Mon</span>
                     </div>
-                    <div className="flex gap-6 text-gray-400">
+                    <div className="flex gap-6 text-neutral-400">
                     <Link href="/about" className="hover:text-primary transition-colors">About</Link>
                     <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
                     <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
@@ -188,7 +188,7 @@ function LegalPageContent() {
                     <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
                     </div>
                 </div>
-                <div className="text-center text-gray-500 text-sm mt-8">
+                <div className="text-center text-neutral-500 text-sm mt-8">
                     &copy; {new Date().getFullYear()} Cine-Mon. All Rights Reserved.
                 </div>
                 </div>

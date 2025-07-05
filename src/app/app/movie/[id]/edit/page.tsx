@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -23,6 +22,8 @@ import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { MovieService } from '@/lib/movie-service';
+import { getDominantColor } from '@/lib/tmdb';
 
 
 const castMemberSchema = z.object({
@@ -36,7 +37,7 @@ const movieEditSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   posterUrl: z.string().url('Must be a valid URL'),
   backdropUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  type: z.enum(['Movie', 'TV Show', 'Anime']),
+  type: z.enum(['Movie', 'TV Show', 'Anime', 'K-Drama', 'Animation']),
   status: z.enum(['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch']),
   rating: z.coerce.number().min(0).max(100),
   tags: z.array(z.string()),
@@ -52,6 +53,7 @@ const movieEditSchema = z.object({
   runtime: z.coerce.number().min(0).optional(),
   productionCountries: z.string().optional(),
   trailerUrl: z.string().optional(),
+  dominantColor: z.string().optional(),
 });
 
 type MovieEditFormValues = z.infer<typeof movieEditSchema>;
@@ -66,9 +68,9 @@ export default function MovieEditPage() {
   const posterFileInputRef = React.useRef<HTMLInputElement>(null);
   const backdropFileInputRef = React.useRef<HTMLInputElement>(null);
   const alternatePosterFileInputRef = React.useRef<HTMLInputElement>(null);
+  const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [scriptFileName, setScriptFileName] = React.useState<string | null>(null);
-  const scriptFileInputRef = React.useRef<HTMLInputElement>(null);
   const [isCastOpen, setIsCastOpen] = React.useState(false);
 
 
@@ -93,6 +95,7 @@ export default function MovieEditPage() {
       revenue: 0,
       runtime: 0,
       productionCountries: '',
+      dominantColor: '',
     }
   });
 
@@ -109,35 +112,40 @@ export default function MovieEditPage() {
   React.useEffect(() => {
     if (!movieId) return;
     
-    try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const movies: Movie[] = JSON.parse(storedMovies);
-        const movieToEdit = movies.find((m) => m.id === movieId);
-        if (movieToEdit) {
-          form.reset(movieToEdit);
-          if (movieToEdit.scriptUrl?.startsWith('data:')) {
-            setScriptFileName("Uploaded file");
-          }
-        } else {
-          toast({ title: 'Error', description: 'Movie not found.', variant: 'destructive' });
-          router.push('/app/dashboard');
+    const loadMovie = async () => {
+        try {
+            const movieToEdit = await MovieService.getMovie(movieId);
+            if (movieToEdit) {
+                form.reset(movieToEdit);
+                if (movieToEdit.scriptUrl?.startsWith('data:')) {
+                    setScriptFileName("Uploaded file");
+                }
+            } else {
+                toast({ title: 'Error', description: 'Movie not found.', variant: 'destructive' });
+                router.push('/app/dashboard');
+            }
+        } catch (error) {
+            console.error('Failed to load movie from DB:', error);
+            toast({ title: 'Error', description: 'Could not load movie data.', variant: 'destructive' });
+        } finally {
+            setIsLoading(false);
         }
-      }
-    } catch (error) {
-      console.error('Failed to load movie from localStorage:', error);
-      toast({ title: 'Error', description: 'Could not load movie data.', variant: 'destructive' });
-    } finally {
-        setIsLoading(false);
-    }
+    };
+    
+    loadMovie();
   }, [movieId, form, router, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'posterUrl' | 'backdropUrl') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue(fieldName, reader.result as string, { shouldValidate: true });
+      reader.onloadend = async () => {
+        const result = reader.result as string;
+        form.setValue(fieldName, result, { shouldValidate: true });
+        if (fieldName === 'posterUrl') {
+          const dominantColor = await getDominantColor(result);
+          form.setValue('dominantColor', dominantColor);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -194,14 +202,21 @@ export default function MovieEditPage() {
     }
   };
 
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag) {
+        const currentTags = form.getValues("tags");
+        if (!currentTags.includes(trimmedTag)) {
+            form.setValue("tags", [...currentTags, trimmedTag]);
+        }
+        setTagInput("");
+    }
+  };
+
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim() !== '') {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      const currentTags = form.getValues('tags');
-      if (!currentTags.includes(tagInput.trim())) {
-        form.setValue('tags', [...currentTags, tagInput.trim()]);
-        setTagInput('');
-      }
+      handleAddTag();
     }
   };
 
@@ -211,34 +226,25 @@ export default function MovieEditPage() {
   };
 
 
-  const onSubmit = (data: MovieEditFormValues) => {
+  const onSubmit = async (data: MovieEditFormValues) => {
     if (!movieId) return;
 
     try {
-      const storedMovies = localStorage.getItem('movies');
-      if (storedMovies) {
-        const movies: Movie[] = JSON.parse(storedMovies);
-        const originalMovie = movies.find(m => m.id === movieId);
-        if (!originalMovie) {
-          throw new Error("Original movie not found");
-        }
-        
-        // Keep derived fields from original movie
-        const updatedMovieData = { 
-            ...originalMovie,
-            ...data,
-            watchedEpisodes: originalMovie.watchedEpisodes,
-            totalEpisodes: originalMovie.totalEpisodes,
-            seasons: originalMovie.seasons,
-        };
-
-        const updatedMovies = movies.map((m) => (m.id === movieId ? updatedMovieData : m));
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-        toast({ title: 'Success!', description: `${data.title} has been updated.` });
-        router.push(`/app/movie/${movieId}`);
+      const originalMovie = await MovieService.getMovie(movieId);
+      if (!originalMovie) {
+        throw new Error("Original movie not found");
       }
+      
+      const updatedMovieData = { 
+          ...originalMovie,
+          ...data,
+      };
+
+      await MovieService.updateMovie(movieId, updatedMovieData);
+      toast({ title: 'Success!', description: `${data.title} has been updated.` });
+      router.push(`/app/movie/${movieId}`);
     } catch (error) {
-      console.error('Failed to save movie to localStorage:', error);
+      console.error('Failed to save movie:', error);
       toast({ title: 'Error', description: 'Could not save changes.', variant: 'destructive' });
     }
   };
@@ -314,6 +320,8 @@ export default function MovieEditPage() {
                                   <SelectItem value="Movie">Movie</SelectItem>
                                   <SelectItem value="TV Show">TV Show</SelectItem>
                                   <SelectItem value="Anime">Anime</SelectItem>
+                                  <SelectItem value="K-Drama">K-Drama</SelectItem>
+                                  <SelectItem value="Animation">Animation</SelectItem>
                               </SelectContent>
                           </Select>
                           <FormMessage />
@@ -364,7 +372,10 @@ export default function MovieEditPage() {
                             </Button>
                         </div>
                             <FormControl>
-                                <Input placeholder="Add tags and press Enter" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagKeyDown}/>
+                                <div className="flex items-center gap-2">
+                                    <Input placeholder="Add a tag..." value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagKeyDown}/>
+                                    <Button type="button" variant="secondary" onClick={handleAddTag}>Add</Button>
+                                </div>
                             </FormControl>
                         <div className="flex flex-wrap gap-2 mt-2">
                             {form.watch("tags").map((tag) => (
@@ -388,7 +399,7 @@ export default function MovieEditPage() {
                 <CollapsibleTrigger asChild>
                   <div className="flex w-full cursor-pointer items-center justify-between p-6">
                     <div>
-                      <CardTitle>Cast & Crew</CardTitle>
+                      <CardTitle>Cast</CardTitle>
                       <CardDescription>Add director and cast members.</CardDescription>
                     </div>
                     <ChevronDown className={cn("h-5 w-5 transition-transform", isCastOpen && "rotate-180")} />

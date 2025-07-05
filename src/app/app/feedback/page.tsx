@@ -3,26 +3,62 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function FeedbackPage() {
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        toast({
-            title: "Feedback Submitted!",
-            description: "Thank you for helping us improve Cine-Mon.",
-        });
-        // Here you would typically send the form data to a server
-        const form = e.target as HTMLFormElement;
-        form.reset();
+        setIsSubmitting(true);
+
+        const formData = new FormData(e.currentTarget);
+        const feedbackType = formData.get('feedbackType') as string;
+        const message = formData.get('feedback-message') as string;
+
+        if (!feedbackType || !message) {
+            toast({
+                title: "Missing Information",
+                description: "Please fill out all fields before submitting.",
+                variant: "destructive",
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
+        try {
+            const newFeedback = {
+                feedbackType,
+                message,
+                submittedAt: new Date().toISOString(),
+            };
+
+            await addDoc(collection(db, "feedback"), newFeedback);
+
+            toast({
+                title: "Feedback Submitted!",
+                description: "Thank you for your feedback. We've received your message.",
+            });
+            (e.target as HTMLFormElement).reset();
+        } catch (error) {
+            console.error("Feedback submission error:", error);
+            toast({
+                title: "Submission Failed",
+                description: "There was an error sending your feedback. Please try again later.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
 
@@ -59,13 +95,17 @@ export default function FeedbackPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="feedback-message">Your Message</Label>
-                                <Textarea id="feedback-message" placeholder="Please be as detailed as possible..." rows={6} required />
+                                <Textarea id="feedback-message" name="feedback-message" placeholder="Please be as detailed as possible..." rows={6} required disabled={isSubmitting} />
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button type="submit">
-                                <Send className="mr-2"/>
-                                Submit Feedback
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Send className="mr-2"/>
+                                )}
+                                {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                             </Button>
                         </CardFooter>
                     </Card>

@@ -33,8 +33,10 @@ import {
     Lock,
     Projector,
     Trash2,
-    Check
+    Check,
+    PlusCircle
 } from 'lucide-react';
+import { format } from 'date-fns';
 
 import type { Movie, UserCollection } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +68,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { AmbientPlayer } from '@/components/ambient-player';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CreateCollectionDialog } from '@/components/create-collection-dialog';
+import { MovieService } from '@/lib/movie-service';
 
 
 const statusOptions = [
@@ -84,15 +88,37 @@ export default function MovieDetailPage() {
     const [allMovies, setAllMovies] = React.useState<Movie[]>([]);
     const [allCollections, setAllCollections] = React.useState<UserCollection[]>([]);
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = React.useState(false);
+    const [isCreateCollectionDialogOpen, setIsCreateCollectionDialogOpen] = React.useState(false);
+    const [createCollectionType, setCreateCollectionType] = React.useState<'Vault' | 'Spotlight'>('Vault');
     const [isTrailerOpen, setIsTrailerOpen] = React.useState(false);
     const [collectionMovies, setCollectionMovies] = React.useState<Movie[]>([]);
     const { toast } = useToast();
 
-    const updateMovieData = (updatedMovie: Movie) => {
+    const loadData = React.useCallback(async () => {
+        if (!movieId) return;
+        try {
+            const [foundMovie, movies, collections] = await Promise.all([
+                MovieService.getMovie(movieId),
+                MovieService.getMovies(),
+                MovieService.getCollections()
+            ]);
+            setMovie(foundMovie || null);
+            setAllMovies(movies);
+            setAllCollections(collections);
+        } catch (error) {
+            console.error("Failed to load data from DB:", error);
+            setMovie(null);
+        }
+    }, [movieId]);
+
+    React.useEffect(() => {
+        loadData();
+    }, [loadData]);
+    
+    const updateMovieData = async (updatedMovie: Movie) => {
         setMovie(updatedMovie);
-        const updatedMovies = allMovies.map(m => m.id === movieId ? updatedMovie : m);
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-        setAllMovies(updatedMovies);
+        await MovieService.updateMovie(movieId, updatedMovie);
+        setAllMovies(allMovies.map(m => m.id === movieId ? updatedMovie : m));
     };
 
     const handleEpisodeToggle = (seasonNumber: number, episodeNumber: number, watched: boolean) => {
@@ -112,11 +138,20 @@ export default function MovieDetailPage() {
         });
 
         const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+        let newStatus = movie.status;
+
+        if (watched && newStatus === 'Plan to Watch') {
+            newStatus = 'Watching';
+        }
+        if (newWatchedEpisodes === movie.totalEpisodes) {
+            newStatus = 'Completed';
+        }
 
         const updatedMovie = {
             ...movie,
             seasons: newSeasons,
             watchedEpisodes: newWatchedEpisodes,
+            status: newStatus,
         };
         
         updateMovieData(updatedMovie);
@@ -140,11 +175,20 @@ export default function MovieDetailPage() {
         });
 
         const newWatchedEpisodes = newSeasons.flatMap(s => s.episodes).filter(e => e.watched).length;
+        let newStatus = movie.status;
+
+        if (newWatchedState && newStatus === 'Plan to Watch') {
+            newStatus = 'Watching';
+        }
+        if (newWatchedEpisodes === movie.totalEpisodes) {
+            newStatus = 'Completed';
+        }
 
         const updatedMovie = {
             ...movie,
             seasons: newSeasons,
             watchedEpisodes: newWatchedEpisodes,
+            status: newStatus,
         };
         
         updateMovieData(updatedMovie);
@@ -153,31 +197,6 @@ export default function MovieDetailPage() {
             description: `All episodes marked as ${newWatchedState ? 'watched' : 'unwatched'}.`
         });
     };
-
-    React.useEffect(() => {
-        if (!movieId) return;
-
-        try {
-            const storedMovies = localStorage.getItem('movies');
-            if (storedMovies) {
-                const movies: Movie[] = JSON.parse(storedMovies);
-                setAllMovies(movies);
-                const foundMovie = movies.find((m) => m.id === movieId);
-                setMovie(foundMovie || null);
-            } else {
-                setMovie(null);
-            }
-
-            const storedCollections = localStorage.getItem('collections');
-            if (storedCollections) {
-                setAllCollections(JSON.parse(storedCollections));
-            }
-
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-            setMovie(null);
-        }
-    }, [movieId]);
 
     const handleCollectionClick = (collectionName: string) => {
         const moviesInCollection = allMovies.filter(
@@ -189,7 +208,26 @@ export default function MovieDetailPage() {
 
     const handleStatusChange = (newStatus: Movie['status']) => {
         if (!movie) return;
-        const updatedMovie = { ...movie, status: newStatus };
+        
+        const isSeries = movie.type !== 'Movie';
+        let updatedMovie: Movie = { ...movie, status: newStatus };
+
+        if (newStatus === 'Completed' && isSeries && movie.seasons) {
+            const allWatchedSeasons = movie.seasons.map(season => ({
+                ...season,
+                episodes: season.episodes.map(ep => ({ ...ep, watched: true }))
+            }));
+            updatedMovie = {
+                ...updatedMovie,
+                seasons: allWatchedSeasons,
+                watchedEpisodes: movie.totalEpisodes,
+            };
+            toast({
+                title: "All Episodes Marked as Watched",
+                description: `Since the series is completed, all episodes have been updated.`,
+            });
+        }
+        
         updateMovieData(updatedMovie);
         toast({
             title: "Status Updated",
@@ -197,20 +235,10 @@ export default function MovieDetailPage() {
         });
     };
     
-    const handleDeleteMovie = () => {
+    const handleDeleteMovie = async () => {
         if (!movie) return;
 
-        const updatedMovies = allMovies.filter(m => m.id !== movie.id);
-        localStorage.setItem('movies', JSON.stringify(updatedMovies));
-
-        const storedCollections = localStorage.getItem('collections');
-        if (storedCollections) {
-            let collections: UserCollection[] = JSON.parse(storedCollections);
-            collections.forEach(c => {
-                c.movieIds = c.movieIds.filter(id => id !== movie.id);
-            });
-            localStorage.setItem('collections', JSON.stringify(collections));
-        }
+        await MovieService.deleteMovie(movie.id);
 
         toast({
             title: "Movie Deleted",
@@ -221,13 +249,10 @@ export default function MovieDetailPage() {
         router.push('/app/dashboard');
     };
 
-    const handleAddToCollection = (collectionId: string) => {
+    const handleAddToCollection = async (collectionId: string) => {
         if (!movie) return;
 
-        const storedCollections = localStorage.getItem('collections');
-        let collections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
-        
-        const targetCollection = collections.find(c => c.id === collectionId);
+        const targetCollection = allCollections.find(c => c.id === collectionId);
         if (!targetCollection) return;
         
         if (targetCollection.movieIds.includes(movie.id)) {
@@ -236,10 +261,29 @@ export default function MovieDetailPage() {
         }
 
         targetCollection.movieIds.push(movie.id);
-        localStorage.setItem('collections', JSON.stringify(collections));
-        setAllCollections(collections);
+        await MovieService.updateCollection(collectionId, { movieIds: targetCollection.movieIds });
+        setAllCollections([...allCollections]);
         toast({ title: "Success!", description: `Added to "${targetCollection.name}".` });
     };
+
+    const handleCollectionCreated = (newCollection: UserCollection) => {
+        if (!movie) return;
+        setAllCollections(prev => [...prev, newCollection]);
+        toast({
+            title: "Collection Created",
+            description: `"${movie.title}" has been added to your new ${newCollection.type.toLowerCase()} "${newCollection.name}".`,
+        });
+    };
+
+    const formattedReleaseDate = React.useMemo(() => {
+        if (!movie?.releaseDate) return 'N/A';
+        try {
+            // Appending T00:00:00 ensures the date is parsed in local time, avoiding timezone-related off-by-one errors.
+            return format(new Date(`${movie.releaseDate}T00:00:00`), 'MMM d, yyyy');
+        } catch (e) {
+            return movie.releaseDate;
+        }
+    }, [movie?.releaseDate]);
 
     if (movie === undefined) {
         return (
@@ -276,7 +320,7 @@ export default function MovieDetailPage() {
     const currentStatusInfo = statusOptions.find(opt => opt.value === movie.status);
     const vaults = allCollections.filter(c => c.type === 'Vault');
     const spotlights = allCollections.filter(c => c.type === 'Spotlight');
-    const isSeries = movie.type === 'TV Show' || movie.type === 'Anime';
+    const isSeries = movie.type !== 'Movie';
 
     const moreOptionsMenuContent = (
       <DropdownMenuContent align="end">
@@ -287,16 +331,25 @@ export default function MovieDetailPage() {
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                      {vaults.length > 0 ? vaults.map(vault => (
-                          <DropdownMenuItem
-                              key={vault.id}
-                              disabled={vault.movieIds.includes(movie.id)}
-                              onClick={() => handleAddToCollection(vault.id)}
-                          >
-                              {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
-                              {vault.name}
-                          </DropdownMenuItem>
-                      )) : <DropdownMenuItem disabled>No vaults created</DropdownMenuItem>}
+                      {vaults.length > 0 && (
+                        <>
+                          {vaults.map(vault => (
+                              <DropdownMenuItem
+                                  key={vault.id}
+                                  disabled={vault.movieIds.includes(movie.id)}
+                                  onClick={() => handleAddToCollection(vault.id)}
+                              >
+                                  {vault.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                  {vault.name}
+                              </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setCreateCollectionType('Vault'); setIsCreateCollectionDialogOpen(true); }}>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>New Vault...</span>
+                      </DropdownMenuItem>
                   </DropdownMenuSubContent>
               </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -307,16 +360,25 @@ export default function MovieDetailPage() {
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                      {spotlights.length > 0 ? spotlights.map(spotlight => (
-                          <DropdownMenuItem
-                              key={spotlight.id}
-                              disabled={spotlight.movieIds.includes(movie.id)}
-                              onClick={() => handleAddToCollection(spotlight.id)}
-                          >
-                              {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
-                              {spotlight.name}
-                          </DropdownMenuItem>
-                      )) : <DropdownMenuItem disabled>No spotlights created</DropdownMenuItem>}
+                      {spotlights.length > 0 && (
+                        <>
+                          {spotlights.map(spotlight => (
+                              <DropdownMenuItem
+                                  key={spotlight.id}
+                                  disabled={spotlight.movieIds.includes(movie.id)}
+                                  onClick={() => handleAddToCollection(spotlight.id)}
+                              >
+                                  {spotlight.movieIds.includes(movie.id) && <Check className="mr-2 h-4 w-4" />}
+                                  {spotlight.name}
+                              </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setCreateCollectionType('Spotlight'); setIsCreateCollectionDialogOpen(true); }}>
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>New Spotlight...</span>
+                      </DropdownMenuItem>
                   </DropdownMenuSubContent>
               </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -475,7 +537,7 @@ export default function MovieDetailPage() {
                                     <TabsList>
                                         <TabsTrigger value="details"><Info className="mr-2" />Details</TabsTrigger>
                                         {isSeries && (movie.seasons?.length ?? 0) > 0 && <TabsTrigger value="seasons"><Tv className="mr-2" />Seasons</TabsTrigger>}
-                                        {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast & Crew</TabsTrigger>}
+                                        {movie.cast && movie.cast.length > 0 && <TabsTrigger value="cast"><Users className="mr-2" />Cast</TabsTrigger>}
                                         {movie.alternatePosters && movie.alternatePosters.length > 0 && <TabsTrigger value="media"><Clapperboard className="mr-2" />Media</TabsTrigger>}
                                     </TabsList>
                                 </div>
@@ -496,7 +558,7 @@ export default function MovieDetailPage() {
                                                         <RatingProgressBar percentage={movie.rating} className="mt-2" />
                                                     </div>
                                                 </div>
-                                                <DetailItem icon={Calendar} label="Release Date" value={movie.releaseDate} />
+                                                <DetailItem icon={Calendar} label="Release Date" value={formattedReleaseDate} />
                                                 <DetailItem icon={isSeries ? Tv : Film} label="Type" value={movie.type} />
                                                 {movie.director && <DetailItem icon={Users} label="Director" value={movie.director} />}
                                                 <DetailItem icon={Repeat} label="Rewatched" value={`${movie.rewatchCount || 0} times`} />
@@ -625,6 +687,13 @@ export default function MovieDetailPage() {
                     </div>
                 </main>
             </div>
+            <CreateCollectionDialog
+                isOpen={isCreateCollectionDialogOpen}
+                setIsOpen={setIsCreateCollectionDialogOpen}
+                type={createCollectionType}
+                onCollectionCreated={handleCollectionCreated}
+                movieIdsToAdd={[movie.id]}
+            />
             <Dialog open={isCollectionDialogOpen} onOpenChange={setIsCollectionDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
@@ -649,7 +718,7 @@ export default function MovieDetailPage() {
                                             />
                                             <div className="flex-grow">
                                                 <p className="font-semibold">{collectionMovie.title}</p>
-                                                <p className="text-sm text-muted-foreground">{collectionMovie.releaseDate}</p>
+                                                <p className="text-sm text-muted-foreground">{collectionMovie.releaseDate ? format(new Date(`${collectionMovie.releaseDate}T00:00:00`), 'MMM d, yyyy') : ''}</p>
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         </div>

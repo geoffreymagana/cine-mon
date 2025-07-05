@@ -14,9 +14,14 @@ export default {
         'neon-hover': '0 0 25px hsl(var(--primary) / 0.8)',
       },
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
+        headline: ['var(--font-space-grotesk)', 'sans-serif'],
+        handwriting: ['var(--font-kalam)', 'cursive'],
         code: ['monospace'],
+      },
+      fontSize: {
+        '2xs': '0.625rem', // 10px
+        '3xs': '0.5rem',   // 8px
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -109,5 +114,5 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;

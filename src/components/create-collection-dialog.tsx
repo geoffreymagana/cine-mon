@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
+import { MovieService } from "@/lib/movie-service";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Collection name is required."),
@@ -39,10 +40,11 @@ type CreateCollectionDialogProps = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   type: 'Vault' | 'Spotlight';
-  onCollectionCreated: () => void;
+  onCollectionCreated: (newCollection: UserCollection) => void;
+  movieIdsToAdd?: string[];
 };
 
-export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCreated }: CreateCollectionDialogProps) => {
+export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCreated, movieIdsToAdd }: CreateCollectionDialogProps) => {
   const coverImageInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<CollectionFormValues>({
@@ -71,28 +73,19 @@ export const CreateCollectionDialog = ({ isOpen, setIsOpen, type, onCollectionCr
     }
   };
 
-  const onSubmit = (data: CollectionFormValues) => {
-    try {
-        const storedCollections = localStorage.getItem('collections');
-        const collections: UserCollection[] = storedCollections ? JSON.parse(storedCollections) : [];
-
-        const newCollection: UserCollection = {
-            id: crypto.randomUUID(),
-            name: data.name,
-            description: data.description,
-            coverImageUrl: data.coverImageUrl,
-            type: type,
-            movieIds: []
-        };
-        
-        collections.push(newCollection);
-        localStorage.setItem('collections', JSON.stringify(collections));
-        
-        onCollectionCreated();
-        setIsOpen(false);
-    } catch (error) {
-        console.error("Failed to save collection:", error);
-    }
+  const onSubmit = async (data: CollectionFormValues) => {
+    const newCollection: UserCollection = {
+        id: crypto.randomUUID(),
+        name: data.name,
+        description: data.description,
+        coverImageUrl: data.coverImageUrl,
+        type: type,
+        movieIds: movieIdsToAdd || []
+    };
+    
+    await MovieService.addCollection(newCollection);
+    onCollectionCreated(newCollection);
+    setIsOpen(false);
   };
   
   const coverImageValue = form.watch('coverImageUrl');

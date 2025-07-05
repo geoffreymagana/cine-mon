@@ -14,20 +14,20 @@ export default async function PublicChangelogPage() {
   const versions = await parseChangelog();
   
   return (
-    <div className="bg-black text-gray-100 font-body antialiased">
+    <div className="bg-black text-white font-body antialiased">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg">
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image src={cineMonLogo} alt="Cine-Mon Logo" width={32} height={32} data-ai-hint="logo" />
-            <span className="text-xl font-bold font-headline">Cine-Mon</span>
+            <span className="text-xl font-bold font-headline text-white">Cine-Mon</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
-            <a href="/#features" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Features</a>
-            <a href="/#testimonials" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">Testimonials</a>
-            <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">About</Link>
+            <a href="/#features" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Features</a>
+            <a href="/#testimonials" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">Testimonials</a>
+            <Link href="/about" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">About</Link>
             <Link href="/changelog" className="text-sm font-medium text-primary transition-colors">Changelog</Link>
-            <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">GitHub</a>
+            <a href="https://github.com/geoffreymagana/cine-mon" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-neutral-300 hover:text-primary transition-colors">GitHub</a>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/app/dashboard" target="_blank" rel="noopener noreferrer">
@@ -41,7 +41,7 @@ export default async function PublicChangelogPage() {
 
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-6 py-12">
-            <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
+            <div className="max-w-4xl mx-auto">
                 <ChangelogDisplay versions={versions} />
             </div>
         </div>
@@ -53,9 +53,9 @@ export default async function PublicChangelogPage() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
                 <Image src={cineMonLogo} alt="Cine-Mon Logo" width={24} height={24} data-ai-hint="logo" />
-                <span className="text-lg font-bold">Cine-Mon</span>
+                <span className="text-lg font-bold text-white">Cine-Mon</span>
             </div>
-            <div className="flex gap-6 text-gray-400">
+            <div className="flex gap-6 text-neutral-400">
               <Link href="/about" className="hover:text-primary transition-colors">About</Link>
               <Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link>
               <Link href="/legal?tab=terms" className="hover:text-primary transition-colors">Terms</Link>
@@ -64,7 +64,7 @@ export default async function PublicChangelogPage() {
               <a href="mailto:geoffreymagana21@gmail.com" className="hover:text-primary transition-colors">Contact</a>
             </div>
           </div>
-          <div className="text-center text-gray-500 text-sm mt-8">
+          <div className="text-center text-neutral-500 text-sm mt-8">
             &copy; {new Date().getFullYear()} Cine-Mon. All Rights Reserved.
           </div>
         </div>
