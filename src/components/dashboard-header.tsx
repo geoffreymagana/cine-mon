@@ -1,8 +1,9 @@
+
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Share2 } from "lucide-react";
+import { Search, Plus, MoreVertical, X, PlusCircle, Trash2, Share2, LibraryBig } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Movie } from "@/lib/types";
 
 type DashboardHeaderProps = {
@@ -45,6 +46,7 @@ export const DashboardHeader = ({
   allMovies,
 }: DashboardHeaderProps) => {
   const isMobile = useIsMobile();
+  const router = useRouter();
   
   const [avatarUrl, setAvatarUrl] = React.useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = React.useState("My");
@@ -159,6 +161,10 @@ export const DashboardHeader = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={onToggleSelectionMode}>Select Items</DropdownMenuItem>
+             <DropdownMenuItem onSelect={() => router.push('/app/collections')}>
+                <LibraryBig className="mr-2 h-4 w-4" />
+                <span>View Collections</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
