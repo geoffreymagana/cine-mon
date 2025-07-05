@@ -188,7 +188,7 @@ function DashboardContent() {
         </div>
         
         {/* Horizontally-Scrollable Filter Bar */}
-        <div className="w-full border-b">
+        <div className="w-full border-b hidden md:block">
           <GenreFilter />
         </div>
         
